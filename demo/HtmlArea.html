@@ -4,12 +4,12 @@
 	<title>HtmlArea Sandbox</title>
 	<style>
 		body { text-align:left; }
-		.html-editor { width:500px; border:1px solid black; }
+		.html-editor { width:500px; border:1px solid black; position:relative; }
 
-		.html-editor .tools { border-bottom:1px solid black; }
+		.html-editor .tools { border-bottom:1px solid black; background:#eee; }
 		.html-editor .tools .tools { display:inline-block; border:none; }
-		.html-editor .tools a { display:inline-block; vertical-align:top; width:16px; height:16px; padding:2px; text-align:center; overflow:hidden; cursor:pointer; }
-		.html-editor .tools a.active { background:#ddd; outline:1px solid #bbb; }
+		.html-editor .tools a { display:inline-block; vertical-align:top; width:16px; line-height:16px; height:16px; padding:2px; text-align:center; overflow:hidden; cursor:pointer; }
+		.html-editor .tools a.active { background:#fff; border-right:1px solid #000; border-left:1px solid #000; margin:0 -1px; }
 		.html-editor .tools span { vertical-align:top; }
 
 		.html-editor textarea { margin:0; padding:5px; border:none; width:490px; min-height:169px; outline:none; }
@@ -18,6 +18,12 @@
 		.html-editor .content p { margin:0; padding:0; }
 
 		.html-editor .tools .separator { cursor:default; }
+		.html-editor .tools .mode { font-size:11px; }
+
+		.html-editor-link { display:none; position:absolute; right:-1px; top:20px; background:#fff; border:1px solid black; }
+		.html-editor-link.show, .html-editor-link.focus { display:block; }
+		.html-editor-link input { width:200px; margin:4px; }
+		.html-editor-link a { display:inline-block; padding:4px 6px 4px 2px; cursor:pointer; }
 	</style>
 	<script src="mootools.js"></script>
 	<script src="../src/HtmlArea.js"></script>
