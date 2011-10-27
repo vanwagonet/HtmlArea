@@ -1,5 +1,7 @@
 /**
- * A simple but extensible rich text editor
+ * A simple but extensible rich-text editor
+ * copyright 2011 - Andy VanWagoner
+ * license: MIT
  **/
 HtmlArea = new Class({
 	Implements: [ Events, Options ],
@@ -9,9 +11,12 @@ HtmlArea = new Class({
 		mode: 'visual',
 		toolsgo: 'top',
 		tools: [
-			[ 'bold', 'italic', 'underline', 'strike', 'sub', 'sup' ],
+			[ 'bold', 'italic', 'underline', 'strike', '|', 'sub', 'sup' ],
+			'|',
 			[ 'left', 'center', 'right', ],
+			'|',
 			[ 'bullet', 'number', 'indent', 'outdent' ],
+			'|',
 			'mode'
 		]
 	},
@@ -59,6 +64,7 @@ HtmlArea = new Class({
 		var Actions = HtmlArea.Actions, html = '', t, tt, action,
 			cmd = (navigator.platform.indexOf('Mac') === 0) ? '&#8984;' : 'ctrl ';
 		for (t = 0, tt = tools.length - 1; t <= tt; ++t) {
+			if (tools[t] === '|') { tools[t] = 'separator'; }
 			if (typeOf(tools[t]) === 'array') {
 				html += '<div class="tools">' + this.buildTools(tools[t]) + '</div>';
 			} else if (action = Actions[tools[t]]) {
@@ -303,12 +309,12 @@ HtmlArea = new Class({
 
 
 HtmlArea.Actions.addActions({
-	bold:{ title:'Bold', text:'B', command:'bold', key:'b' },
-	italic:{ title:'Italic', text:'I', command:'italic', key:'i' },
-	underline:{ title:'Underline', text:'U', command:'underline', key:'u' },
-	strike:{ title:'Strikethrough', text:'S', command:'strikethrough' },
-	sub:{ title:'Subscript', text:'s', command:'subscript' },
-	sup:{ title:'Superscript', text:'s', command:'superscript' },
+	bold:{ title:'Bold', text:'<b>B</b>', command:'bold', key:'b' },
+	italic:{ title:'Italic', text:'<i>I</i>', command:'italic', key:'i' },
+	underline:{ title:'Underline', text:'<u>U</u>', command:'underline', key:'u' },
+	strike:{ title:'Strikethrough', text:'<s>S</s>', command:'strikethrough' },
+	sub:{ title:'Subscript', text:'x<sub>2</sub>', command:'subscript' },
+	sup:{ title:'Superscript', text:'x<sup>2</sup>', command:'superscript' },
 
 	left:{ title:'Align Left', command:'justifyLeft' },
 	center:{ title:'Align Center', command:'justifyCenter' },
@@ -328,7 +334,6 @@ HtmlArea.Actions.addActions({
 	redo:{ title:'Redo', text:'&#8618;', command:'redo', key:'y', magic:true },
 
 	separator:{ text:'|' },
-	'|':{ text:'|' },
 
 	mode:{ title:'View HTML', text:'&lt;/&gt;', key:'0',
 		run: function(editor, btn) {
