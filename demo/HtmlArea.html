@@ -2,39 +2,54 @@
 <html>
 <head>
 	<title>HtmlArea Sandbox</title>
-	<style>
-		body { text-align:left; }
-		.html-editor { width:500px; border:1px solid black; position:relative; }
-
-		.html-editor .tools { border-bottom:1px solid black; background:#eee; }
-		.html-editor .tools .tools { display:inline-block; border:none; }
-		.html-editor .tools a { display:inline-block; vertical-align:top; width:16px; line-height:16px; height:16px; padding:2px; text-align:center; overflow:hidden; cursor:pointer; }
-		.html-editor .tools a.active { background:#fff; border-right:1px solid #000; border-left:1px solid #000; margin:0 -1px; }
-		.html-editor .tools span { vertical-align:top; }
-
-		.html-editor textarea { margin:0; padding:5px; border:none; width:490px; min-height:169px; outline:none; }
-		.html-editor .content { min-height:169px; outline:none; padding:5px; }
-		.html-editor .content:focus { box-shadow:inset 0 0 5px rgba(0,0,0,.5); }
-		.html-editor .content p { margin:0; padding:0; }
-
-		.html-editor .tools .separator { cursor:default; }
-		.html-editor .tools .mode { font-size:11px; }
-
-		.html-editor-link { display:none; position:absolute; right:-1px; top:20px; background:#fff; border:1px solid black; }
-		.html-editor-link.show, .html-editor-link.focus { display:block; }
-		.html-editor-link input { width:200px; margin:4px; }
-		.html-editor-link a { display:inline-block; padding:4px 6px 4px 2px; cursor:pointer; }
-	</style>
+	<link rel="stylesheet" href="../src/HtmlArea.css" />
+	<link rel="stylesheet" href="demo.css" />
 	<script src="mootools.js"></script>
 	<script src="../src/HtmlArea.js"></script>
 </head>
 <body>
+	<form id="editor_options">
+		<label>
+			Toolbar:<br/>
+			<select id="toolbar_select">
+				<option value="normal">Default</option>
+				<option value="all">Everything</option>
+				<option value="minimal">Minimal</option>
+				<option value="custom">Custom</option>
+			</select>
+		</label>
+		<input id="toolbar_custom" style="display:none" />
+		<br/>
+		<input type="submit" value="Update Editor" />
+	</form>
 	<form id="form">
 		<input type="submit" value="submit" />
 	</form>
 	<script>
-		var editor = new HtmlArea(null, { value:'<p>Hello <b>World!</b></p>' });
-		editor.element.inject($('form'));
+		var toolbar_presets = {
+			all: '[bold,italic,underline,strike|sub,sup]|[left,center,right]|[bullet,number,indent,outdent]|[cut,copy,paste,undo,redo]|[link,mode]',
+			normal: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,mode]',
+			minimal: '[bold,italic,underline]|[link]'
+		};
+		$('toolbar_custom').set('value', toolbar_presets.all);
+
+		$('toolbar_select').addEvent('change', function(e) {
+			var value = $('toolbar_select').get('value');
+			if (value === 'custom') { $('toolbar_custom').setStyle('display', 'inline'); }
+			else { $('toolbar_custom').setStyle('display', 'none'); }
+		});
+
+		$('editor_options').addEvent('submit', function(e) {
+			e.stop();
+			var tools = $('toolbar_select').get('value'), html = editor.getHTML();
+			tools = toolbar_presets[tools] || $('toolbar_custom').get('value');
+			editor.element.dispose();
+			editor = new HtmlArea(null, { tools:tools, value:html });
+			editor.element.inject($('form'), 'top');
+		});
+
+		var editor = new HtmlArea(null, { value:'<p><i>Hello</i> <b>World!</b></p>' });
+		editor.element.inject($('form'), 'top');
 	</script>
 </body>
 </html>

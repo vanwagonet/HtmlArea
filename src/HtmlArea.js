@@ -10,22 +10,19 @@ HtmlArea = new Class({
 		style: 'default',
 		mode: 'visual',
 		toolsgo: 'top',
-		tools: [
-			[ 'bold', 'italic', 'underline', 'strike', '|', 'sub', 'sup' ],
-			'|',
-			[ 'left', 'center', 'right', ],
-			'|',
-			[ 'bullet', 'number', 'indent', 'outdent' ],
-			'|',
-			'link', 'mode'
-		]
+		tools: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,mode]'
 	},
 
 	initialize: function(content, o) {
 		this.setOptions(o);
 		o = this.options;
+		if (typeOf(o.tools) === 'string') {
+			o.tools = '"' + o.tools.split('|').join(',|,').split(',').join('","') + '"';
+			o.tools = '[' + o.tools.replace(/"\[/g, '["').replace(/\]"/g, '"]') + ']';
+			o.tools = JSON.decode(o.tools);
+		}
 
-		this.content = (content = $(content) || new Element('div'));
+		this.content = (content = $(content) || new Element('div', { html:o.value||'' }));
 		this.element = new Element('div');
 		if (content.parentNode) { this.element.wraps(content); }
 		else { this.element.grab(content); }
@@ -45,8 +42,8 @@ HtmlArea = new Class({
 		}
 		this.element.addClass('html-editor').addClass(o.style);
 		content.addClass('content').set('contentEditable', true);
-		if (this.query('styleWithCSS', 'support')) { this.exec('styleWithCSS', true); } // prefer tags to styles
-		if (Browser.firefox) { content.innerHTML += HtmlArea.pbrp; }
+		if (this.query('styleWithCSS', 'support')) { this.exec('styleWithCSS', false); } // prefer tags to styles
+		if (!content.innerHTML.trim()) { content.innerHTML += HtmlArea.pbrp; }
 
 		if (o.mode === 'html') { this.setHTMLMode(); }
 		else { this.mode = 'visual'; }
@@ -166,9 +163,7 @@ HtmlArea = new Class({
 	},
 
 	shortcut: function(e) {
-		if (e && e.key === 'enter') {
-			if (Browser.ie) { e.preventDefault(); this.insert('<br/>'); }
-		} else if (!e || !(e.control || e.meta)) { return; }
+		if (!e || !(e.control || e.meta)) { return; }
 
 		var keys = this.shortcut.keys, Actions = HtmlArea.Actions, t;
 		if (!keys) {
@@ -204,9 +199,16 @@ HtmlArea = new Class({
 		} else { this.exec('insertHTML', html); }
 	},
 
+	unwrap: function(node) {
+		var parentNode = node.parentNode, child;
+		while (child = node.firstChild) {
+			parentNode.insertBefore(node.removeChild(child), node);
+		}
+		$(node).destroy();
+	},
+
 	beforeGetHTML: function() {
-		var pbrp = this.content.getElements('.p-br-p').dispose(),
-			spans = this.content.getElements('span,[style]').include(this.content),
+		var spans = this.content.getElements('span,[style]').include(this.content),
 			styles = HtmlArea.styles, s, ss = styles.length,
 			style, span, t, tt = spans.length;
 		for (t = 0; t < tt; ++t) {
@@ -220,14 +222,12 @@ HtmlArea = new Class({
 							+ span.innerHTML + '</' + styles[s][2] + '>';
 					}
 				}
+				span.set('style', (style = style.trim()));
 			}
-			span.set('style', (style = style.trim()));
 			if (!style && span != this.content && span.get('tag') === 'span') {
-				span.getChildren().inject(span, 'after');
-				span.destroy();
+				this.unwrap(span);
 			}
 		}
-		return { pbrp:pbrp };
 	},
 
 	cleanHTML: function(html) {
@@ -243,15 +243,9 @@ HtmlArea = new Class({
 		return html.trim();
 	},
 
-	afterGetHTML: function(pre) {
-		if (pre && pre.pbrp) { this.content.adopt(pre.pbrp); }
-	},
-
 	getHTML: function() {
-		var pre = this.beforeGetHTML(),
-			html = this.cleanHTML(this.content.get('html'));
-		this.afterGetHTML(pre);
-		return html;
+		this.beforeGetHTML(); 
+		return this.cleanHTML(this.content.get('html'));
 	},
 
 	getRange: function(type) {
@@ -293,7 +287,7 @@ HtmlArea = new Class({
 		}
 	},
 
-	pbrp: '<p class="p-br-p" style="display:none"><br/></p>',
+	pbrp: '<p><br/></p>',
 
 	// got this started by looking at MooRTE. Thanks Sam!
 	cleanups: [
@@ -301,7 +295,8 @@ HtmlArea = new Class({
 		[ /<[^> ]*/g, function(m) { return m.toLowerCase(); } ], // lowercase tags
 		[ /<[^>]*>/g, function(m) {	return m
 			.replace(/ [^=]+=/g, function(a) { return a.toLowerCase(); }) // lowercase attributes
-			.replace(/( [^=]+=)([^"][^ >]*)/g, '$1"$2"'); // quote attributes
+			.replace(/( [^=]+=)([^"][^ >]*)/g, '$1"$2"') // quote attributes
+			.replace(/ slick-uniqueid="[^"]*"/g, ''); // remove slick added attributes
 		} ],
 		[ /(<(?:img|input)[^\/>]*)>/g, '$1 />' ], // self close tags
 
@@ -355,21 +350,21 @@ HtmlArea.Actions.addActions({
 	underline:{ title:'Underline', text:'<u>U</u>', command:'underline', key:'u' },
 	strike:{ title:'Strikethrough', text:'<s>S</s>', command:'strikethrough' },
 	sub:{ title:'Subscript', text:'x<sub>2</sub>', command:'subscript' },
-	sup:{ title:'Superscript', text:'x<sup>2</sup>', command:'superscript' },
+	sup:{ title:'Superscript', text:'x&#x00B2;', command:'superscript' },
 
-	left:{ title:'Align Left', text:'L', command:'justifyLeft' },
-	center:{ title:'Align Center', text:'C', command:'justifyCenter' },
-	right:{ title:'Align Right', text:'R', command:'justifyRight' },
+	left:{ title:'Align Left', text:'<ul><li>&ndash;&ndash;</li><li>&ndash;</li><li>&ndash;&ndash;</li></ul>', command:'justifyLeft' },
+	center:{ title:'Align Center', text:'<ul><li>&ndash;</li><li>&ndash;&ndash;</li><li>&ndash;</li></ul>', command:'justifyCenter' },
+	right:{ title:'Align Right', text:'<ul><li>&ndash;&ndash;</li><li>&ndash;</li><li>&ndash;&ndash;</li></ul>', command:'justifyRight' },
 //	justify:{ title:'Justify', text:'J', command:'justifyAll' }, // doesn't seem to work, even though querying says supported
 
-	bullet:{ title:'Bullet List', text:':=', command:'insertunorderedlist' },
-	number:{ title:'Numbered List', text:'1', command:'insertorderedlist' },
+	bullet:{ title:'Bullet List', text:'<ul><li>&mdash;</li><li>&mdash;</li><li>&mdash;</li></ul>', command:'insertunorderedlist' },
+	number:{ title:'Numbered List', text:'<ol><li>&mdash;</li><li>&mdash;</li><li>&mdash;</li></ol>', command:'insertorderedlist' },
 	indent:{ title:'Increase Indent', text:'&#8614;', command:'indent' },
 	outdent:{ title:'Decrease Indent', text:'&#8612;', command:'outdent' },
-	rule:{ title:'Horizontal Rule', text:'&mdash;', command:'inserthorizontalrule' },
+//	rule:{ title:'Horizontal Rule', text:'&mdash;', command:'inserthorizontalrule' }, // I don't think you should do this
 
 	cut:{ title:'Cut', text:'&#9986;', command:'cut', key:'x', magic:true },
-	copy:{ title:'Copy', text:'C', command:'copy', key:'c', magic:true },
+	copy:{ title:'Copy', text:'&copy;', command:'copy', key:'c', magic:true },
 	paste:{ title:'Paste', text:'P', command:'paste', key:'v', magic:true },
 	undo:{ title:'Undo', text:'&#8617;', command:'undo', key:'z', magic:true },
 	redo:{ title:'Redo', text:'&#8618;', command:'redo', key:'y', magic:true },
@@ -407,14 +402,16 @@ HtmlArea.Actions.addActions({
 			var url = editor.getRange('text');
 			if (url && this.getLink(editor)) { return; }
 			if (!/^(\S)*[:\/?#.](\S)*$/.test(url)) { url = 'http://'; }
+			if (!/^\w+:\/\//.test(url)) { url = 'http://' + url; }
 			editor.exec('createlink', url);
+			editor.exec('underline');
 			this.show(editor, btn, url);
 		},
 
 		getLink: function(editor) {
 			var node = editor.getRange('node');
 			while (node && node.nodeName.toLowerCase() !== 'a' && node != editor.element) { node = node.parentNode; }
-			return node != editor.element && node;
+			return node != editor.element && $(node);
 		},
 
 		getUI: function(editor) {
@@ -435,12 +432,12 @@ HtmlArea.Actions.addActions({
 
 		show: function(editor, btn, url) {
 			var ui = this.getUI(editor), link = this.getLink(editor);
-			url = url || (link && link.href) || 'http://';
+			url = url || (link && link.get('href')) || 'http://';
 			ui.getFirst('input').set('value', url);
 			ui.addClass('show');
 		},
 
-		hide: function(editor, btn) {
+		hide: function(editor) {
 			var ui = this.getUI(editor);
 			ui.removeClass('show');
 		},
@@ -458,13 +455,19 @@ HtmlArea.Actions.addActions({
 		},
 
 		uiMousedown: function(e) {
-			var target = $(e.target), ui, editor;
+			var target = $(e.target), ui, editor, action, link;
 			if (target.get('tag') === 'input') { return; }
 			if (target.get('tag') === 'span') { target = target.getParent(); }
 			if (target.get('tag') === 'a') {
 				ui = target.getParent('.html-editor-link');
 				editor = ui.retrieve('html-editor-link:editor');
-				editor.exec('unlink');
+				action = ui.retrieve('html-editor-link:action');
+				link = action.getLink(editor);
+				if (link) {
+					link.getChildren('u').each(editor.unwrap);
+					editor.unwrap(link);
+				}
+				action.hide(editor);
 			}
 			e.preventDefault(); // don't change focus
 		}
