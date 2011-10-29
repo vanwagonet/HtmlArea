@@ -2,10 +2,12 @@
 <html>
 <head>
 	<title>HtmlArea Sandbox</title>
-	<link rel="stylesheet" href="../src/HtmlArea.css" />
+	<link rel="stylesheet" href="../src/htmlarea.css" />
 	<link rel="stylesheet" href="demo.css" />
 	<script src="mootools.js"></script>
-	<script src="../src/HtmlArea.js"></script>
+	<script src="../src/htmlarea.js"></script>
+	<script src="../src/htmlarea.actions.link.js"></script>
+	<script src="../src/htmlarea.actions.image.js"></script>
 </head>
 <body>
 	<form id="editor_options">
@@ -27,8 +29,8 @@
 	</form>
 	<script>
 		var toolbar_presets = {
-			all: '[bold,italic,underline,strike|sub,sup]|[left,center,right]|[bullet,number,indent,outdent]|[cut,copy,paste,undo,redo]|[link,mode]',
-			normal: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,mode]',
+			all: '[bold,italic,underline,strike|sub,sup]|[left,center,right]|[bullet,number,indent,outdent]|[cut,copy,paste,undo,redo]|[link,image,mode]',
+			normal: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,mode]',
 			minimal: '[bold,italic,underline]|[link]'
 		};
 		$('toolbar_custom').set('value', toolbar_presets.all);

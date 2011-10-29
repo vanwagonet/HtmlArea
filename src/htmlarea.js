@@ -10,7 +10,7 @@ HtmlArea = new Class({
 		style: 'default',
 		mode: 'visual',
 		toolsgo: 'top',
-		tools: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,mode]'
+		tools: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,mode]'
 	},
 
 	initialize: function(content, o) {
@@ -381,101 +381,9 @@ HtmlArea.Actions.addActions({
 				editor.setVisualMode();
 			}
 		}
-	},
-
-
-	/**
-	 * Create, update, and remove links
-	 **/
-	link:{ title:'Link', text:'<b>&#9741;</b>',
-		update: function(editor, btn) {
-			var link = this.getLink(editor);
-			if (link) {
-				this.show(editor, btn.addClass('active').removeClass('indeterminate'));
-			} else {
-				this.hide(editor, btn.removeClass('active').removeClass('indeterminate'));
-			}
-			return link;
-		},
-
-		run: function(editor, btn) {
-			var url = editor.getRange('text');
-			if (url && this.getLink(editor)) { return; }
-			if (!/^(\S)*[:\/?#.](\S)*$/.test(url)) { url = 'http://'; }
-			if (!/^\w+:\/\//.test(url)) { url = 'http://' + url; }
-			editor.exec('createlink', url);
-			editor.exec('underline');
-			this.show(editor, btn, url);
-		},
-
-		getLink: function(editor) {
-			var node = editor.getRange('node');
-			while (node && node.nodeName.toLowerCase() !== 'a' && node != editor.element) { node = node.parentNode; }
-			return node != editor.element && $(node);
-		},
-
-		getUI: function(editor) {
-			var ui = editor.element.retrieve('html-editor-link:ui');
-			if (!ui) {
-				editor.element.store('html-editor-link:ui',
-					(ui = new Element('div.html-editor-link', {
-						html: '<input type="text" name="url" placeholder="Enter URL" />'
-							+ '<a><span>&times;</span></a>'
-					}).store('html-editor-link:editor', editor)
-					.addEvent('mousedown', this.uiMousedown).inject(editor.element))
-				);
-				ui.store('html-editor-link:action', this).getFirst('input')
-					.addEvents({ focus:this.urlFocus, blur:this.urlBlur });
-			}
-			return ui;
-		},
-
-		show: function(editor, btn, url) {
-			var ui = this.getUI(editor), link = this.getLink(editor);
-			url = url || (link && link.get('href')) || 'http://';
-			ui.getFirst('input').set('value', url);
-			ui.addClass('show');
-		},
-
-		hide: function(editor) {
-			var ui = this.getUI(editor);
-			ui.removeClass('show');
-		},
-
-		urlFocus: function(e) {
-			$(e.target).getParent('.html-editor-link').addClass('focus');
-		},
-
-		urlBlur: function(e) {
-			var input = $(e.target),
-				ui = input.getParent('.html-editor-link').removeClass('focus'),
-				editor = ui.retrieve('html-editor-link:editor');
-			editor.content.focus();
-			ui.retrieve('html-editor-link:action').getLink(editor).href = input.value;
-		},
-
-		uiMousedown: function(e) {
-			var target = $(e.target), ui, editor, action, link;
-			if (target.get('tag') === 'input') { return; }
-			if (target.get('tag') === 'span') { target = target.getParent(); }
-			if (target.get('tag') === 'a') {
-				ui = target.getParent('.html-editor-link');
-				editor = ui.retrieve('html-editor-link:editor');
-				action = ui.retrieve('html-editor-link:action');
-				link = action.getLink(editor);
-				if (link) {
-					link.getChildren('u').each(editor.unwrap);
-					editor.unwrap(link);
-				}
-				action.hide(editor);
-			}
-			e.preventDefault(); // don't change focus
-		}
 	}
 });
 /* TODO:
-link
-image
 code
 removeformat
 font
