@@ -40,7 +40,7 @@ HtmlArea = new Class({
 				.set('value', this.getHTML())
 				.setStyle('display', 'none').inject(content, 'after');
 		}
-		this.element.addClass('html-editor').addClass(o.style);
+		this.element.addClass('htmlarea').addClass(o.style);
 		content.addClass('content').set('contentEditable', true);
 		if (this.query('styleWithCSS', 'support')) { this.exec('styleWithCSS', false); } // prefer tags to styles
 		if (!content.innerHTML.trim()) { content.innerHTML += HtmlArea.pbrp; }
@@ -254,6 +254,17 @@ HtmlArea = new Class({
 		if (type === 'text') { return range && (range.text || range.toString()) || ''; }
 		if (type === 'node') { return range && (range.commonAncestorContainer || range.parentElement()) || null; }
 		return range;
+	},
+
+	setRange: function(range) {
+		if (range && window.getSelection) {
+			var sel = window.getSelection();
+			sel.removeAllRanges();
+			sel.addRange(range);
+		} else if (range && range.select) {
+			range.select();
+		}
+		this.content.focus();
 	}
 
 }).extend({ // static
@@ -298,7 +309,7 @@ HtmlArea = new Class({
 			.replace(/( [^=]+=)([^"][^ >]*)/g, '$1"$2"') // quote attributes
 			.replace(/ slick-uniqueid="[^"]*"/g, ''); // remove slick added attributes
 		} ],
-		[ /(<(?:img|input)[^\/>]*)>/g, '$1 />' ], // self close tags
+		[ /(<(?:img|input)\b[^>]*[^\/])>/g, '$1 />' ], // self close tags
 
 		// <br/> tag cleanup
 		[ /<br\b[^>]*?>/g, '<br/>' ], // normalize <br>

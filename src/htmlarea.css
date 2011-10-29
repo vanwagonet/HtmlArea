@@ -1,30 +1,41 @@
 /*
  * Basic styles, I expect them to be overridden, but they should provide basline functioning
  */
-.html-editor { text-align:left; border:1px solid #999; position:relative; min-width:500px; }
+.htmlarea { text-align:left; border:1px solid #999; position:relative; min-width:500px; }
 
-.html-editor .tools { border-bottom:1px solid black; background:#eee; }
-.html-editor .tools .tools { display:inline-block; border:none; }
-.html-editor .tools a { display:inline-block; vertical-align:top; width:16px; line-height:16px; height:16px; padding:2px; text-align:center; overflow:hidden; cursor:pointer; }
-.html-editor .tools a.active { background:#fff; border-right:1px solid #000; border-left:1px solid #000; margin:0 -1px; }
-.html-editor .tools span { vertical-align:top; }
+.htmlarea .tools { border-bottom:1px solid black; background:#eee; }
+.htmlarea .tools .tools { display:inline-block; border:none; }
+.htmlarea .tools a { display:inline-block; vertical-align:top; width:16px; line-height:16px; height:16px; padding:2px; text-align:center; overflow:hidden; cursor:pointer; }
+.htmlarea .tools a.active { background:#fff; border-right:1px solid #000; border-left:1px solid #000; margin:0 -1px; }
+.htmlarea .tools span { vertical-align:top; }
 
-.html-editor textarea { margin:0; padding:5px; border:none; width:490px; min-height:169px; outline:none; }
-.html-editor .content { min-height:169px; outline:none; padding:5px; }
-.html-editor .content:focus { box-shadow:inset 0 0 5px rgba(0,0,0,.5); }
-.html-editor .content p { margin:0; padding:0; }
-.html-editor .content a { text-decoration:none; }
+.htmlarea textarea { margin:0; padding:5px; border:none; width:490px; min-height:169px; outline:none; }
+.htmlarea .content { min-height:169px; outline:none; padding:5px; }
+.htmlarea .content:focus { box-shadow:inset 0 0 5px rgba(0,0,0,.5); }
+.htmlarea .content p { margin:0; padding:0; }
+.htmlarea .content a { text-decoration:none; }
 
-.html-editor .tools .separator { cursor:default; }
-.html-editor .tools .mode { font-size:11px; }
-.html-editor .tools .bullet *, .html-editor .tools .number * { margin:0; padding:0; list-style-position:inside; font-size:6px; line-height:5px; font-weight:bold; }
-.html-editor .tools .left *, .html-editor .tools .center *, .html-editor .tools .right * { margin:-1px 0 1px 0; padding:0; list-style:none; font-size:10px; line-height:5px; font-weight:bold; }
-.html-editor .tools .left * { text-align:left; }
-.html-editor .tools .center * { text-align:center; }
-.html-editor .tools .right * { text-align:right; }
-.html-editor .tools .undo, .html-editor .tools .redo { line-height:22px; }
+.htmlarea .tools .separator { cursor:default; }
+.htmlarea .tools .mode { font-size:11px; }
+.htmlarea .tools .bullet *, .htmlarea .tools .number * { margin:0; padding:0; list-style-position:inside; font-size:6px; line-height:5px; font-weight:bold; }
+.htmlarea .tools .left *, .htmlarea .tools .center *, .htmlarea .tools .right * { margin:-1px 0 1px 0; padding:0; list-style:none; font-size:10px; line-height:5px; font-weight:bold; }
+.htmlarea .tools .left * { text-align:left; }
+.htmlarea .tools .center * { text-align:center; }
+.htmlarea .tools .right * { text-align:right; }
+.htmlarea .tools .undo, .htmlarea .tools .redo { line-height:22px; }
 
-.html-editor-link { display:none; position:absolute; right:-1px; top:20px; background:#fff; border:1px solid black; }
-.html-editor-link.show, .html-editor-link.focus { display:block; }
-.html-editor-link input { width:200px; margin:4px; }
-.html-editor-link a { display:inline-block; padding:4px 6px 4px 2px; cursor:pointer; }
+.htmlarea-link { display:none; position:absolute; right:-1px; top:20px; background:#fff; border:1px solid black; }
+.htmlarea-link.show, .htmlarea-link.focus { display:block; }
+.htmlarea-link input { width:200px; margin:4px; }
+.htmlarea-link a { display:inline-block; padding:4px 6px 4px 2px; cursor:pointer; }
+
+.htmlarea-image { display:none; position:absolute; right:-1px; top:20px; background:#fff; border:1px solid black; }
+.htmlarea-image.show, .htmlarea-image.focus { display:block; }
+.htmlarea-image form { padding:5px; margin:0; width:auto; }
+.htmlarea-image h6 { padding:0; margin:0; font-size:1em; }
+.htmlarea-image h6 label { font-size:.9em; font-weight:normal; }
+.htmlarea-image input[type=text] { width:200px; margin:4px; }
+.htmlarea-image label.upload, .htmlarea-image label.url { display:none; }
+.htmlarea-image.upload label.upload, .htmlarea-image.url label.url,
+.htmlarea-image label.upload span, .htmlarea-image label.url span { display:block; }
+.htmlarea-image .error { color:red; }

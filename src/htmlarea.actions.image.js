@@ -9,26 +9,17 @@
  *  imageUploadSrc - (default: /uploads/{file}) img src for just uploaded files
  *   {file} is replaced with the base name of the file (/path/pic.jpg => pic)
  **/
-HtmlArea.Actions.addActions({ image: { title:'Link', text:'<b>&#9731;</b>',
-	update: function(editor, btn) {
-		var img = this.getImage(editor);
-		if (img) { this.show(editor, btn.addClass('active'), img); }
-		else { this.hide(editor, btn.removeClass('active')); }
-		return img;
-	},
+HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9731;</b>',
 
-	run: function(editor, btn) { this.show(editor, btn, this.getImage(editor)); },
-
-	getImage: function(editor) {
-		var node = editor.getRange('node');
-		return node && (node.nodeName.toLowerCase() === 'img') && $(node);
-	},
+	run: function(editor, btn) { this.show(editor, btn); },
 
 	template:
 	'<form action="{action}" method="post" enctype="multipart/form-data" encoding="multipart/form-data" accept-charset="utf-8">' +
-		'<h6>Add Picture:</h6>' +
-		'<label><input type="radio" name="type" value="upload" checked /> From My Computer</label>' +
-		'<label><input type="radio" name="type" value="url" /> From the Web</label>' +
+		'<h6>' +
+			'<span>Add Picture:</span>' +
+			'<label><input type="radio" name="type" value="upload" checked /> From My Computer</label>' +
+			'<label><input type="radio" name="type" value="url" /> From the Web</label>' +
+		'</h6>' +
 		'<label class="upload button choose">' +
 			'<span>Choose File</span>' +
 			'<input type="file" name="{name}" />' +
@@ -37,21 +28,21 @@ HtmlArea.Actions.addActions({ image: { title:'Link', text:'<b>&#9731;</b>',
 			'<span>Enter URL</span>' +
 			'<input type="text" name="url" placeholder="Enter URL" />' +
 		'</label>' +
-		'<span class="error"></span>' +
+		'<div class="error"></div>' +
 		'<input type="submit" class="button" value="Done" />' +
 		'<input type="button" class="button" value="Cancel" />' +
 	'</form>',
 
 	getUI: function(editor) {
-		var ui = editor.element.retrieve('html-editor-image:ui');
+		var ui = editor.element.retrieve('htmlarea-image:ui');
 		if (!ui) {
-			editor.element.store('html-editor-image:ui',
-				(ui = new Element('div.html-editor-image.upload', {
+			editor.element.store('htmlarea-image:ui',
+				(ui = new Element('div.htmlarea-image.upload', {
 					html: this.template.substitute({
 						action: editor.options.imageUploadURL || '/upload.json',
 						name: editor.options.imageUploadName || 'theuploadedfile'
 					})
-				})).store('html-editor-image:editor', editor)
+				})).store('htmlarea-image:editor', editor).inject(editor.element)
 			);
 			ui.getElement('form').addEvent('submit', this.submit.bind(this, editor));
 			ui.getElement('input[type=button]').addEvent('click', this.cancel.bind(this, editor));
@@ -61,17 +52,16 @@ HtmlArea.Actions.addActions({ image: { title:'Link', text:'<b>&#9731;</b>',
 		return ui;
 	},
 
-	show: function(editor, btn, img) {
-		if (img) { return this.hide(editor, btn); } // TODO: UI for altering img size and position
-
+	show: function(editor, btn) {
 		var ui = this.getUI(editor);
+		ui.store('htmlarea-image:range', editor.getRange());
 		ui.getElement('input[type=file]').set('value', '');
 		ui.getElement('input[name=url]').set('value', '');
 		ui.getElements('input[type=submit],input[type=radio]').set('disabled', false);
 		ui.getElement('label.upload').removeClass('progress').removeClass('complete')
 			.getElement('span').set('text', 'Choose File');
 		ui.addClass('show');
-		editor.fireEvent('showImagePanel', { editor:editor, panel:ui, image:img, action:this });
+		editor.fireEvent('showImagePanel', { editor:editor, panel:ui, action:this });
 	},
 
 	hide: function(editor) {
@@ -82,12 +72,17 @@ HtmlArea.Actions.addActions({ image: { title:'Link', text:'<b>&#9731;</b>',
 	submit: function(editor, e) {
 		e.preventDefault();
 		if (!this.validate(editor)) { return; }
-		var ui = this.getUI(editor), src,
+		var ui = this.getUI(editor), src, html,
 			type = ui.getElement('input[name=type]:checked').get('value');
 		if (type === 'url') { src = ui.getElement('input[name=url]').get('value').trim(); }
 		else { src = this.getUploadSrc(editor, ui); }
-		if (editor.options.imageAutoLink) { editor.exec('createlink', src); }
-		editor.exec('insertimage', src);
+		editor.setRange(ui.retrieve('htmlarea-image:range'));
+		html = '<img src="' + encodeURI(src) + '" />';
+		if (editor.options.imageAutoLink) {
+			html = '<a href="' + encodeURI(src) + '">' + html + '</a>';
+		}
+		editor.insert(html);
+		this.hide(editor);
 	},
 
 	cancel: function(editor, e) {
@@ -105,9 +100,10 @@ HtmlArea.Actions.addActions({ image: { title:'Link', text:'<b>&#9731;</b>',
 
 	typeChange: function(editor, e) {
 		var input = $(e.target), type = input.get('value'),
-			ui = input.getParent('.html-editor-image');
+			ui = input.getParent('.htmlarea-image');
 		if (ui.hasClass(type)) { return; }
 		ui.removeClass(type === 'url' ? 'upload' : 'url').addClass(type);
+		ui.getElement('.error').set('text', '');
 	},
 
 	fileChange: function(editor, e) {

@@ -26,13 +26,13 @@ HtmlArea.Actions.addActions({ link:{ title:'Link', text:'<b>&#9741;</b>',
 	},
 
 	getUI: function(editor) {
-		var ui = editor.element.retrieve('html-editor-link:ui');
+		var ui = editor.element.retrieve('htmlarea-link:ui');
 		if (!ui) {
-			editor.element.store('html-editor-link:ui',
-				(ui = new Element('div.html-editor-link', {
+			editor.element.store('htmlarea-link:ui',
+				(ui = new Element('div.htmlarea-link', {
 					html: '<input type="text" name="url" placeholder="Enter URL" />'
 						+ '<a><span>&times;</span></a>'
-				}).store('html-editor-link:editor', editor)
+				}).store('htmlarea-link:editor', editor)
 				.addEvent('mousedown', this.uiMousedown.bind(this, editor))
 				.inject(editor.element))
 			);
@@ -71,7 +71,7 @@ HtmlArea.Actions.addActions({ link:{ title:'Link', text:'<b>&#9741;</b>',
 		if (target.get('tag') === 'input') { return; }
 		if (target.get('tag') === 'span') { target = target.getParent(); }
 		if (target.get('tag') === 'a') {
-			ui = target.getParent('.html-editor-link');
+			ui = target.getParent('.htmlarea-link');
 			link = this.getLink(editor);
 			if (link) {
 				link.getChildren('u').each(editor.unwrap);
