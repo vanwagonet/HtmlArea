@@ -7,9 +7,15 @@
  *  imageUploadURL - (default: /upload.json) url to post image uploads to
  *  imageUploadName - (default: theuploadedfile) field name used for image file uploads
  *  imageUploadSrc - (default: /uploads/{file}) img src for just uploaded files
- *   {file} is replaced with the base name of the file (/path/pic.jpg => pic)
+ *   {file} is replaced with the base name of the file (/path/pic.jpg => pic.jpg)
+ *   {name} is replaced with the base name of the file (/path/pic.jpg => pic)
+ *   {ext} is replaced with the base name of the file (/path/pic.jpg => jpg)
  **/
 HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9731;</b>',
+
+	added: function(editor) {
+		editor.content.addEvent('mouseover', this.imgMouseOver.bind(this, editor));
+	},
 
 	run: function(editor, btn) { this.show(editor, btn); },
 
@@ -42,7 +48,7 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9731;</b>
 						action: editor.options.imageUploadURL || '/upload.json',
 						name: editor.options.imageUploadName || 'theuploadedfile'
 					})
-				})).store('htmlarea-image:editor', editor).inject(editor.element)
+				})).inject(editor.element)
 			);
 			ui.getElement('form').addEvent('submit', this.submit.bind(this, editor));
 			ui.getElement('input[type=button]').addEvent('click', this.cancel.bind(this, editor));
@@ -91,11 +97,12 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9731;</b>
 	},
 
 	getUploadSrc: function(editor, ui) {
-		var file = ui.getElement('input[type=file]').get('value')
-			.split(/[\/\\]/).slice(-1).join('') // basename(file)
-			.split('.').slice(0, -1).join('.'); // remove extension
+		var full = ui.getElement('input[type=file]').get('value'),
+			file = full.split(/[\/\\]/).slice(-1)[0], // basename(file)
+			name = file.split('.').slice(0, -1).join('.'),
+			ext = file.split('.').slice(-1)[0];
 		return (editor.options.imageUploadSrc || '/uploads/{file}')
-			.substitute({ file:file });
+			.substitute({ file:file, name:name, ext:ext });
 	},
 
 	typeChange: function(editor, e) {
@@ -177,8 +184,11 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9731;</b>
 	},
 
 	success: function(editor, ui, xhr, response) {
-		if (xhr) { response = JSON.decode(xhr.responseText); }
-		if (response && response.error) { return this.failure(editor, ui, response.error ); }
+		if (xhr) {
+			try { response = JSON.decode(xhr.responseText); }
+			catch(er) { return this.failure(editor, ui, er.message); }
+		}
+		if (response && response.error) { return this.failure(editor, ui, response.error); }
 
 		ui.getElement('label.upload').removeClass('progress').addClass('complete');
 		ui.getElements('input[type=submit],input[type=radio]').set('disabled', false);
@@ -190,4 +200,117 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9731;</b>
 		ui.getElements('input[type=submit],input[type=radio]').set('disabled', false);
 		ui.getElement('.error').set('text', msg);
 	},
+
+
+	/**
+	 * Resize, float image
+	 **/
+	editTemplate:
+	'<div class="tools">' +
+		'<span class="tools float">' +
+			'<a class="tool float-left" data-action="float-left"><span>&laquo;</span></a>' +
+			'<a class="tool float-none" data-action="float-none"><span>-=-</span></a>' +
+			'<a class="tool float-right" data-action="float-right"><span>&raquo;</span></a>' +
+		'</span>' +
+		'<a class="tool resize" data-action="resize"><span>&#8660;</span></a>' +
+		'<a class="tool remove" data-action="remove"><span>&times;</span></a>' +
+	'</div>',
+
+	getEditUI: function(editor, img) {
+		var ui = editor.element.retrieve('htmlarea-image:edit-ui');
+		if (!ui) {
+			editor.element.store('htmlarea-image:edit-ui',
+				(ui = new Element('div.htmlarea-image-edit',
+					{ html:this.editTemplate })).inject(editor.element)
+			);
+			ui.addEvent('mousedown', this.edit.bind(this, editor, ui, img));
+			ui.addEvent('mouseleave', this.hideEditUI.bind(this, editor, ui, img));
+		}
+		return ui;
+	},
+
+	imgMouseOver: function(editor, e) {
+		if (e.target.nodeName.toLowerCase() !== 'img') { return; }
+		var img = $(e.target), ui = this.getEditUI(editor, img);
+		this.showEditUI(editor, ui, img);
+	},
+
+	hideEditUI: function(editor, ui, img, e) {
+		editor.fireEvent('hideImageEditPanel', {
+			editor:editor, panel:ui.removeClass('show'), image:img
+		});
+	},
+
+	showEditUI: function(editor, ui, img) {
+		var floatd = img.getStyles('float')['float'] || 'none';
+		ui.getElements('.float .tool').removeClass('active');
+		ui.getElement('.float-' + floatd).addClass('active');
+		var pos = img.getPosition(editor.element), size = img.getSize();
+		ui.setStyles({ width:size.x, height:size.y, left:pos.x, top:pos.y });
+		editor.fireEvent('showImageEditPanel', {
+			editor:editor, panel:ui.addClass('show'), image:img
+		});
+	},
+
+	edit: function(editor, ui, img, e) {
+		e.preventDefault(); // don't change focus
+		var a = $(e.target), action;
+		if (!a.get('data-action')) { a = a.getParent('[data-action]'); }
+		if (!a || !(action = a.get('data-action'))) { return; }
+		this[('run-' + action).camelCase()](editor, ui, img, e);
+	},
+
+	runRemove: function(editor, ui, img) {
+		if (img.getParent().get('href') === img.get('src')) {
+			img.getParent().destroy();
+		} else {
+			img.destroy();
+		}
+		this.hideEditUI(editor, ui);
+	},
+
+	runFloatLeft: function(editor, ui, img) {
+		img.setStyle('float', 'left');
+		this.showEditUI(editor, ui, img);
+	},
+
+	runFloatNone: function(editor, ui, img) {
+		img.setStyle('float', 'none');
+		this.showEditUI(editor, ui, img);
+	},
+
+	runFloatRight: function(editor, ui, img) {
+		img.setStyle('float', 'right');
+		this.showEditUI(editor, ui, img);
+	},
+
+	runResize: function(editor, ui, img, e) {
+		var data = { editor:editor, ui:ui, img:img }, size = img.getSize();
+		data.mousemove = this.resizeMouseMove.bind(this, data);
+		data.mousedone = this.resizeMouseDone.bind(this, data);
+		data.mouseOffset = { x:e.page.x - size.x, y:e.page.y - size.y };
+		data.aspect = size.x / size.y;
+		editor.element.addEvent('mousemove', data.mousemove);
+		editor.element.addEvent('mouseup', data.mousedone);
+		editor.element.addEvent('mouseleave', data.mousedone);
+	},
+
+	resizeMouseMove: function(data, e) {
+		var width = e.page.x - data.mouseOffset.x,
+			height = e.page.y - data.mouseOffset.y;
+		if ((width / height) < data.aspect) {
+			width = data.aspect * height;
+		} else {
+			height = width / data.aspect;
+		}
+		data.img.setStyles({ width:width, hieght:height });
+		data.ui.setStyles({ width:width, height:height });
+	},
+
+	resizeMouseDone: function(data, e) {
+		var editor = data.editor;
+		editor.element.removeEvent('mousemove', data.mousemove);
+		editor.element.removeEvent('mouseup', data.mousedone);
+		editor.element.removeEvent('mouseleave', data.mousedone);
+	}
 } });

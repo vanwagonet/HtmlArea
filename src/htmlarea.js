@@ -63,7 +63,7 @@ HtmlArea = new Class({
 		for (t = 0, tt = tools.length - 1; t <= tt; ++t) {
 			if (tools[t] === '|') { tools[t] = 'separator'; }
 			if (typeOf(tools[t]) === 'array') {
-				html += '<div class="tools">' + this.buildTools(tools[t]) + '</div>';
+				html += '<span class="tools">' + this.buildTools(tools[t]) + '</span>';
 			} else if (action = Actions[tools[t]]) {
 				html += '<a data-action="' + tools[t] + '" class="' + tools[t];
 				if (!t) { html += ' first'; }
@@ -73,6 +73,7 @@ HtmlArea = new Class({
 				if (action.key) { html += ' ' + cmd + action.key.toUpperCase(); }
 
 				html += '"><span>' + (action.text || tools[t]) + '</span></a>';
+				if (action.added) { action.added(this); }
 			}
 		}
 		return html;
@@ -99,6 +100,23 @@ HtmlArea = new Class({
 	updateContent: function() {
 		this.content.set('html', this.textarea.get('value'));
 		if (Browser.firefox) { this.content.innerHTML += HtmlArea.pbrp; }
+	},
+
+	setHTMLMode: function() {
+		var height = this.content.getStyles('height').height;
+		this.element.addClass('html-mode');
+		this.updateTextarea();
+		this.content.setStyle('display', 'none');
+		this.textarea.setStyles({ display:'', height:height });
+		this.mode = 'html';
+	},
+
+	setVisualMode: function() {
+		this.element.removeClass('html-mode');
+		this.updateContent();
+		this.textarea.setStyle('display', 'none');
+		this.content.setStyle('display', '');
+		this.mode = 'visual';
 	},
 
 	updateTools: function(e) {
@@ -134,23 +152,6 @@ HtmlArea = new Class({
 				}
 			}
 		}
-	},
-
-	setHTMLMode: function() {
-		var height = this.content.getStyles('height').height;
-		this.element.addClass('html-mode');
-		this.updateTextarea();
-		this.content.setStyle('display', 'none');
-		this.textarea.setStyles({ display:'', height:height });
-		this.mode = 'html';
-	},
-
-	setVisualMode: function() {
-		this.element.removeClass('html-mode');
-		this.updateContent();
-		this.textarea.setStyle('display', 'none');
-		this.content.setStyle('display', '');
-		this.mode = 'visual';
 	},
 
 	toolRun: function(e) {
