@@ -11,7 +11,7 @@
  *   {name} is replaced with the base name of the file (/path/pic.jpg => pic)
  *   {ext} is replaced with the base name of the file (/path/pic.jpg => jpg)
  **/
-HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9731;</b>',
+HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9679;</b><span>&#9728;</span>',
 
 	added: function(editor) {
 		editor.content.addEvent('mouseover', this.imgMouseOver.bind(this, editor));
@@ -208,12 +208,12 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9731;</b>
 	editTemplate:
 	'<div class="tools">' +
 		'<span class="tools float">' +
-			'<a class="tool float-left" data-action="float-left"><span>&laquo;</span></a>' +
-			'<a class="tool float-none" data-action="float-none"><span>-=-</span></a>' +
-			'<a class="tool float-right" data-action="float-right"><span>&raquo;</span></a>' +
+			'<a class="float-left" data-action="float-left"><span>&laquo;</span></a>' +
+			'<a class="float-none" data-action="float-none"><span>-=-</span></a>' +
+			'<a class="float-right" data-action="float-right"><span>&raquo;</span></a>' +
 		'</span>' +
-		'<a class="tool resize" data-action="resize"><span>&#8660;</span></a>' +
-		'<a class="tool remove" data-action="remove"><span>&times;</span></a>' +
+		'<a class="resize" data-action="resize"><span>&#8598;&#8600;</span></a>' +
+		'<a class="remove" data-action="remove"><span>&times;</span></a>' +
 	'</div>',
 
 	getEditUI: function(editor, img) {
@@ -243,7 +243,7 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9731;</b>
 
 	showEditUI: function(editor, ui, img) {
 		var floatd = img.getStyles('float')['float'] || 'none';
-		ui.getElements('.float .tool').removeClass('active');
+		ui.getElements('.float a').removeClass('active');
 		ui.getElement('.float-' + floatd).addClass('active');
 		var pos = img.getPosition(editor.element), size = img.getSize();
 		ui.setStyles({ width:size.x, height:size.y, left:pos.x, top:pos.y });

@@ -1,7 +1,7 @@
 /**
  * Create, update, and remove links
  **/
-HtmlArea.Actions.addActions({ link:{ title:'Link', text:'<b>&#9741;</b>',
+HtmlArea.Actions.addActions({ link:{ title:'Link', text:'link',
 	update: function(editor, btn) {
 		var link = this.getLink(editor);
 		if (link) { this.show(editor, btn.addClass('active'), link.get('href'), link); }

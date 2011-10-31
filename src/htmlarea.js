@@ -72,7 +72,7 @@ HtmlArea = new Class({
 				html += '" title="' + (action.title || '');
 				if (action.key) { html += ' ' + cmd + action.key.toUpperCase(); }
 
-				html += '"><span>' + (action.text || tools[t]) + '</span></a>';
+				html += '"><span>' + (action.text || tools[t]) + '</span><em></em></a>';
 				if (action.added) { action.added(this); }
 			}
 		}
@@ -103,11 +103,12 @@ HtmlArea = new Class({
 	},
 
 	setHTMLMode: function() {
-		var height = this.content.getStyles('height').height;
+		var style = this.content.getStyles('height', 'width');
+		style.display = '';
 		this.element.addClass('html-mode');
 		this.updateTextarea();
 		this.content.setStyle('display', 'none');
-		this.textarea.setStyles({ display:'', height:height });
+		this.textarea.setStyles(style);
 		this.mode = 'html';
 	},
 
@@ -362,22 +363,22 @@ HtmlArea.Actions.addActions({
 	underline:{ title:'Underline', text:'<u>U</u>', command:'underline', key:'u' },
 	strike:{ title:'Strikethrough', text:'<s>S</s>', command:'strikethrough' },
 	sub:{ title:'Subscript', text:'x<sub>2</sub>', command:'subscript' },
-	sup:{ title:'Superscript', text:'x&#x00B2;', command:'superscript' },
+	sup:{ title:'Superscript', text:'x<sup>2</sup>', command:'superscript' },
 
-	left:{ title:'Align Left', text:'<ul><li>&ndash;&ndash;</li><li>&ndash;</li><li>&ndash;&ndash;</li></ul>', command:'justifyLeft' },
-	center:{ title:'Align Center', text:'<ul><li>&ndash;</li><li>&ndash;&ndash;</li><li>&ndash;</li></ul>', command:'justifyCenter' },
-	right:{ title:'Align Right', text:'<ul><li>&ndash;&ndash;</li><li>&ndash;</li><li>&ndash;&ndash;</li></ul>', command:'justifyRight' },
-//	justify:{ title:'Justify', text:'J', command:'justifyAll' }, // doesn't seem to work, even though querying says supported
+	left:{ title:'Align Left', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyLeft' },
+	center:{ title:'Align Center', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyCenter' },
+	right:{ title:'Align Right', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyRight' },
+//	justify:{ title:'Justify', text:'<hr/><hr/><hr/><hr/><hr/><hr/>', command:'justifyAll' }, // doesn't seem to work, even though querying says supported
 
-	bullet:{ title:'Bullet List', text:'<ul><li>&mdash;</li><li>&mdash;</li><li>&mdash;</li></ul>', command:'insertunorderedlist' },
-	number:{ title:'Numbered List', text:'<ol><li>&mdash;</li><li>&mdash;</li><li>&mdash;</li></ol>', command:'insertorderedlist' },
-	indent:{ title:'Increase Indent', text:'&#8614;', command:'indent' },
-	outdent:{ title:'Decrease Indent', text:'&#8612;', command:'outdent' },
+	bullet:{ title:'Bullet List', text:'<ul><li><b>&#9679;</b></li><li><b>&#9679;</b></li><li><b>&#9679;</b></li></ul>', command:'insertunorderedlist' },
+	number:{ title:'Numbered List', text:'<ol><li><b>1</b></li><li><b>2</b></li><li><b>3</b></li></ol>', command:'insertorderedlist' },
+	indent:{ title:'Increase Indent', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b><b></b><b></b>', command:'indent' },
+	outdent:{ title:'Decrease Indent', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b><b></b><b></b>', command:'outdent' },
 //	rule:{ title:'Horizontal Rule', text:'&mdash;', command:'inserthorizontalrule' }, // I don't think you should do this
 
-	cut:{ title:'Cut', text:'&#9986;', command:'cut', key:'x', magic:true },
-	copy:{ title:'Copy', text:'&copy;', command:'copy', key:'c', magic:true },
-	paste:{ title:'Paste', text:'P', command:'paste', key:'v', magic:true },
+//	cut:{ title:'Cut', text:'&#9986;', command:'cut', key:'x', magic:true }, // execCommand('cut') doesn't seem to work
+//	copy:{ title:'Copy', text:'&copy;', command:'copy', key:'c', magic:true }, // execCommand('copy') doesn't seem to work
+//	paste:{ title:'Paste', text:'P', command:'paste', key:'v', magic:true }, // execCommand('paste') doesn't seem to work
 	undo:{ title:'Undo', text:'&#8617;', command:'undo', key:'z', magic:true },
 	redo:{ title:'Redo', text:'&#8618;', command:'redo', key:'y', magic:true },
 
