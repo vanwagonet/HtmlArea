@@ -12,6 +12,7 @@ HtmlArea.Actions.addActions({ link:{ title:'Link', text:'link',
 	run: function(editor, btn) {
 		var url = editor.getRange('text');
 		if (url && this.getLink(editor)) { return; }
+		// TODO: check for email address
 		if (!/^(\S)*[:\/?#.](\S)*$/.test(url)) { url = 'http://'; }
 		if (!/^\w+:\/\//.test(url)) { url = 'http://' + url; }
 		editor.exec('createlink', url);
@@ -30,14 +31,14 @@ HtmlArea.Actions.addActions({ link:{ title:'Link', text:'link',
 		if (!ui) {
 			editor.element.store('htmlarea-link:ui',
 				(ui = new Element('div.htmlarea-link', {
-					html: '<input type="text" name="url" placeholder="Enter URL" />'
+					html: '<input type="text" class="url" placeholder="Enter URL" />'
 						+ '<a><span>&times;</span></a>'
 				}).store('htmlarea-link:editor', editor)
-				.addEvent('mousedown', this.uiMousedown.bind(this, editor))
+				.addEvent('mousedown', this.uiMousedown.bind(this, editor, ui))
 				.inject(editor.element))
 			);
-			ui.getFirst('input').addEvents({
-				focus:this.urlFocus.bind(this, ui), blur:this.urlBlur.bind(this, editor)
+			ui.getFirst('input').addEvents({ keypress:this.urlKeypress.bind(this, editor, ui),
+				focus:this.urlFocus.bind(this, editor, ui), blur:this.urlBlur.bind(this, editor, ui)
 			});
 		}
 		return ui;
@@ -46,6 +47,8 @@ HtmlArea.Actions.addActions({ link:{ title:'Link', text:'link',
 	show: function(editor, btn, url, link) {
 		var ui = this.getUI(editor);
 		ui.getFirst('input').set('value', url);
+		ui.store('htmlarea-link:link', link);
+		ui.store('htmlarea-link:range', editor.getRange());
 		ui.addClass('show');
 		editor.fireEvent('showLinkPanel', { editor:editor, panel:ui, link:link, action:this });
 	},
@@ -55,23 +58,27 @@ HtmlArea.Actions.addActions({ link:{ title:'Link', text:'link',
 		editor.fireEvent('hideLinkPanel', { editor:editor, panel:ui, action:this });
 	},
 
-	urlFocus: function(ui, e) {
+	urlKeypress: function(editor, ui, e) {
+		if (e.key === 'enter') {
+			e.preventDefault(); // don't submit the form
+			editor.setRange(ui.retrieve('htmlarea-link:range'));
+		}
+	},
+
+	urlFocus: function(editor, ui, e) {
 		ui.addClass('focus');
 	},
 
-	urlBlur: function(editor, e) {
-		var input = $(e.target);
-		this.getUI(editor).removeClass('focus');
-		editor.content.focus();
-		this.getLink(editor).href = input.value;
+	urlBlur: function(editor, ui, e) {
+		ui.removeClass('focus');
+		ui.retrieve('htmlarea-link:link').set('href', $(e.target).value);
 	},
 
-	uiMousedown: function(editor, e) {
-		var target = $(e.target), ui, link;
+	uiMousedown: function(editor, ui, e) {
+		var target = $(e.target), link;
 		if (target.get('tag') === 'input') { return; }
 		if (target.get('tag') === 'span') { target = target.getParent(); }
 		if (target.get('tag') === 'a') {
-			ui = target.getParent('.htmlarea-link');
 			link = this.getLink(editor);
 			if (link) {
 				link.getChildren('u').each(editor.unwrap);
