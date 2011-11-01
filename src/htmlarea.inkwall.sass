@@ -1,0 +1,433 @@
+@import ../mixin.sass
+
+.htmlarea.inkwall
+	text-align: left
+	border: 1px solid #ccc
+	position: relative
+	min-width: 500px
+
+	textarea, .content
+		margin: 0
+		padding: 1em
+		border: none
+		min-height: 169px
+		outline: none
+		background: #f7f7f7
+		font-size: 16px
+		font-size: inherit
+		+box-shadow(inset 0 0 3px rgba(0,0,0,.2))
+		&:focus
+			background: #fff
+
+	.content
+		a
+			text-decoration: none
+		img
+			max-width: 100%
+			margin: 5px
+		& > :last-child:after
+			content: " "
+			display: block
+			clear: both
+
+	input[type=text]
+		+border-radius(3px)
+		+box-shadow(inset 0 0 3px #E0E0E0)
+		border: 1px solid silver
+		font-size: 1.5em
+		margin: 3px 0 4px
+		outline: none
+		padding: 5px
+		background-color: #f7f7f7
+		color: #333
+		&:focus
+			background: #fff
+
+
+	.tools
+		border-bottom: 1px solid #ccc
+		background: #ddd
+		white-space: nowrap
+		+user-select(none)
+		.tools
+			display: inline-block
+			vertical-align: top
+			border: none
+		a
+			display: inline-block
+			vertical-align: top
+			text-align: center
+			width: 32px
+			line-height: 32px
+			height: 32px
+			padding: 4px
+			margin: 4px 0 4px 4px
+			cursor: pointer
+			border: 1px solid #C9C9C9
+			+border-radius(6px)
+			background-color: #eee
+			position: relative
+			color: #{$mainColor}
+			font-size: 30px
+			font-family: Times, serif
+			text-shadow: 0 1px 0px #FFF
+			+gradientTopEdge(#F9F9F9, #EAEAEA, #D5D5D5)
+			&:hover
+				+gradientTopEdge(#FFFFFF , #EFEFEF , #DADADA)
+				border: 1px solid #CCC
+			&.active
+				color: #fff
+				+gradient(#{$mainColor}, lighten($mainColor, 10%))
+				border: 1px solid #{$mainShadowColor}
+				text-shadow: 0 1px 0 #{$mainShadowColor}
+			& > span
+				display: inline-block
+			& > em /* Add a text-gradient */
+				display: none
+
+		.separator, .separator:hover
+			cursor: default
+			width: 1px
+			border: none
+			background: none
+			& > span, & > em
+				display: none
+
+		.sub, .sup
+			line-height: 28px
+			font-weight: bold
+		.sub sub, .sup sup
+			display: inline-block
+			vertical-align: top
+			font-size: 20px
+			margin: 12px 0 0 -2px
+		.sup sup
+			margin: -4px 0 0 -2px
+
+		.center, .left, .right
+			span
+				margin-top: 5px
+			hr
+				width: 24px
+				height: 2px
+				border: 0 none
+				margin: 0 4px 2px 4px
+				background: #{$mainColor}
+				+box-shadow(0 1px 0px #FFF)
+				&.odd
+					width: 16px
+		.center.active hr, .left.active hr, .right.active hr
+			background: #fff
+			+box-shadow(0 1px 0 #{$mainShadowColor})
+		.center hr.odd
+			margin: 0 8px 2px 8px
+		.right hr.odd
+			margin: 0 4px 2px 12px
+
+		.bullet ul, .number ol
+			list-style: none
+			margin: 0
+			padding: 0
+			li
+				list-style: none
+				display: block
+				margin: 6px 0 7px 10px
+				padding: 0
+				color: #{$mainColor}
+				background: #{$mainColor}
+				+box-shadow(0 1px 0px #FFF)
+				height: 2px
+				width: 14px
+		.bullet.active ul li, .number.active ol li
+			background: #fff
+			+box-shadow(0 1px 0 #{$mainShadowColor})
+		.bullet ul b
+			position: relative
+			left: -10px
+			top: -2px
+			display: block
+			width: 5px
+			height: 5px
+			background: #{$mainColor}
+			+box-shadow(0 1px 0px #FFF)
+			overflow: hidden
+			+border-radius(5px)
+		.bullet.active ul b
+			background: #fff
+			+box-shadow(0 1px 0 #{$mainShadowColor})
+		.number ol b
+			position: relative
+			left: -12px
+			top: -6px
+			display: block
+			width: 10px
+			height: 10px
+			font-size: 11px
+			line-height: 12px
+		.number.active ol b
+			color: #fff
+
+		.indent, .outdent
+			span
+				margin-top: 5px
+			hr
+				width: 14px
+				height: 2px
+				border: 0 none
+				margin: 0 3px 2px 15px
+				background: #{$mainColor}
+				+box-shadow(0 1px 0px #FFF)
+				&.full
+					width: 26px
+					margin: 0 3px 2px 3px
+		.indent b
+			position: absolute
+			left: 7px
+			top: 14px
+			height: 0
+			width: 0
+			overflow: hidden
+			border: 6px solid transparent
+			border-left-color: #{$mainColor}
+			+background-clip(padding-box)
+			& + b
+				display: none
+		.outdent b
+			position: absolute
+			left: 2px
+			top: 14px
+			height: 0
+			width: 0
+			overflow: hidden
+			border: 6px solid transparent
+			border-right-color: #{$mainColor}
+			+background-clip(padding-box)
+			& + b
+				display: none
+
+		.undo, .redo
+			color: #690
+			vertical-align: top
+			padding: 4px 2px 0 2px
+			font-weight: bold
+
+		.mode
+			font-size: 22px
+			font-weight: bold
+			letter-spacing: -1px
+			position: absolute
+			right: 4px
+
+
+		.link
+			span
+				font-size: 18px
+				text-decoration: underline
+				vertical-align: top
+
+		.image
+			& > span
+				margin: 4px 2px
+				width: 22px
+				height: 20px
+				position: relative
+				+gradient(lighten(#33f, 20%), #3333ff)
+				overflow: hidden
+				border: 2px solid #{$mainColor}
+				+box-shadow(1px 1px 0px #FFF)
+				b
+					position: absolute
+					left: -20px
+					top: 12px
+					width: 84px
+					height: 84px
+					line-height: 32px
+					+horizontal-gradient(#669900, lighten(#690, 30%))
+					overflow: hidden
+					text-indent: -99em
+					+border-radius(42px)
+				span
+					position: absolute
+					font-size: 20px
+					line-height: 10px
+					top: -4px
+					left: -6px
+					color: #cc0
+					text-shadow: 0 0 3px #fff
+
+
+	.htmlarea-link
+		display: none
+		position: absolute
+		right: -1px
+		top: 50px
+		&.show, &.focus
+			display: block
+		input
+			width: 350px
+		.tools
+			background: none
+			border: none
+		a, a:hover
+			color: #c00
+			width: 30px
+			height: 30px
+			margin: 3px 4px 4px 4px
+			line-height: 26px
+			font-weight: bold
+
+
+	.htmlarea-image
+		display: none
+		position: absolute
+		right: -1px
+		top: 50px
+		background: #dfdfdf
+		border: 1px solid #ccc
+		&.show, &.focus
+			display: block
+		form
+			padding: 10px
+			margin: 0
+			width: 370px
+		h6
+			padding: 0
+			margin: 0
+			font-size: 1em
+			label
+				font-size: .9em
+				font-weight: normal
+				display: inline
+				color: #{$mainColor}
+		input[type=text]
+			width: 350px
+			margin: 4px 0 10px 0
+		input[type=radio]
+			margin: 4px 0 4px 8px
+		label.upload, label.url, label.url span
+			display: none
+		&.upload label.upload, &.url label.url
+			display: block
+		label.upload
+			margin: 4px 0 10px 0
+			font-weight: bold
+			+gradientTopEdge(#C5C5C5, #989898, #757575)
+			border: 1px solid #8A8C94
+			text-shadow: 0 1px 0px #666666
+			color: white
+			&:hover
+				+gradientTopEdge(#C5C5C5 , #A8A8A8 , #858585)
+			&:active
+				color: #EEE
+				+gradient(#757575, #909090)
+		.error
+			color: red
+			font-size: .9em
+			position: absolute
+			right: 12px
+			bottom: 6px
+
+
+	.htmlarea-image-edit
+		display: none
+		position: absolute
+		right: -1px
+		top: 26px
+		padding: 10px 10px 0 0
+		margin: -10px -10px 0 0
+		min-height: 20px
+		min-width: 20px
+		&.show
+			display: block
+		&:before
+			content: " "
+			display: block
+			width: 100%
+			height: 100%
+			background: #55f
+			+opacity(.2)
+		.tools
+			border: none
+			background: none
+
+			a
+				width: 16px
+				height: 16px
+				line-height: 16px
+				font-size: 16px
+			.float
+				position: absolute
+				display: block
+				top: 50%
+				left: 50%
+				margin: -8px 0 0 -47px
+			.float-left, .float-right, .float-none
+				span
+					margin-top: 2px
+				hr
+					width: 6px
+					height: 1px
+					border: 0 none
+					margin: 0 1px 1px 9px
+					background: #{$mainColor}
+					+box-shadow(0 1px 0px #FFF)
+					&.full
+						width: 14px
+						margin: 0 1px 1px 1px
+				&.active hr
+					background: #fff
+					+box-shadow(0 1px 0 #{$mainShadowColor})
+				b
+					position: absolute
+					left: 5px
+					top: 8px
+					width: 5px
+					height: 5px
+					border: 1px solid #{$mainColor}
+					+box-shadow(1px 1px 0px #FFF)
+				&.active b
+					border-color: #fff
+					+box-shadow(0 1px 0 #{$mainShadowColor})
+			.float-right
+				hr
+					margin: 0 9px 1px 1px
+				b
+					left: 12px
+			.float-none
+				hr.left
+					width: 2px
+					margin: 7px 13px 1px 1px
+				hr.right
+					width: 2px
+					margin: -2px 1px 1px 13px
+				b
+					left: 8px
+			.remove
+				position: absolute
+				top: 0
+				right: 0
+				background: none
+				border: 0 none
+				margin: 0
+				font-size: 20px
+				line-height: 12px
+				color: #c00
+				font-weight: bold
+			.resize
+				position: absolute
+				bottom: -10px
+				right: 0
+				width: 21px
+				height: 21px
+				cursor: move
+				cursor: nwse-resize
+				background: none
+				border: 0 none
+				margin: 0
+				letter-spacing: -9px
+				font-weight: bold
+				font-size: 10px
+				text-align: right
+				span
+					height: 5px
+					margin: 10px

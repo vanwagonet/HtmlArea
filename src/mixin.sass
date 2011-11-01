@@ -1,0 +1,153 @@
+$imagesDir: /images
+
+$mainColor: #4A535D
+$mainShadowColor: darken($mainColor, 10%)
+$altColor: #0050AE
+$altLighterColor: #0069D1
+
+=border-radius($style)
+	-webkit-border-radius: $style
+	-moz-border-radius: $style
+	-khtml-border-radius: $style
+	-ms-border-radius: $style
+	border-radius: $style
+	
+=border-top-radius($style)
+	+border-top-left-radius($style)
+	+border-top-right-radius($style)
+	
+=border-top-left-radius($style)
+	-moz-border-radius-topleft: $style
+	-webkit-border-top-left-radius: $style
+	-khtml-border-top-left-radius: $style
+	-ms-border-top-left-radius: $style
+	border-top-left-radius: $style
+	
+=border-top-right-radius($style)
+	-moz-border-radius-topright: $style
+	-webkit-border-top-right-radius: $style
+	-khtml-border-top-right-radius: $style
+	-ms-border-top-right-radius: $style
+	border-top-right-radius: $style
+	
+=border-bottom-right-radius($style)
+	-moz-border-radius-bottomright: $style
+	-webkit-border-bottom-right-radius: $style
+	-khtml-border-bottom-right-radius: $style
+	-ms-border-bottom-right-radius: $style
+	border-bottom-right-radius: $style
+	
+=border-bottom-left-radius($style)
+	-moz-border-radius-bottomleft: $style
+	-webkit-border-bottom-left-radius: $style
+	-khtml-border-bottom-left-radius: $style
+	-ms-border-bottom-left-radius: $style
+	border-bottom-left-radius: $style
+=border-bottom-radius($style)
+	+border-bottom-left-radius($style)
+	+border-bottom-right-radius($style)
+=border-top-radius($style)
+	+border-top-left-radius($style)
+	+border-top-right-radius($style)
+	
+
+=border-right-radius($style)
+	+border-top-right-radius($style)
+	+border-bottom-right-radius($style)
+=border-left-radius($style)
+	+border-top-left-radius($style)
+	+border-bottom-left-radius($style)
+
+=user-select($sel)
+	-moz-user-select: $sel
+	-webkit-user-select: $sel
+	user-select: $sel
+	
+=box-shadow($style)
+	-moz-box-shadow: $style
+	-webkit-box-shadow: $style
+	box-shadow: $style
+
+=opacity($value)
+	opacity: $value
+	-moz-opacity: $value
+	filter: alpha(opacity=#{$value * 100})
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=#{$value*100})"
+	-ms-filter: "alpha(opacity=#{$value * 100})"
+
+=inline-block
+	display: inline-block
+	*display: inline
+	zoom: 1
+
+=transform($how)
+	-moz-transform: $how
+	-webkit-transform: $how
+	-o-transform: $how
+	-ms-transform: $how
+	transform: $how
+=transition($how)
+	-moz-transition: $how
+	-webkit-transition: $how
+	-o-transition: $how
+	-ms-transition: $how
+	transition: $how
+
+=ie-gradient($top , $bottom)
+	background: $bottom
+	filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#{$top}, endColorstr=#{$bottom})
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#{$top}', endColorstr='#{$bottom}')"
+	
+	
+=horizontal-ie-gradient($left , $right)
+	background: $left
+	filter: progid:DXImageTransform.Microsoft.gradient(GradientType=1,startColorstr=#{$left}, endColorstr=#{$right})
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(GradientType=1,startColorstr='#{$left}', endColorstr='#{$right}')"
+
+=horizontal-gradient($left , $right)
+	+horizontal-ie-gradient($left , $right)
+	background: linear-gradient(left, $left , $right)
+	background: -moz-linear-gradient(left, #{$left}, #{$right})
+	background: -webkit-gradient(linear, left top, right top, from(#{$left}), to(#{$right}))
+
+=gradient($top, $bottom)
+	+ie-gradient($top , $bottom)
+	background: linear-gradient(top, $top, $bottom)
+	background: -moz-linear-gradient(top, #{$top}, #{$bottom})
+	background: -webkit-gradient(linear, left top, left bottom, from(#{$top}), to(#{$bottom}))
+
+=tri-gradient($top, $middle, $bottom)
+	+ie-gradient($top , $bottom)
+	background: linear-gradient(top, $top, $bottom)
+	background: -moz-linear-gradient(center top, #{$top} 27%, #{$middle} 64%, #{$bottom} 100%)
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.27, #{$top}), color-stop(0.64, #{$middle}), color-stop(1, #{$bottom}) )
+	
+	
+=apple-gradient-edged($topEdge , $top , $topMiddle , $bottomMiddle , $bottom)
+	+ie-gradient($top , $bottom)
+	background: -moz-linear-gradient(center top, #{$topEdge} 0px, #{$top} 1px, #{$topMiddle} 50%, #{$bottomMiddle} 50%, #{$bottom} 100%)
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #{$topEdge}), color-stop(0.021, #{$top}), color-stop(0.50, #{$topMiddle}), color-stop(0.50, #{$bottomMiddle}), color-stop(1, #{$bottom}) )
+	
+=gradientTopEdge($topEdge, $middle, $bottom)
+	+ie-gradient($middle , $bottom)
+	background: linear-gradient($middle, $bottom)
+	background: -moz-linear-gradient(center top, #{$topEdge} 0px, #{$middle} 1px, #{$bottom} 100%)
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #{$topEdge}), color-stop(0.021, #{$middle}), color-stop(1, #{$bottom}) )
+
+=gradientBottomEdge($top, $middle, $bottomEdge)
+	+ie-gradient($top , $middle)
+	background: linear-gradient($top, $middle)
+	background: -moz-linear-gradient(center top, #{$top} 64%, #{$middle} 96%, #{$bottomEdge} 100%)	
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.64, #{$top}), color-stop(0.96, #{$middle}), color-stop(1, #{$bottomEdge}))
+	
+=gradient-radial($outside , $inside)
+	background-color: #{$outside}
+	background-image: -moz-radial-gradient(50% 50%, ellipse closest-corner, #{$inside}, #{$outside} 50%)
+	background-image: -webkit-radial-gradient(50% 50%, ellipse closest-corner, #{$inside}, #{$outside} 50%)
+	background-image: -o-radial-gradient(50% 50%, ellipse closest-corner, #{$inside}, #{$outside} 50%)
+	background-image: -ms-radial-gradient(50% 50%, ellipse closest-corner, #{$inside}, #{$outside} 50%)
+	background-image: radial-gradient(50% 50%, ellipse closest-corner, #{$inside}, #{$outside} 50%)
+
+=background-clip($type)
+	-webkit-background-clip: $type
+	background-clip: $type
