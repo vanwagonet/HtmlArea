@@ -32,14 +32,14 @@ HtmlArea.Actions.addActions({ link:{ title:'Link', text:'link',
 			editor.element.store('htmlarea-link:ui',
 				(ui = new Element('div.htmlarea-link', {
 					html: '<input type="text" class="url" placeholder="Enter URL" />'
-						+ '<a><span>&times;</span></a>'
+						+ '<span class="tools"><a><span>&times;</span></a></span>'
 				}).store('htmlarea-link:editor', editor)
-				.addEvent('mousedown', this.uiMousedown.bind(this, editor, ui))
-				.inject(editor.element))
+				.addEvent('mousedown', this.uiMousedown.bind(this, editor, ui)))
 			);
 			ui.getFirst('input').addEvents({ keypress:this.urlKeypress.bind(this, editor, ui),
 				focus:this.urlFocus.bind(this, editor, ui), blur:this.urlBlur.bind(this, editor, ui)
 			});
+			editor.fireEvent('buildLinkPanel', { editor:editor, panel:ui, action:this });
 		}
 		return ui;
 	},
@@ -49,12 +49,12 @@ HtmlArea.Actions.addActions({ link:{ title:'Link', text:'link',
 		ui.getFirst('input').set('value', url);
 		ui.store('htmlarea-link:link', link);
 		ui.store('htmlarea-link:range', editor.getRange());
-		ui.addClass('show');
+		ui.addClass('show').inject(editor.element);
 		editor.fireEvent('showLinkPanel', { editor:editor, panel:ui, link:link, action:this });
 	},
 
 	hide: function(editor) {
-		var ui = this.getUI(editor).removeClass('show');
+		var ui = this.getUI(editor).removeClass('show').dispose();
 		editor.fireEvent('hideLinkPanel', { editor:editor, panel:ui, action:this });
 	},
 

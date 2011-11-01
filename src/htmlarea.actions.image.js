@@ -35,7 +35,7 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9679;</b>
 			'<input type="text" name="url" placeholder="Enter URL" />' +
 		'</label>' +
 		'<div class="error"></div>' +
-		'<input type="submit" class="button" value="Done" />' +
+		'<input type="submit" class="button" value="Done" disabled />' +
 		'<input type="button" class="button" value="Cancel" />' +
 	'</form>',
 
@@ -48,12 +48,14 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9679;</b>
 						action: editor.options.imageUploadURL || '/upload.json',
 						name: editor.options.imageUploadName || 'theuploadedfile'
 					})
-				})).inject(editor.element)
+				}))
 			);
 			ui.getElement('form').addEvent('submit', this.submit.bind(this, editor));
 			ui.getElement('input[type=button]').addEvent('click', this.cancel.bind(this, editor));
 			ui.getElements('input[name=type]').addEvent('change', this.typeChange.bind(this, editor));
 			ui.getElement('input[type=file]').addEvent('change', this.fileChange.bind(this, editor));
+			ui.getElement('input[name=url]').addEvent('input', this.validate.bind(this, editor));
+			editor.fireEvent('buildImagePanel', { editor:editor, panel:ui, action:this });
 		}
 		return ui;
 	},
@@ -63,16 +65,17 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9679;</b>
 		ui.store('htmlarea-image:range', editor.getRange());
 		ui.getElement('input[type=file]').set('value', '');
 		ui.getElement('input[name=url]').set('value', '');
-		ui.getElements('input[type=submit],input[type=radio]').set('disabled', false);
+		ui.getElements('input[type=radio]').set('disabled', false);
+		ui.getElements('input[type=submit]').set('disabled', true);
 		ui.getElement('label.upload').removeClass('progress').removeClass('complete')
 			.getElement('span').set('text', 'Choose File');
-		ui.addClass('show');
+		ui.addClass('show').inject(editor.element);
 		editor.fireEvent('showImagePanel', { editor:editor, panel:ui, action:this });
 	},
 
 	hide: function(editor) {
-		var ui = this.getUI(editor).removeClass('show');
-		editor.fireEvent('hideImagePanel', { editor:editor, panel:ui });	
+		var ui = this.getUI(editor).removeClass('show').dispose();
+		editor.fireEvent('hideImagePanel', { editor:editor, panel:ui });
 	},
 
 	submit: function(editor, e) {
@@ -110,6 +113,7 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9679;</b>
 			ui = input.getParent('.htmlarea-image');
 		if (ui.hasClass(type)) { return; }
 		ui.removeClass(type === 'url' ? 'upload' : 'url').addClass(type);
+		this.validate(editor, e);
 		ui.getElement('.error').set('text', '');
 	},
 
@@ -131,7 +135,7 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9679;</b>
 			if (!url) { error = 'URL Is Required'; }
 		} else {
 			var input = ui.getElement('input[type=file]'), file = input.files && input.files[0],
-				name = file && file.name || input.get('value').split(/[\/\\]/).slice(-1).join(''),
+				name = (file && file.name || input.get('value')).split(/[\/\\]/).slice(-1).join(''),
 				size = file && file.size || NaN,
 				max = editor.options.imageUploadMax || (6 * 1024 * 1024);
 
@@ -140,6 +144,7 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9679;</b>
 			ui.getElement('label.upload span').set('text', name || 'Choose File');
 		}
 		ui.getElement('.error').set('text', error || '');
+		ui.getElement('input[type=submit]').set('disabled', !!error);
 		return !error;
 	},
 
@@ -208,9 +213,9 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9679;</b>
 	editTemplate:
 	'<div class="tools">' +
 		'<span class="tools float">' +
-			'<a class="float-left" data-action="float-left"><span>&laquo;</span></a>' +
-			'<a class="float-none" data-action="float-none"><span>-=-</span></a>' +
-			'<a class="float-right" data-action="float-right"><span>&raquo;</span></a>' +
+			'<a class="float-left" data-action="float-left"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></i></span></a>' +
+			'<a class="float-none" data-action="float-none"><span><hr class="full"/><hr/ class="left"><hr class="right"/><hr class="full"/><b></b></span></a>' +
+			'<a class="float-right" data-action="float-right"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></span></a>' +
 		'</span>' +
 		'<a class="resize" data-action="resize"><span>&#8598;&#8600;</span></a>' +
 		'<a class="remove" data-action="remove"><span>&times;</span></a>' +
