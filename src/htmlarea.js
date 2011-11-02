@@ -43,7 +43,7 @@ HtmlArea = new Class({
 		this.element.addClass('htmlarea').addClass(o.style);
 		content.addClass('content').set('contentEditable', true);
 		if (this.query('styleWithCSS', 'support')) { this.exec('styleWithCSS', false); } // prefer tags to styles
-		if (!content.innerHTML.trim()) { content.innerHTML += HtmlArea.pbrp; }
+		if (!content.innerHTML.trim()) { content.innerHTML += HtmlArea.pbr; }
 
 		if (o.mode === 'html') { this.setHTMLMode(); }
 		else { this.mode = 'visual'; }
@@ -99,7 +99,7 @@ HtmlArea = new Class({
 
 	updateContent: function() {
 		this.content.set('html', this.textarea.get('value'));
-		if (Browser.firefox) { this.content.innerHTML += HtmlArea.pbrp; }
+		if (Browser.firefox) { this.content.innerHTML += HtmlArea.pbr; }
 	},
 
 	setHTMLMode: function() {
@@ -300,7 +300,7 @@ HtmlArea = new Class({
 		}
 	},
 
-	pbrp: '<p><br/></p>',
+	pbr: '<p><br/></p>',
 
 	// got this started by looking at MooRTE. Thanks Sam!
 	cleanups: [
@@ -324,7 +324,7 @@ HtmlArea = new Class({
 		[ /^([^<]+)(<?)/, '<p>$1</p>$2' ], // wrap first text in <p>
 		[ /<(\/?)div\b/g, '<$1p' ], // change <div> to <p>
 
-		[ /<p>\s*<br\/>\s*<\/p>|<p>(?:&nbsp;|\s)*<\/p>/g, '<p>\u00a0</p>' ], // replace padded <p> with non-breaking space
+		[ /<p>\s*<br\/>\s*<\/p>|<p>(?:&nbsp;|\s)*<\/p>/g, '<p><br/></p>' ], // replace padded <p> with pbr
 
 		// semantic changes, but prefer b, i, and s instead of strong, em, and del
 		[ /<(\/?)strong\b/g, '<$1b' ], // use <b> for bold
