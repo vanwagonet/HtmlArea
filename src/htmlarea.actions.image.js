@@ -5,7 +5,7 @@
  *  imageAutoLink - (default: false) if true, inserted images are wrapped in a link pointing to the image
  *  imageUploadMax - (default: 6 * 1024 * 1024 [6MB]) max number of bytes allowed in image size
  *  imageUploadURL - (default: /upload.json) url to post image uploads to
- *  imageUploadName - (default: theuploadedfile) field name used for image file uploads
+ *  imageUploadName - (default: file) field name used for image file uploads
  *  imageUploadSrc - (default: /uploads/{file}) img src for just uploaded files
  *   {file} is replaced with the base name of the file (/path/pic.jpg => pic.jpg)
  *   {name} is replaced with the base name of the file (/path/pic.jpg => pic)
@@ -46,7 +46,7 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9679;</b>
 				(ui = new Element('div.htmlarea-image.upload', {
 					html: this.template.substitute({
 						action: editor.options.imageUploadURL || '/upload.json',
-						name: editor.options.imageUploadName || 'theuploadedfile'
+						name: editor.options.imageUploadName || 'file'
 					})
 				}))
 			);
@@ -81,10 +81,9 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9679;</b>
 	submit: function(editor, e) {
 		e.preventDefault();
 		if (!this.validate(editor)) { return; }
-		var ui = this.getUI(editor), src, html,
+		var ui = this.getUI(editor), html,
 			type = ui.getElement('input[name=type]:checked').get('value');
-		if (type === 'url') { src = ui.getElement('input[name=url]').get('value').trim(); }
-		else { src = this.getUploadSrc(editor, ui); }
+			src = ui.getElement('input[name=url]').get('value').trim();
 		editor.setRange(ui.retrieve('htmlarea-image:range'));
 		html = '<img src="' + encodeURI(src) + '" />';
 		if (editor.options.imageAutoLink) {
@@ -195,8 +194,14 @@ HtmlArea.Actions.addActions({ image: { title:'Add Picture', text:'<b>&#9679;</b>
 		}
 		if (response && response.error) { return this.failure(editor, ui, response.error); }
 
+		if (response && response.upload.url && response.upload.url) {
+			ui.getElement('input[name=url]').set('value', response.upload.url);
+		} else {
+			ui.getElement('input[name=url]').set('value', this.getUploadSrc(editor, ui));
+		}
+
 		ui.getElement('label.upload').removeClass('progress').addClass('complete');
-		ui.getElements('input[type=submit],input[type=radio]').set('disabled', false);
+		ui.getElements('input[type=submit]').set('disabled', false);
 	},
 
 	failure: function(editor, ui, e) {
