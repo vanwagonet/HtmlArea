@@ -34,13 +34,14 @@ HtmlArea relies on Mootools Core. I've only tested in version 1.4.
 content may be any div or textarea. It will be wrapped with a div.
 
 options is an object with any of the following properties
+
 * name - deafults to 'content' - String name attribute to add to the generated textarea, only used if a textarea was not passed in as content
 * style - defaults to 'default' - css class name appended to the wrapper div, designates the theme to use
 * mode - defaults to 'visual' - may also be 'html' signifying the editor starts by showing raw html
 * toolsgo - defaults to 'top' - may also be 'bottom' denoting where in the wrapper the toolbar should be added
 * tools - defaults to '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,mode]' - an array or string denoting the actions to add to the toolbar
-** [] denotes a group, wrapped in span.tools
-** | is a shortcut for separator
+* * [] denotes a group, wrapped in span.tools
+* * | is a shortcut for separator
 
 
 ## License
