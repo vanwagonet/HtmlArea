@@ -7,6 +7,7 @@
 	min-width: 500px
 
 	textarea, .content
+		resize: none
 		margin: 0
 		padding: 1em
 		border: none
@@ -432,3 +433,31 @@
 				span
 					height: 5px
 					margin: 10px
+
+
+	.htmlarea-image-drop
+		position: absolute
+		left: 0
+		top: 0
+		width: 100%
+		height: 100%
+		background: #{$mainColor}
+		+opacity(.5)
+		span
+			display: block
+			position: absolute
+			left: 0
+			top: 50%
+			margin-top: -50px
+			width: 100%
+			font-size: 64px
+			line-height: 100px
+			color: #fff
+			text-shadow: 0 1px 0 #{$mainShadowColor}
+			text-align: center
+		.mask
+			position: absolute
+			left: 0
+			top: 0
+			width: 100%
+			height: 100%

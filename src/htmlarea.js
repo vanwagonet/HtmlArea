@@ -40,8 +40,9 @@ HtmlArea = new Class({
 				.set('value', this.getHTML())
 				.setStyle('display', 'none').inject(content, 'after');
 		}
+		this.textarea.set('spellcheck', false);
 		this.element.addClass('htmlarea').addClass(o.style);
-		content.addClass('content').set('contentEditable', true);
+		content.addClass('content').set('contentEditable', true).set('spellcheck', true);
 		if (this.query('styleWithCSS', 'support')) { this.exec('styleWithCSS', false); } // prefer tags to styles
 		if (!content.innerHTML.trim()) { content.innerHTML += HtmlArea.pbr; }
 
@@ -98,8 +99,9 @@ HtmlArea = new Class({
 	},
 
 	updateContent: function() {
-		this.content.set('html', this.textarea.get('value'));
-		if (Browser.firefox) { this.content.innerHTML += HtmlArea.pbr; }
+		var html = this.cleanHTML(this.textarea.get('value'));
+		if (!html) { html = HtmlArea.pbr; }
+		this.content.set('html', html);
 	},
 
 	setHTMLMode: function() {
