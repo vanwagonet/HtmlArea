@@ -362,7 +362,7 @@ HtmlArea.Tools.Image = new Class({
 			var file = e && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0],
 				name = file && file.name || '', size = file && file.size || NaN,
 				error = this.image.getFileError(name, size);
-			if (error) { this.dropFailure(editor, data, null, error); }
+			if (error) { this.uploadFailure({ error:error }); }
 			else {
 				this.ui.addClass('progress');
 				var data = new FormData();

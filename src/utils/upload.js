@@ -9,7 +9,7 @@ HtmlArea.Utils.Uploader = new Class({
 		this.setOptions(o);
 	},
 
-	canUploadXhr: function() { return window.File && window.FormData && window.XMLHttpRequest && !window.File.prototype.getAsBinary && true || false; },
+	canUploadXhr: function() { return window.File && window.FormData && window.XMLHttpRequest && true || false; },
 
 	uploadForm: function(form) {
 		return this.canUploadXhr() ?
