@@ -8,7 +8,8 @@
 
 	textarea, .content
 		resize: none
-		margin: 0
+		display: block
+		margin: 0 !important
 		padding: 1em
 		border: none
 		min-height: 169px
@@ -58,10 +59,10 @@
 			display: inline-block
 			vertical-align: top
 			text-align: center
-			width: 32px
-			line-height: 32px
-			height: 32px
-			padding: 4px
+			width: 26px
+			line-height: 26px
+			height: 26px
+			padding: 3px
 			margin: 4px 0 4px 4px
 			cursor: pointer
 			border: 1px solid #C9C9C9
@@ -69,7 +70,7 @@
 			background-color: #eee
 			position: relative
 			color: #{$mainColor}
-			font-size: 30px
+			font-size: 24px
 			font-family: Times, serif
 			text-shadow: 0 1px 0px #FFF
 			+gradientTopEdge(#F9F9F9, #EAEAEA, #D5D5D5)
@@ -109,21 +110,21 @@
 			span
 				margin-top: 5px
 			hr
-				width: 24px
+				width: 18px
 				height: 2px
 				border: 0 none
-				margin: 0 4px 2px 4px
+				margin: 0 4px 1px 4px
 				background: #{$mainColor}
 				+box-shadow(0 1px 0px #FFF)
 				&.odd
-					width: 16px
+					width: 12px
 		.center.active hr, .left.active hr, .right.active hr
 			background: #fff
 			+box-shadow(0 1px 0 #{$mainShadowColor})
 		.center hr.odd
-			margin: 0 8px 2px 8px
+			margin: 0 7px 1px 7px
 		.right hr.odd
-			margin: 0 4px 2px 12px
+			margin: 0 4px 1px 10px
 
 		.bullet ul, .number ol
 			list-style: none
@@ -132,39 +133,39 @@
 			li
 				list-style: none
 				display: block
-				margin: 6px 0 7px 10px
+				margin: 5px 0 5px 5px
 				padding: 0
 				color: #{$mainColor}
 				background: #{$mainColor}
 				+box-shadow(0 1px 0px #FFF)
 				height: 2px
-				width: 14px
+				width: 12px
 		.bullet.active ul li, .number.active ol li
 			background: #fff
 			+box-shadow(0 1px 0 #{$mainShadowColor})
 		.bullet ul b
 			position: relative
-			left: -10px
-			top: -2px
+			left: -7px
+			top: -1px
 			display: block
-			width: 5px
-			height: 5px
+			width: 4px
+			height: 4px
 			background: #{$mainColor}
 			+box-shadow(0 1px 0px #FFF)
 			overflow: hidden
-			+border-radius(5px)
+			+border-radius(2px)
 		.bullet.active ul b
 			background: #fff
 			+box-shadow(0 1px 0 #{$mainShadowColor})
 		.number ol b
 			position: relative
-			left: -12px
-			top: -6px
+			left: -9px
+			top: -4px
 			display: block
 			width: 10px
 			height: 10px
-			font-size: 11px
-			line-height: 12px
+			font-size: 9px
+			line-height: 10px
 		.number.active ol b
 			color: #fff
 
@@ -172,23 +173,23 @@
 			span
 				margin-top: 5px
 			hr
-				width: 14px
+				width: 10px
 				height: 2px
 				border: 0 none
-				margin: 0 3px 2px 15px
+				margin: 0 4px 1px 12px
 				background: #{$mainColor}
 				+box-shadow(0 1px 0px #FFF)
 				&.full
-					width: 26px
-					margin: 0 3px 2px 3px
+					width: 18px
+					margin: 0 4px 1px 4px
 		.indent b
 			position: absolute
 			left: 7px
-			top: 14px
+			top: 12px
 			height: 0
 			width: 0
 			overflow: hidden
-			border: 6px solid transparent
+			border: 5px solid transparent
 			border-left-color: #{$mainColor}
 			+background-clip(padding-box)
 			& + b
@@ -196,11 +197,11 @@
 		.outdent b
 			position: absolute
 			left: 2px
-			top: 14px
+			top: 12px
 			height: 0
 			width: 0
 			overflow: hidden
-			border: 6px solid transparent
+			border: 5px solid transparent
 			border-right-color: #{$mainColor}
 			+background-clip(padding-box)
 			& + b
@@ -209,12 +210,12 @@
 		.undo, .redo
 			color: #690
 			vertical-align: top
-			padding-top: 8px
-			height: 28px
+			padding-top: 3px
+			height: 22px
 			font-weight: bold
 
 		.mode
-			font-size: 22px
+			font-size: 18px
 			font-weight: bold
 			letter-spacing: -1px
 			position: absolute
@@ -223,15 +224,15 @@
 
 		.link
 			span
-				font-size: 18px
+				font-size: 14px
 				text-decoration: underline
 				vertical-align: top
 
 		.image
 			& > span
 				margin: 4px 2px
-				width: 22px
-				height: 20px
+				width: 16px
+				height: 14px
 				position: relative
 				+gradient(lighten(#33f, 20%), #3333ff)
 				overflow: hidden
@@ -239,18 +240,18 @@
 				+box-shadow(1px 1px 0px #FFF)
 				b
 					position: absolute
-					left: -20px
-					top: 12px
-					width: 84px
-					height: 84px
+					left: -18px
+					top: 8px
+					width: 72px
+					height: 72px
 					line-height: 32px
 					+horizontal-gradient(#669900, lighten(#690, 30%))
 					overflow: hidden
 					text-indent: -99em
-					+border-radius(42px)
+					+border-radius(36px)
 				span
 					position: absolute
-					font-size: 20px
+					font-size: 16px
 					line-height: 10px
 					top: -4px
 					left: -6px
@@ -262,7 +263,9 @@
 		display: block
 		position: absolute
 		right: -1px
-		top: 50px
+		top: 42px
+		&.show, &.focus
+			display: block
 		input
 			width: 350px
 		.tools
@@ -270,10 +273,10 @@
 			border: none
 		a, a:hover
 			color: #c00
-			width: 30px
-			height: 30px
-			margin: 3px 4px 4px 4px
-			line-height: 26px
+			width: 26px
+			height: 26px
+			margin: 5px 4px 4px 4px
+			line-height: 22px
 			font-weight: bold
 
 
@@ -281,7 +284,7 @@
 		display: block
 		position: absolute
 		right: -1px
-		top: 50px
+		top: 42px
 		background: #dfdfdf
 		border: 1px solid #ccc
 		form
@@ -318,6 +321,14 @@
 			&:active
 				color: #EEE
 				+gradient(#757575, #909090)
+			&.complete
+				color: white
+				+gradientTopEdge(#23DA49, #00B315, #009613)
+				border: 1px solid #008A21
+				text-shadow: 0 1px 0px mix(#444 , #008A21)
+			&.progress span
+				padding: 16px 40px
+				background: transparent url(#{$imagesDir}/loaders/loader-on-bg.gif) no-repeat 0 center
 		.error
 			color: red
 			font-size: .9em
