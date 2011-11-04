@@ -264,8 +264,6 @@
 		position: absolute
 		right: -1px
 		top: 42px
-		&.show, &.focus
-			display: block
 		input
 			width: 350px
 		.tools
@@ -447,8 +445,19 @@
 		width: 100%
 		height: 100%
 		background: #{$mainColor}
-		+opacity(.5)
-		span
+		background: rgba($mainColor, .75)
+		&.progress
+			background: rgba($mainColor, .9)
+			span
+				display: inline-block
+				padding-left: 42px
+				background: transparent url(#{$imagesDir}/loaders/loader-on-bg.gif) no-repeat 4px center
+			em
+				font-style: normal
+				font-weight: normal
+		&.error span
+			color: #c00
+		label
 			display: block
 			position: absolute
 			left: 0
@@ -460,6 +469,7 @@
 			color: #fff
 			text-shadow: 0 1px 0 #{$mainShadowColor}
 			text-align: center
+			font-weight: bold
 		.mask
 			position: absolute
 			left: 0

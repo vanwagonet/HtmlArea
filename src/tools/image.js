@@ -334,14 +334,16 @@ HtmlArea.Tools.Image = new Class({
 		dragEnter: function(e) {
 			var editor = this.editor, size = editor.element.getSize();
 			if (!this.ui) {
-				this.ui = new Element('div.htmlarea-image-drop', { html:'<span></span>' });
+				this.ui = new Element('div.htmlarea-image-drop', { html:'<label><span></span><em></em></label>' });
 				this.mask = (new Element('div.mask')).inject(this.ui);
 				this.mask.addEventListener('dragleave', this.dragLeave, false);
 				this.mask.addEventListener('dragover', this.dragOver, false);
 				this.mask.addEventListener('drop', this.drop, false);
+				this.progress = this.ui.getElement('em');
 				editor.fireEvent('buildImageDropPanel', { editor:editor, panel:this.ui, tool:this });
 			}
 
+			this.progress.set('text', '');
 			this.ui.getElement('span').set('text', this.options.dropText);
 			this.ui.removeClass('progress').removeClass('error')
 				.setStyles({ width:size.x, height:size.y }).inject(editor.element);
@@ -365,6 +367,7 @@ HtmlArea.Tools.Image = new Class({
 			if (error) { this.uploadFailure({ error:error }); }
 			else {
 				this.ui.addClass('progress');
+				this.ui.getElement('span').set('text', name);
 				var data = new FormData();
 				data.append(this.options.uploadName, file);
 				this.uploader.uploadXhr(data, this.options.uploadURL);
@@ -379,6 +382,13 @@ HtmlArea.Tools.Image = new Class({
 
 			this.image.insert(data.response.upload.url);
 			this.hide();
+		},
+
+		uploadProgress: function(xhr, e) {
+			if (e.lengthComputable) {
+			  var percent = ~~((e.loaded / e.total) * 100); // integer percentage
+			  this.progress.set('text', ' ' + percent + '%');
+			}
 		},
 
 		uploadFailure: function(data) {
