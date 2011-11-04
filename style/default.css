@@ -74,8 +74,7 @@
 
 
 .htmlarea .tools .link span { font-size:9px; text-decoration:underline; vertical-align:top; margin-top:-1px; color:#00c; }
-.htmlarea-link { display:none; position:absolute; right:-1px; top:26px; background:#dfdfdf; border:1px solid #ccc; }
-.htmlarea-link.show, .htmlarea-link.focus { display:block; }
+.htmlarea-link { display:block; position:absolute; right:-1px; top:26px; background:#dfdfdf; border:1px solid #ccc; }
 .htmlarea-link input { width:200px; }
 .htmlarea-link a { display:inline-block; vertical-align:top; width:16px; line-height:16px; height:16px; padding:2px; margin:4px 2px 2px 0; cursor:pointer; }
 .htmlarea-link a > span { display:none; }
@@ -86,8 +85,7 @@
 .htmlarea .tools .image b { position:absolute; left:-10px; top:7px; width:42px; height:42px; line-height:16px; background:#690; overflow:hidden; text-indent:-99em; border-radius:21px; }
 .htmlarea .tools .image > span span { position:absolute; font-size:10px; line-height:5px; top:-1px; left:-2px; color:#cc0; }
 
-.htmlarea-image { display:none; position:absolute; right:-1px; top:26px; background:#dfdfdf; border:1px solid #ccc; }
-.htmlarea-image.show, .htmlarea-image.focus { display:block; }
+.htmlarea-image { display:block; position:absolute; right:-1px; top:26px; background:#dfdfdf; border:1px solid #ccc; }
 .htmlarea-image form { padding:5px; margin:0; width:auto; }
 .htmlarea-image h6 { padding:0; margin:0; font-size:1em; }
 .htmlarea-image h6 label { font-size:.9em; font-weight:normal; }
@@ -98,8 +96,7 @@
 .htmlarea-image label.upload span, .htmlarea-image label.url span { display:none; }
 .htmlarea-image .error { color:red; font-size:.9em; }
 
-.htmlarea-image-edit { display:none; position:absolute; right:-1px; top:26px; padding:10px 10px 0 0; margin:-10px -10px 0 0; min-height:20px; min-width:20px; }
-.htmlarea-image-edit.show { display:block; }
+.htmlarea-image-edit { display:block; position:absolute; right:-1px; top:26px; padding:10px 10px 0 0; margin:-10px -10px 0 0; min-height:20px; min-width:20px; }
 .htmlarea-image-edit .tools { border:none; background:none; }
 .htmlarea-image-edit .tools a {  }
 .htmlarea-image-edit .float { position:absolute; display:block; top:50%; left:50%; margin:-8px 0 0 -44px; }

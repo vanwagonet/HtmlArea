@@ -1,7 +1,7 @@
 /**
  * Create, update, and remove links
  **/
-HtmlArea.Actions.addActions({ link:{ title:'Link', text:'link',
+HtmlArea.Tools.addTools({ link:{ title:'Link', text:'link',
 	update: function(editor, btn) {
 		var link = this.getLink(editor);
 		if (link) { this.show(editor, btn.addClass('active'), link.get('href'), link); }
@@ -9,7 +9,7 @@ HtmlArea.Actions.addActions({ link:{ title:'Link', text:'link',
 		return link;
 	},
 
-	run: function(editor, btn) {
+	run: function(editor, btn, e) {
 		var url = editor.getRange('text');
 		if (url && this.getLink(editor)) { return; }
 		// TODO: check for email address
@@ -39,7 +39,7 @@ HtmlArea.Actions.addActions({ link:{ title:'Link', text:'link',
 			ui.getFirst('input').addEvents({ keypress:this.urlKeypress.bind(this, editor, ui),
 				focus:this.urlFocus.bind(this, editor, ui), blur:this.urlBlur.bind(this, editor, ui)
 			});
-			editor.fireEvent('buildLinkPanel', { editor:editor, panel:ui, action:this });
+			editor.fireEvent('buildLinkPanel', { editor:editor, panel:ui, tool:this });
 		}
 		return ui;
 	},
@@ -50,12 +50,12 @@ HtmlArea.Actions.addActions({ link:{ title:'Link', text:'link',
 		ui.store('htmlarea-link:link', link);
 		ui.store('htmlarea-link:range', editor.getRange());
 		ui.addClass('show').inject(editor.element);
-		editor.fireEvent('showLinkPanel', { editor:editor, panel:ui, link:link, action:this });
+		editor.fireEvent('showLinkPanel', { editor:editor, panel:ui, link:link, tool:this });
 	},
 
 	hide: function(editor) {
 		var ui = this.getUI(editor).removeClass('show').dispose();
-		editor.fireEvent('hideLinkPanel', { editor:editor, panel:ui, action:this });
+		editor.fireEvent('hideLinkPanel', { editor:editor, panel:ui, tool:this });
 	},
 
 	urlKeypress: function(editor, ui, e) {

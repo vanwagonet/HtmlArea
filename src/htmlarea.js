@@ -59,22 +59,22 @@ HtmlArea = new Class({
 	},
 
 	buildTools: function(tools) {
-		var Actions = HtmlArea.Actions, html = '', t, tt, action,
+		var Tools = HtmlArea.Tools, html = '', t, tt, tool,
 			cmd = (navigator.platform.indexOf('Mac') === 0) ? '&#8984;' : 'ctrl ';
 		for (t = 0, tt = tools.length - 1; t <= tt; ++t) {
 			if (tools[t] === '|') { tools[t] = 'separator'; }
 			if (typeOf(tools[t]) === 'array') {
 				html += '<span class="tools">' + this.buildTools(tools[t]) + '</span>';
-			} else if (action = Actions[tools[t]]) {
-				html += '<a data-action="' + tools[t] + '" class="' + tools[t];
+			} else if (tool = Tools[tools[t]]) {
+				html += '<a data-tool="' + tools[t] + '" class="' + tools[t];
 				if (!t) { html += ' first'; }
 				if (t === tt) { html += ' last'; }
 
-				html += '" title="' + (action.title || '');
-				if (action.key) { html += ' ' + cmd + action.key.toUpperCase(); }
+				html += '" title="' + (tool.title || '');
+				if (tool.key) { html += ' ' + cmd + tool.key.toUpperCase(); }
 
-				html += '"><span>' + (action.text || tools[t]) + '</span><em></em></a>';
-				if (action.added) { action.added(this); }
+				html += '"><span>' + (tool.text || tools[t]) + '</span><em></em></a>';
+				if (tool.setup) { tool.setup(this); }
 			}
 		}
 		return html;
@@ -124,16 +124,16 @@ HtmlArea = new Class({
 
 	updateTools: function(e) {
 		var map = this.updateTools.toolMap, btn, state, cmd,
-			Actions = HtmlArea.Actions, action, name;
+			Tools = HtmlArea.Tools, tool, name;
 
 		if (!map) {
 			map = (this.updateTools.toolMap = {});
 			this.updateToolMap(map, this.options.tools);
 		}
 		for (name in map) {
-			if ((action = Actions[name]).update) {
-				action.update(this, map[name], e);
-			} else if (cmd = action.getCommand()) {
+			if ((tool = Tools[name]).update) {
+				tool.update(this, map[name], e);
+			} else if (cmd = tool.command) {
 				btn = map[name];
 				state = this.query(cmd);
 				if (state === false) { btn.removeClass('active').removeClass('indeterminate'); }
@@ -145,12 +145,12 @@ HtmlArea = new Class({
 
 	updateToolMap: function(map, tools) {
 		var t, tt = tools.length, bar = this.tools,
-			Actions = HtmlArea.Actions, action;
+			Tools = HtmlArea.Tools, tool;
 		for (t = 0; t < tt; ++t) {
 			if (typeOf(tools[t]) === 'array') {
 				this.updateToolMap(map, tools[t]);
-			} else if (action = Actions[tools[t]]) {
-				if (action.update || action.getCommand()) { // only stateful tools
+			} else if (tool = Tools[tools[t]]) {
+				if (tool.update || tool.command) { // only stateful tools
 					map[tools[t]] = bar.getElement('.' + tools[t]);
 				}
 			}
@@ -159,22 +159,22 @@ HtmlArea = new Class({
 
 	toolRun: function(e) {
 		e.preventDefault(); // prevent losing focus
-		var a = $(e.target), action;
-		if (!a.get('data-action')) { a = a.getParent('[data-action]'); }
+		var a = $(e.target), tool;
+		if (!a.get('data-tool')) { a = a.getParent('[data-tool]'); }
 		if (!a) { return; }
-		action = HtmlArea.Actions[a.get('data-action')];
-		if (action) { action.run(this, a, e); }
+		tool = HtmlArea.Tools[a.get('data-tool')];
+		if (tool) { tool.run(this, a, e); }
 	},
 
 	shortcut: function(e) {
 		if (!e || !(e.control || e.meta)) { return; }
 
-		var keys = this.shortcut.keys, Actions = HtmlArea.Actions, t;
+		var keys = this.shortcut.keys, Tools = HtmlArea.Tools, t;
 		if (!keys) {
 			keys = (this.shortcut.keys = {});
-			for (t in Actions) {
-				if (Actions[t].key && !Actions[t].magic) {
-					keys[Actions[t].key] = Actions[t];
+			for (t in Tools) {
+				if (Tools[t].key && !Tools[t].magic) {
+					keys[Tools[t].key] = Tools[t];
 				}
 			}
 		}
@@ -212,11 +212,21 @@ HtmlArea = new Class({
 	},
 
 	beforeGetHTML: function() {
-		var spans = this.content.getElements('span,[style]').include(this.content),
-			styles = HtmlArea.styles, s, ss = styles.length,
+		var spans = this.content.getElements('font,span,[style]').include(this.content),
+			styles = HtmlArea.styles, s, ss = styles.length, font,
 			style, span, t, tt = spans.length;
 		for (t = 0; t < tt; ++t) {
 			style = (span = spans[t]).get('style').trim();
+			if (span.get('tag') === 'font') {
+				font = span;
+				if (s = font.get('color')) { style += ' color: ' + s; }
+				if (s = font.get('face')) { style += ' font-face: ' + s; }
+				if (s = font.get('size')) { style += ' font-size: ' + s; }
+				font.innerHTML = '<span style="' + style + '">'
+					+ font.innerHTML + '</span>';
+				span = font.firstChild;
+				this.upwrap(font);
+			}
 			if (style) {
 				for (s = 0; s < ss; ++s) {
 					if (!styles[s][0].test(style)) { continue; }
@@ -273,39 +283,9 @@ HtmlArea = new Class({
 
 }).extend({ // static
 
-	Actions: {
-		Action: new Class({
-			initialize: function(o) {
-				for (var k in o) { this[k] = o[k]; }
-			},
-
-			getCommand: function() { return this.command },
-			getParam: function() { return this.param; },
-			getUI: function() { return this.ui; },
-
-			run: function(editor, btn, evt) {
-				evt.preventDefault();
-				var cmd = this.getCommand();
-				return cmd ? editor.exec(cmd, this.getParam(), this.getUI()) : false;
-			}
-		}),
-
-		addActions: function(o) {
-			var Action = HtmlArea.Actions.Action;
-			for (var name in o) {
-				if (name === 'Action' || name === 'addActions') { continue; }
-				if (!o.command || document.queryCommandSupported(o.command)) {
-					this[o[name].name = name] = new Action(o[name]);
-				}
-			}
-			return this;
-		}
-	},
-
 	pbr: '<p><br/></p>',
 
-	// got this started by looking at MooRTE. Thanks Sam!
-	cleanups: [
+	cleanups: [ // got this started by looking at MooRTE. Thanks Sam!
 		// html tidiness
 		[ /<[^> ]*/g, function(m) { return m.toLowerCase(); } ], // lowercase tags
 		[ /<[^>]*>/g, function(m) {	return m
@@ -320,23 +300,17 @@ HtmlArea = new Class({
 		[ /><br\/>/g, '>' ], // no <br> directly after something else
 		[ /^<br\/>|<br\/>$/g, '' ], // no leading or trailing <br>
 		[ /<br\/>\s*<\/(h1|h2|h3|h4|h5|h6|li|p|div)/g, '</$1' ], // no <br> at end of block
+		[ /<p>(?:&nbsp;|\s)*<br\/>(?:&nbsp;|\s)*<\/p>/g, '<p><br/></p>' ], // replace padded <p> with pbr
 
 		// webkit cleanup
 		[ / class="apple-style-span"| style=""/gi, '' ], // remove unhelpful attributes	
 		[ /^([^<]+)(<?)/, '<p>$1</p>$2' ], // wrap first text in <p>
 		[ /<(\/?)div\b/g, '<$1p' ], // change <div> to <p>
 
-		[ /<p>\s*<br\/>\s*<\/p>|<p>(?:&nbsp;|\s)*<\/p>/g, '<p><br/></p>' ], // replace padded <p> with pbr
-
 		// semantic changes, but prefer b, i, and s instead of strong, em, and del
 		[ /<(\/?)strong\b/g, '<$1b' ], // use <b> for bold
 		[ /<(\/?)em\b/g, '<$1i' ], // use <i> for italic
 		[ /<(\/?)(?:strike|del)\b/g, '<$1s' ], // use <s> for strikethrough
-	// Done in DOM do prevent mismatching end tags, or only matching leaf nodes
-	//	[ /<span style="font-weight: bold;">([^<]*?)<\/span>/gi, '<b>$1</b>' ], // use <b> for bold
-	//	[ /<span style="font-style: italic;">([^<]*?)<\/span>/gi, '<i>$1</i>' ], // use <i> for italic
-	//	[ /<span style="text-decoration: underline;">([^<]*?)<\/span>/gi, '<u>$1</u>' ], // use <u> for underline (http://dev.w3.org/html5/spec/Overview.html#the-u-element)
-	//	[ /<span style="text-decoration: line-through;">([^<]*?)<\/span>/gi, '<s>$1</s>' ], // use <s> for strikethrough (http://dev.w3.org/html5/spec/Overview.html#the-s-element)
 
 		// normalize whitespace, tag placement
 		[ /<p>\s*(<img[^>]+>)\s*<\/p>/g, '$1' ], // <p> with only <img>, unwrap
@@ -355,11 +329,40 @@ HtmlArea = new Class({
 		[ /text-decoration:\s*;/, '' ],
 		[ /font-style:\s*italic;?/g, '', 'i' ],
 		[ /font-weight:\s*bold;?/g, '', 'b' ]
-	]
+	],
+
+	Utils: {},
+
+	Tools: {
+		Tool: new Class({
+			initialize: function(o) { for (var k in o) { this[k] = o[k]; } },
+
+			run: function(editor, btn, e) {
+				var cmd = this.command;
+				return cmd ? editor.exec(cmd, this.param, this.ui) : false;
+			}
+		}),
+
+		addTools: function(o) {
+			for (var name in o) { this.addTool(name, o[name]); }
+			return this;
+		},
+
+		addTool: function(name, tool) {
+			var Tool = HtmlArea.Tools.Tool;
+			tool.name = name;
+			if (!instanceOf(tool, Tool) && !instanceOf(tool, Class)) {
+				tool = new Tool(tool);
+			}
+			this[name] = tool;
+			return this;
+		}
+	}
 });
 
+HtmlArea.Tools.addTools({
+	separator:{ text:'|' },
 
-HtmlArea.Actions.addActions({
 	bold:{ title:'Bold', text:'<b>B</b>', command:'bold', key:'b' },
 	italic:{ title:'Italic', text:'<i>I</i>', command:'italic', key:'i' },
 	underline:{ title:'Underline', text:'<u>U</u>', command:'underline', key:'u' },
@@ -384,9 +387,7 @@ HtmlArea.Actions.addActions({
 	undo:{ title:'Undo', text:'&#8617;', command:'undo', key:'z', magic:true },
 	redo:{ title:'Redo', text:'&#8618;', command:'redo', key:'y', magic:true },
 
-	separator:{ text:'|' },
-
-	mode:{ title:'View HTML', text:'&lt;/&gt;', key:'0',
+	mode:{ title:'View HTML', text:'&lt;/&gt;', key:'<',
 		run: function(editor, btn) {
 			if (editor.mode === 'visual') {
 				btn.addClass('active');
@@ -398,14 +399,3 @@ HtmlArea.Actions.addActions({
 		}
 	}
 });
-/* TODO:
-code
-removeformat
-font
-fontsize
-style
-forecolor
-backcolor
-charmap
-blockquote
-*/
