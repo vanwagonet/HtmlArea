@@ -142,7 +142,7 @@ HtmlArea.Tools.Image = new Class({
 
 	getFileError: function(name, size) {
 		var error, max = this.options.uploadMax || (6 * 1024 * 1024);
-		if (!/\.(jpg|jpeg|png|gif|bmp)$/.test(name)) { error = 'Invalid File Format'; }
+		if (!/\.(jpg|jpeg|png|gif|bmp)$/i.test(name)) { error = 'Invalid File Format'; }
 		else if (size && size > max) { error = 'Photo Is Too Large'; }
 		return error;
 	},
