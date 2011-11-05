@@ -225,7 +225,7 @@ HtmlArea = new Class({
 				font.innerHTML = '<span style="' + style + '">'
 					+ font.innerHTML + '</span>';
 				span = font.firstChild;
-				this.upwrap(font);
+				this.unwrap(font);
 			}
 			if (style) {
 				for (s = 0; s < ss; ++s) {
