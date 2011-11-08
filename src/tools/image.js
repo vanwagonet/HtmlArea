@@ -164,13 +164,14 @@ HtmlArea.Tools.Image = new Class({
 		ui.getElement('.error').set('text', msg);
 	},
 
-	insert: function(src) {
+	insert: function(src, href) {
 		this.editor.setRange(this.range);
 		var html = '<img src="' + encodeURI(src) + '" />';
 		if (this.options.autoLink) {
-			html = '<a href="' + encodeURI(src) + '">' + html + '</a>';
+			html = '<a href="' + encodeURI(href || src) + '">' + html + '</a>';
 		}
 		this.editor.insert(html);
+		try { this.editor.exec('enableObjectResizing', false); } catch(err) {} // disable UA resizing
 	}
 
 }).extend({ // static
@@ -187,43 +188,92 @@ HtmlArea.Tools.Image = new Class({
 		initialize: function(image) {
 			this.image = image;
 			this.editor = image.editor;
-			this.editor.content.addEvent('mouseover', this.mouseOver.bind(this));
+			this.select = this.select.bind(this);
+			this.editor.content.addEvents({ mousedown:this.select, mouseup:this.select });
+			if (this.editor.content.attachEvent) { // prevent IE's img resizers
+				this.editor.content.attachEvent('oncontrolselect', function(e) { e.returnValue = false; });
+			}
 		},
 
 		template:
+		'<img src="javascript:\'\'" />' +
 		'<div class="tools">' +
-			'<span class="tools float">' +
-				'<a class="float-left" data-tool="float-left"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></i></span></a>' +
-				'<a class="float-none" data-tool="float-none"><span><hr class="full"/><hr/ class="left"><hr class="right"/><hr class="full"/><b></b></span></a>' +
-				'<a class="float-right" data-tool="float-right"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></span></a>' +
-			'</span>' +
-			'<a class="resize" data-tool="resize"><span>&#8598;&#8600;</span></a>' +
-			'<a class="remove" data-tool="remove"><span>&times;</span></a>' +
+			'<a class="float-left" data-tool="float-left"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></i></span><em></em></a>' +
+			'<a class="float-none" data-tool="float-none"><span><hr class="full"/><hr/ class="left"><hr class="right"/><hr class="full"/><b></b></span><em></em></a>' +
+			'<a class="float-right" data-tool="float-right"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></span><em></em></a>' +
+			'<a data-tool="separator" class="separator" title=""><span>|</span><em></em></a>' +
+			'<a class="remove" data-tool="remove"><span>&times;</span><em></em></a>' +
+		'</div>' +
+		'<div class="resize">' +
+			'<a class="resize-top" data-tool="resize-top"><span></span></a>' +
+			'<a class="resize-left" data-tool="resize-left"><span></span></a>' +
+			'<a class="resize-right" data-tool="resize-right"><span></span></a>' +
+			'<a class="resize-bottom" data-tool="resize-bottom"><span></span></a>' +
+			'<a class="resize-top-left" data-tool="resize-top-left"><span></span></a>' +
+			'<a class="resize-top-right" data-tool="resize-top-right"><span></span></a>' +
+			'<a class="resize-bottom-left" data-tool="resize-bottom-left"><span></span></a>' +
+			'<a class="resize-bottom-right" data-tool="resize-bottom-right"><span></span></a>' +
 		'</div>',
 
 		getUI: function() {
 			if (this.ui) { return this.ui; }
 			this.ui = new Element('div.htmlarea-image-edit', { html:this.template })
-				.addEvents({ mousedown:this.edit.bind(this), mouseleave:this.hide.bind(this) });
+				.addEvents({ mousedown:this.edit.bind(this) });
+			this.proxy = this.ui.getElement('img');
 			this.resizeMouseMove = this.resizeMouseMove.bind(this);
 			this.resizeMouseDone = this.resizeMouseDone.bind(this);
 			editor.fireEvent('buildImageEditPanel', { editor:editor, panel:this.ui, tool:this });
 			return this.ui;
 		},
 
-		mouseOver: function(e) {
+		select: function(e) {
 			if (e.target.nodeName.toLowerCase() !== 'img') { return; }
-			this.img = $(e.target);
-			this.show();
+			e.preventDefault();
+			this.editor.select(e.target);
+			if (!this.img) {
+				this.img = $(e.target);
+				this.show();
+			}
+		},
+
+		update: function(btn) {
+			var range = this.editor.getRange(), oRange = range, img, elm, next, prev;
+			if (range && range.cloneRange) { // W3C Range
+				range = range.cloneRange(); // don't change the position of caret
+				if (range.startContainer.nodeType === 3 && range.startOffset === range.startContainer.length) { range.setStartAfter(range.startContainer); }
+				while (range.startOffset === range.startContainer.childNodes.length) { range.setStartAfter(range.startContainer); }
+				while (!range.endOffset) { range.setEndBefore(range.endContainer); }
+
+				next = range.startContainer, prev = range.endContainer;
+				if (next.nodeType !== 3) { next = next.childNodes[range.startOffset]; }
+				if (prev.nodeType !== 3) { prev = prev.childNodes[range.endOffset-1]; }
+
+				if (oRange.collapsed) {
+					if (prev.nodeName.toLowerCase() === 'img') { img = prev; }
+					if (next.nodeName.toLowerCase() === 'img') { img = next; }
+				} else if (prev == next && next.nodeName.toLowerCase() === 'img') { img = next; }
+			} else if (range && range.duplicate) {
+				if (/^\s*<img\b[^>]*>\s*$/i.test(range.htmlText)) {
+					img = range.parentElement();
+				}
+			}
+			if (img) {
+				this.img = $(img);
+				this.show();
+			} else {
+				this.img = null;
+				this.hide();
+			}
 		},
 
 		show: function() {
 			var img = this.img, ui = this.getUI(), editor = this.editor,
 				floatd = img.getStyles('float')['float'] || 'none',
 				pos = img.getPosition(editor.element), size = img.getSize();
-			ui.getElements('.float a').removeClass('active');
+			ui.getElements('a').removeClass('active');
 			ui.getElement('.float-' + floatd).addClass('active');
 			ui.setStyles({ width:size.x, height:size.y, left:pos.x, top:pos.y });
+			this.proxy.set('src', img.get('src'));
 			editor.fireEvent('showImageEditPanel', {
 				editor:editor, panel:ui.inject(editor.element), image:img, tool:this
 			});
@@ -231,7 +281,7 @@ HtmlArea.Tools.Image = new Class({
 
 		hide: function() {
 			this.editor.fireEvent('hideImageEditPanel', {
-				editor:this.editor, panel:this.ui.dispose(), image:this.img, tool:this
+				editor:this.editor, panel:this.getUI().dispose(), image:this.img, tool:this
 			});
 		},
 
@@ -240,7 +290,11 @@ HtmlArea.Tools.Image = new Class({
 			var a = $(e.target), tool;
 			if (!a.get('data-tool')) { a = a.getParent('[data-tool]'); }
 			if (!a || !(tool = a.get('data-tool'))) { return; }
-			this[('run-' + tool).camelCase()](this.img, e);
+			if (tool.indexOf('resize-') === 0) {
+				this.runResize(this.img, e, tool.substr(6).camelCase());
+			} else {
+				this[('run-' + tool).camelCase()](this.img, e);
+			}
 		},
 
 		runRemove: function(img) {
@@ -264,11 +318,14 @@ HtmlArea.Tools.Image = new Class({
 			this.show();
 		},
 
-		runResize: function(img, e) {
-			var size = img.getSize();
-			this.mouseOffset = { x:e.page.x - size.x, y:e.page.y - size.y };
+		runResize: function(img, e, from) {
+			var size = img.getSize(), pos = img.getPosition(this.editor.element);
+			this.mouseOffset = { from:from, size:size, pos:pos,
+				x: from.contains('Left') ? (e.page.x + size.x) : (e.page.x - size.x),
+				y: from.contains('Top')  ? (e.page.y + size.y) : (e.page.y - size.y)
+			};
 			this.aspect = size.x / size.y;
-			this.editor.element.addEvents({
+			$(document.body).addEvents({
 				mousemove: this.resizeMouseMove,
 				mouseup: this.resizeMouseDone,
 				mouseleave: this.resizeMouseDone
@@ -276,22 +333,77 @@ HtmlArea.Tools.Image = new Class({
 		},
 
 		resizeMouseMove: function(e) {
-			var width = e.page.x - this.mouseOffset.x,
-				height = e.page.y - this.mouseOffset.y;
+			var off = this.mouseOffset,
+				styles = this['resizeMove'+off.from](e, off, off.size, off.pos);
+			this.ui.setStyles(styles);
+		},
+
+		resizeMouseDone: function(e) {
+			$(document.body)
+				.removeEvent('mousemove', this.resizeMouseMove)
+				.removeEvent('mouseup', this.resizeMouseDone)
+				.removeEvent('mouseleave', this.resizeMouseDone);
+			var elm = this.editor.element, size = this.ui.getStyles('width', 'height'),
+				pos = this.img.setStyles(size).getPosition(elm);
+			this.ui.setStyles({ left:pos.x, top:pos.y });
+		},
+
+		resizeMoveTop: function(e, off, oSize, oPos) {
+			var size = this.keepAspect(1, (off.y - e.page.y));
+			size.top = oPos.y + (oSize.y - size.height);
+			size.left = oPos.x + ((oSize.x - size.width) / 2);
+			return size;
+		},
+
+		resizeMoveLeft: function(e, off, oSize, oPos) {
+			var size = this.keepAspect((off.x - e.page.x), 1);
+			size.top = oPos.y + ((oSize.y - size.height) / 2);
+			size.left = oPos.x + (oSize.x - size.width);
+			return size;
+		},
+
+		resizeMoveRight: function(e, off, oSize, oPos) {
+			var size = this.keepAspect((e.page.x - off.x), 1);
+			size.top = oPos.y + ((oSize.y - size.height) / 2);
+			return size;
+		},
+
+		resizeMoveBottom: function(e, off, oSize, oPos) {
+			var size = this.keepAspect(1, (e.page.y - off.y));
+			size.left = oPos.x + ((oSize.x - size.width) / 2);
+			return size;
+		},
+
+		resizeMoveTopLeft: function(e, off, oSize, oPos) {
+			var size = this.keepAspect((off.x - e.page.x), (off.y - e.page.y));
+			size.left = oPos.x + (oSize.x - size.width);
+			size.top = oPos.y + (oSize.y - size.height);
+			return size;
+		},
+
+		resizeMoveTopRight: function(e, off, oSize, oPos) {
+			var size = this.keepAspect((e.page.x - off.x), (off.y - e.page.y));
+			size.top = oPos.y + (oSize.y - size.height);
+			return size;
+		},
+
+		resizeMoveBottomLeft: function(e, off, oSize, oPos) {
+			var size = this.keepAspect((off.x - e.page.x), (e.page.y - off.y));
+			size.left = oPos.x + (oSize.x - size.width);
+			return size;
+		},
+
+		resizeMoveBottomRight: function(e, off, oSize, oPos) {
+			return this.keepAspect((e.page.x - off.x), (e.page.y - off.y));
+		},
+
+		keepAspect: function(width, height) {
 			if ((width / height) < this.aspect) {
 				width = this.aspect * height;
 			} else {
 				height = width / this.aspect;
 			}
-			this.img.setStyles({ width:width, hieght:height });
-			this.ui.setStyles({ width:width, height:height });
-		},
-
-		resizeMouseDone: function(e) {
-			var elm = this.editor.element;
-			elm.removeEvent('mousemove', this.resizeMouseMove);
-			elm.removeEvent('mouseup', this.resizeMouseDone);
-			elm.removeEvent('mouseleave', this.resizeMouseDone);
+			return { width:width, height:height };
 		}
 	}),
 
@@ -409,6 +521,8 @@ HtmlArea.Tools.Image = new Class({
 	setup: function(editor) {
 		if (!editor.imageAction) { editor.imageAction = new this(editor); }
 	},
+
+	update: function(editor, btn) { editor.imageAction.editTool.update(btn); },
 
 	run: function(editor) { editor.imageAction.show(); }
 });

@@ -266,7 +266,7 @@ HtmlArea = new Class({
 		var sel = window.getSelection ? window.getSelection() : document.selection,
 			range = (sel.rangeCount && sel.getRangeAt && sel.getRangeAt(0)) || (sel.createRange && sel.createRange());
 		if (type === 'text') { return range && (range.text || range.toString()) || ''; }
-		if (type === 'node') { return range && (range.commonAncestorContainer || range.parentElement()) || null; }
+		if (type === 'node') { return range && (range.commonAncestorContainer || (range.parentElement && range.parentElement())) || null; }
 		return range;
 	},
 
@@ -279,6 +279,20 @@ HtmlArea = new Class({
 			range.select();
 		}
 		this.content.focus();
+		this.updateTools();
+	},
+
+	select: function(node) {
+		var range;
+		if (node && document.createRange) {
+			range = document.createRange();
+			range.setStartBefore(node);
+			range.setEndAfter(node);
+		} else if (node && document.body.createTextRange) {
+			range = document.body.createTextRange();
+			range.moveToElementText(node);
+		}
+		this.setRange(range);
 	}
 
 }).extend({ // static

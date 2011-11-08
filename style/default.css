@@ -96,16 +96,25 @@
 .htmlarea-image label.upload span, .htmlarea-image label.url span { display:none; }
 .htmlarea-image .error { color:red; font-size:.9em; }
 
-.htmlarea-image-edit { display:block; position:absolute; right:-1px; top:26px; padding:10px 10px 0 0; margin:-10px -10px 0 0; min-height:20px; min-width:20px; }
-.htmlarea-image-edit .tools { border:none; background:none; }
+.htmlarea-image-edit { display:block; position:absolute; right:-1px; top:26px; margin:-1px; min-height:20px; min-width:20px; border:1px solid #888; }
+.htmlarea-image-edit img { width:100%; height:100%; opacity:.5; }
+.htmlarea-image-edit .tools { border:1px solid #ccc; position:absolute; top:-32px; left:-4px; min-width:100%; padding-right:26px; }
 .htmlarea-image-edit .tools a {  }
-.htmlarea-image-edit .float { position:absolute; display:block; top:50%; left:50%; margin:-8px 0 0 -44px; }
-.htmlarea-image-edit .tools .remove { position:absolute; top:0; right:0; background:none; border:0 none; margin:0; font-size:20px; line-height:12px; color:#c00; font-weight:bold; }
-.htmlarea-image-edit .tools .resize { position:absolute; bottom:-5px; right:5px; width:21px; height:21px; cursor:move; cursor:nwse-resize; background:none; border:0 none; margin:0; letter-spacing:-9px; font-weight:bold; font-size:10px; text-align:right; }
-.htmlarea-image-edit .tools .resize span { height:5px; margin:10px; }
-.htmlarea .tools .float-none { background-position:0 -40px; }
-.htmlarea .tools .float-left span { display:inline-block; }
-.htmlarea .tools .float-right span { display:inline-block; }
+.htmlarea-image-edit .tools .remove { position:absolute; top:2px; right:2px; margin:0; font-size:20px; line-height:8px; color:#c00; font-weight:bold; }
+.htmlarea-image-edit .tools .float-none span { display:none; }
+.htmlarea-image-edit .tools .float-left span { display:none; }
+.htmlarea-image-edit .tools .float-right span { display:none; }
+.htmlarea-image-edit .resize a {  position:absolute; width:0; height:0; padding:5px; background:none; border:0 none; margin:-1px; cursor:move; }
+.htmlarea-image-edit .resize span { position:absolute; left:50%; top:50%; height:5px; width:5px; margin:-4px; border:1px solid #888; background:#fff; }
+.htmlarea-image-edit .resize a:hover span { border-color:#fff; background:#888; }
+.htmlarea-image-edit .resize a.resize-top { top:-5px; left:-5px; width:100%; cursor:n-resize; cursor:ns-resize; }
+.htmlarea-image-edit .resize a.resize-left { top:-5px; left:-5px; height:100%; cursor:w-resize; cursor:ew-resize; }
+.htmlarea-image-edit .resize a.resize-right { top:-5px; right:-5px; height:100%; cursor:e-resize; cursor:ew-resize; }
+.htmlarea-image-edit .resize a.resize-bottom { bottom:-5px; left:-5px; width:100%; cursor:s-resize; cursor:ns-resize; }
+.htmlarea-image-edit .resize a.resize-top-left { top:-5px; left:-5px; cursor:nw-resize; cursor:nwse-resize; }
+.htmlarea-image-edit .resize a.resize-top-right { top:-5px; right:-5px; cursor:ne-resize; cursor:nesw-resize; }
+.htmlarea-image-edit .resize a.resize-bottom-left { bottom:-5px; left:-5px; cursor:sw-resize; cursor:nesw-resize; }
+.htmlarea-image-edit .resize a.resize-bottom-right { bottom:-5px; right:-5px; cursor:se-resize; cursor:nwse-resize; }
 
 .htmlarea-image-drop { position:absolute; left:0; top:0; width:100%; height:100%; background:#888; opacity:.5; }
 .htmlarea-image-drop span { display:block; position:absolute; left:0; top:50%; margin-top:-50px; width:100%; font-size:64px; line-height:100px; color:#fff; text-align:center; }
