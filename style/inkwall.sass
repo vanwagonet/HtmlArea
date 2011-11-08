@@ -24,13 +24,23 @@
 	.content
 		a
 			text-decoration: none
+		b, strong
+			font-weight: bold
+		i, em
+			font-style: italic
+		u
+			text-decoration: underline
+		s, del, strike
+			text-decoration: line-through
+		u s, u del, u strike, s u, del u, strike u
+			text-decoration: underline, line-through
 		img
 			max-width: 100%
 			margin: 5px
 		& > :last-child:after
-			content: " "
-			display: block
+			content: "\200B"
 			clear: both
+			visibility: hidden
 
 	input[type=text]
 		+border-radius(3px)
@@ -92,6 +102,7 @@
 			width: 1px
 			border: none
 			background: none
+			filter: none
 			& > span, & > em
 				display: none
 
@@ -340,25 +351,30 @@
 		position: absolute
 		right: -1px
 		top: 26px
-		padding: 10px 10px 0 0
-		margin: -10px -10px 0 0
+		margin: -1px
+		border: 1px solid #{$mainColor}
 		min-height: 20px
 		min-width: 20px
+		img
+			width: 100%
+			height: 100%
+			+opacity(.5)
 		.tools
-			border: none
-			background: none
+			border: 1px solid #ccc
+			position: absolute
+			top: -36px
+			left: 0
+			min-width: 100%
+			+box-shadow(0 0 3px rgba(0,0,0,.5))
 
 			a
 				width: 16px
 				height: 16px
 				line-height: 16px
 				font-size: 16px
-			.float
-				position: absolute
-				display: block
-				top: 50%
-				left: 50%
-				margin: -8px 0 0 -47px
+				margin: 2px 0 2px 2px
+			.separator
+				margin-right: 4px
 			.float-left, .float-right, .float-none
 				span
 					margin-top: 2px
@@ -377,8 +393,8 @@
 					+box-shadow(0 1px 0 #{$mainShadowColor})
 				b
 					position: absolute
-					left: 5px
-					top: 8px
+					left: 4px
+					top: 7px
 					width: 5px
 					height: 5px
 					border: 1px solid #{$mainColor}
@@ -390,7 +406,7 @@
 				hr
 					margin: 0 9px 1px 1px
 				b
-					left: 12px
+					left: 11px
 			.float-none
 				hr.left
 					width: 2px
@@ -399,36 +415,86 @@
 					width: 2px
 					margin: -2px 1px 1px 13px
 				b
-					left: 8px
+					left: 7px
 			.remove
 				position: absolute
 				top: 0
-				right: 0
-				background: none
-				border: 0 none
-				margin: 0
+				right: 2px
 				font-size: 20px
-				line-height: 12px
+				line-height: 16px
 				color: #c00
 				font-weight: bold
-			.resize
+				span
+					line-height: 13px
+					vertical-align: top
+		.resize
+			a
 				position: absolute
-				bottom: -10px
-				right: 0
-				width: 21px
-				height: 21px
-				cursor: move
-				cursor: nwse-resize
+				width: 0
+				height: 0
+				padding: 6px
 				background: none
 				border: 0 none
-				margin: 0
-				letter-spacing: -9px
-				font-weight: bold
-				font-size: 10px
-				text-align: right
+				margin: -1px
+				cursor: move
 				span
-					height: 5px
-					margin: 10px
+					position: absolute
+					left: 50%
+					top: 50%
+					height: 7px
+					width: 7px
+					margin: -5px
+					border: 1px solid #{$mainColor}
+					background: #fff
+					+border-radius(4px)
+				&:hover span
+					border-color: #fff
+					background: #{$mainColor}
+
+				&.resize-top
+					top: -6px
+					left: -6px
+					width: 100%
+					cursor: n-resize
+					cursor: ns-resize
+				&.resize-left
+					top: -6px
+					left: -6px
+					height: 100%
+					cursor: w-resize
+					cursor: ew-resize
+				&.resize-right
+					top: -6px
+					right: -6px
+					height: 100%
+					cursor: e-resize
+					cursor: ew-resize
+				&.resize-bottom
+					bottom: -6px
+					left: -6px
+					width: 100%
+					cursor: s-resize
+					cursor: ns-resize
+				&.resize-top-left
+					top: -6px
+					left: -6px
+					cursor: nw-resize
+					cursor: nwse-resize
+				&.resize-top-right
+					top: -6px
+					right: -6px
+					cursor: ne-resize
+					cursor: nesw-resize
+				&.resize-bottom-left
+					bottom: -6px
+					left: -6px
+					cursor: sw-resize
+					cursor: nesw-resize
+				&.resize-bottom-right
+					bottom: -6px
+					right: -6px
+					cursor: se-resize
+					cursor: nwse-resize
 
 
 	.htmlarea-image-drop

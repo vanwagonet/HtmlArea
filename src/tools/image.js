@@ -201,7 +201,7 @@ HtmlArea.Tools.Image = new Class({
 			'<a class="float-left" data-tool="float-left"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></i></span><em></em></a>' +
 			'<a class="float-none" data-tool="float-none"><span><hr class="full"/><hr/ class="left"><hr class="right"/><hr class="full"/><b></b></span><em></em></a>' +
 			'<a class="float-right" data-tool="float-right"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></span><em></em></a>' +
-			'<a data-tool="separator" class="separator" title=""><span>|</span><em></em></a>' +
+			'<a class="separator"><span>|</span><em></em></a>' +
 			'<a class="remove" data-tool="remove"><span>&times;</span><em></em></a>' +
 		'</div>' +
 		'<div class="resize">' +
@@ -222,7 +222,7 @@ HtmlArea.Tools.Image = new Class({
 			this.proxy = this.ui.getElement('img');
 			this.resizeMouseMove = this.resizeMouseMove.bind(this);
 			this.resizeMouseDone = this.resizeMouseDone.bind(this);
-			editor.fireEvent('buildImageEditPanel', { editor:editor, panel:this.ui, tool:this });
+			this.editor.fireEvent('buildImageEditPanel', { editor:this.editor, panel:this.ui, tool:this });
 			return this.ui;
 		},
 
