@@ -196,15 +196,15 @@ HtmlArea.Tools.Image = new Class({
 		},
 
 		template:
-		'<img src="javascript:\'\'" />' +
+		'<img src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />' +
 		'<div class="tools">' +
-			'<a class="float-left" data-tool="float-left"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></i></span><em></em></a>' +
-			'<a class="float-none" data-tool="float-none"><span><hr class="full"/><hr/ class="left"><hr class="right"/><hr class="full"/><b></b></span><em></em></a>' +
-			'<a class="float-right" data-tool="float-right"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></span><em></em></a>' +
+			'<a class="float-left" data-tool="float-left" title="{float_left}"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></i></span><em></em></a>' +
+			'<a class="float-none" data-tool="float-none" title="{float_none}"><span><hr class="full"/><hr/ class="left"><hr class="right"/><hr class="full"/><b></b></span><em></em></a>' +
+			'<a class="float-right" data-tool="float-right" title="{float_right}"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></span><em></em></a>' +
 			'<a class="separator"><span>|</span><em></em></a>' +
-			'<a class="remove" data-tool="remove"><span>&times;</span><em></em></a>' +
+			'<a class="remove" data-tool="remove" title="{remove}"><span>&times;</span><em></em></a>' +
 		'</div>' +
-		'<div class="resize">' +
+		'<div class="resize" title="{resize}">' +
 			'<a class="resize-top" data-tool="resize-top"><span></span></a>' +
 			'<a class="resize-left" data-tool="resize-left"><span></span></a>' +
 			'<a class="resize-right" data-tool="resize-right"><span></span></a>' +
@@ -215,10 +215,19 @@ HtmlArea.Tools.Image = new Class({
 			'<a class="resize-bottom-right" data-tool="resize-bottom-right"><span></span></a>' +
 		'</div>',
 
+		strings: {
+			float_left: 'Float Left',
+			float_none: 'Inline',
+			float_right: 'Float Right',
+			remove: 'Remove Picture',
+			resize: 'Resize'
+		},
+
 		getUI: function() {
 			if (this.ui) { return this.ui; }
-			this.ui = new Element('div.htmlarea-image-edit', { html:this.template })
-				.addEvents({ mousedown:this.edit.bind(this) });
+			this.ui = new Element('div.htmlarea-image-edit', {
+				html:this.template.substitute(this.strings)
+			}).addEvents({ mousedown:this.edit.bind(this) });
 			this.proxy = this.ui.getElement('img');
 			this.resizeMouseMove = this.resizeMouseMove.bind(this);
 			this.resizeMouseDone = this.resizeMouseDone.bind(this);
@@ -309,7 +318,7 @@ HtmlArea.Tools.Image = new Class({
 		},
 
 		runFloatNone: function(img) {
-			img.setStyle('float', 'none');
+			img.setStyle('float', '');
 			this.show();
 		},
 
