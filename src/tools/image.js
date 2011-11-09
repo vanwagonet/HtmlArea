@@ -32,6 +32,8 @@ HtmlArea.Tools.Image = new Class({
 		});
 	},
 
+	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
+
 	template:
 	'<form action="{action}" method="post" enctype="multipart/form-data" encoding="multipart/form-data" accept-charset="utf-8">' +
 		'<h6>' +
@@ -195,38 +197,36 @@ HtmlArea.Tools.Image = new Class({
 			}
 		},
 
-		template:
-		'<img src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />' +
-		'<div class="tools">' +
-			'<a class="float-left" data-tool="float-left" title="{float_left}"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></i></span><em></em></a>' +
-			'<a class="float-none" data-tool="float-none" title="{float_none}"><span><hr class="full"/><hr/ class="left"><hr class="right"/><hr class="full"/><b></b></span><em></em></a>' +
-			'<a class="float-right" data-tool="float-right" title="{float_right}"><span><hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b></span><em></em></a>' +
-			'<a class="separator"><span>|</span><em></em></a>' +
-			'<a class="remove" data-tool="remove" title="{remove}"><span>&times;</span><em></em></a>' +
-		'</div>' +
-		'<div class="resize" title="{resize}">' +
-			'<a class="resize-top" data-tool="resize-top"><span></span></a>' +
-			'<a class="resize-left" data-tool="resize-left"><span></span></a>' +
-			'<a class="resize-right" data-tool="resize-right"><span></span></a>' +
-			'<a class="resize-bottom" data-tool="resize-bottom"><span></span></a>' +
-			'<a class="resize-top-left" data-tool="resize-top-left"><span></span></a>' +
-			'<a class="resize-top-right" data-tool="resize-top-right"><span></span></a>' +
-			'<a class="resize-bottom-left" data-tool="resize-bottom-left"><span></span></a>' +
-			'<a class="resize-bottom-right" data-tool="resize-bottom-right"><span></span></a>' +
-		'</div>',
+		template: '<img src="{emptyGif}" /><div class="tools">{tools}</div><div class="resize">{resizeTools}</div>',
 
-		strings: {
-			float_left: 'Float Left',
-			float_none: 'Inline',
-			float_right: 'Float Right',
-			remove: 'Remove Picture',
-			resize: 'Resize'
-		},
+		tools: [
+			{ tool:'float-left', title:'Float Left', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b>' },
+			{ tool:'float-none', title:'Inline', text:'<hr class="full"/><hr/ class="left"><hr class="right"/><hr class="full"/><b></b>' },
+			{ tool:'float-right', title:'Float Right', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b>' },
+			'|',
+			{ tool:'remove', title:'Remove Picture', text:'&times;' }
+		],
+
+		resizeTools: [
+			{ tool:'resize-top', title:'Resize', text:'&nbsp;' },
+			{ tool:'resize-left', title:'Resize', text:'&nbsp;' },
+			{ tool:'resize-right', title:'Resize', text:'&nbsp;' },
+			{ tool:'resize-bottom', title:'Resize', text:'&nbsp;' },
+			{ tool:'resize-top-left', title:'Resize', text:'&nbsp;' },
+			{ tool:'resize-top-right', title:'Resize', text:'&nbsp;' },
+			{ tool:'resize-bottom-left', title:'Resize', text:'&nbsp;' },
+			{ tool:'resize-bottom-right', title:'Resize', text:'&nbsp;' }
+		],
 
 		getUI: function() {
 			if (this.ui) { return this.ui; }
+			var data = {
+				emptyGif: this.image.emptyGif,
+				tools: this.editor.buildTools(this.tools),
+				resizeTools: this.editor.buildTools(this.resizeTools)
+			}
 			this.ui = new Element('div.htmlarea-image-edit', {
-				html:this.template.substitute(this.strings)
+				html:this.template.substitute(data)
 			}).addEvents({ mousedown:this.edit.bind(this) });
 			this.proxy = this.ui.getElement('img');
 			this.resizeMouseMove = this.resizeMouseMove.bind(this);

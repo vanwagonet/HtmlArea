@@ -65,15 +65,15 @@ HtmlArea = new Class({
 			if (tools[t] === '|') { tools[t] = 'separator'; }
 			if (typeOf(tools[t]) === 'array') {
 				html += '<span class="tools">' + this.buildTools(tools[t]) + '</span>';
-			} else if (tool = Tools[tools[t]]) {
-				html += '<a data-tool="' + tools[t] + '" class="' + tools[t];
+			} else if (tool = (typeOf(tools[t]) === 'object') ? tools[t] : Tools[tools[t]]) {
+				html += '<a data-tool="' + tool.tool + '" class="' + tool.tool;
 				if (!t) { html += ' first'; }
 				if (t === tt) { html += ' last'; }
 
 				html += '" title="' + (tool.title || '');
 				if (tool.key) { html += ' ' + cmd + tool.key.toUpperCase(); }
 
-				html += '"><span>' + (tool.text || tools[t]) + '</span><em></em></a>';
+				html += '"><span>' + (tool.text || tool.tool) + '</span><em></em></a>';
 				if (tool.setup) { tool.setup(this); }
 			}
 		}
@@ -179,7 +179,7 @@ HtmlArea = new Class({
 			}
 		}
 		if (t = keys[e.key]) {
-			var a = this.tools.getElement('.' + t.name);
+			var a = this.tools.getElement('.' + t.tool);
 			t.run(this, a, e);
 		}
 	},
@@ -364,7 +364,7 @@ HtmlArea = new Class({
 
 		addTool: function(name, tool) {
 			var Tool = HtmlArea.Tools.Tool;
-			tool.name = name;
+			tool.tool = name;
 			if (!instanceOf(tool, Tool) && !instanceOf(tool, Class)) {
 				tool = new Tool(tool);
 			}
