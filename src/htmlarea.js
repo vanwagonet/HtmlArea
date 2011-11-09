@@ -110,16 +110,16 @@ HtmlArea = new Class({
 		this.element.addClass('html-mode');
 		this.updateTextarea();
 		this.content.setStyle('display', 'none');
-		this.textarea.setStyles(style);
-		this.mode = 'html';
+		this.textarea.setStyles(style).focus();
+		this.fireEvent('modechange', { editor:this, mode:(this.mode='html') });
 	},
 
 	setVisualMode: function() {
 		this.element.removeClass('html-mode');
 		this.updateContent();
 		this.textarea.setStyle('display', 'none');
-		this.content.setStyle('display', '');
-		this.mode = 'visual';
+		this.content.setStyle('display', '').focus();
+		this.fireEvent('modechange', { editor:this, mode:(this.mode='visual') });
 	},
 
 	updateTools: function(e) {

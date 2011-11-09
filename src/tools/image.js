@@ -30,6 +30,7 @@ HtmlArea.Tools.Image = new Class({
 			onUploadSuccess: this.uploadSuccess.bind(this),
 			onUploadFailure: this.uploadFailure.bind(this)
 		});
+		editor.addEvent('modechange', this.hide.bind(this));
 	},
 
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
@@ -528,12 +529,12 @@ HtmlArea.Tools.Image = new Class({
 	title:'Add Picture', text:'<b>&#9679;</b><span>&#9728;</span>',
 
 	setup: function(editor) {
-		if (!editor.imageAction) { editor.imageAction = new this(editor); }
+		if (!editor.imageTool) { editor.imageTool = new this(editor); }
 	},
 
-	update: function(editor, btn) { editor.imageAction.editTool.update(btn); },
+	update: function(editor, btn) { editor.imageTool.editTool.update(btn); },
 
-	run: function(editor) { editor.imageAction.show(); }
+	run: function(editor) { editor.imageTool.show(); }
 });
 
 HtmlArea.Tools.addTool('image', HtmlArea.Tools.Image);

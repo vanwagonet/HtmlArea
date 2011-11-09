@@ -74,10 +74,9 @@
 
 
 .htmlarea .tools .link span { font-size:9px; text-decoration:underline; vertical-align:top; margin-top:-1px; color:#00c; }
-.htmlarea-link { display:block; position:absolute; right:-1px; top:26px; background:#dfdfdf; border:1px solid #ccc; }
-.htmlarea-link input { width:200px; }
-.htmlarea-link a { display:inline-block; vertical-align:top; width:16px; line-height:16px; height:16px; padding:2px; margin:4px 2px 2px 0; cursor:pointer; }
-.htmlarea-link a > span { display:none; }
+.htmlarea-link { display:block; position:absolute; left:-1px; top:26px; margin-top:2px; }
+.htmlarea-link input[type=text] { width:200px; vertical-align:top; margin:0; height:14px; padding-right:20px; }
+.htmlarea-link a { color:#c00; cursor:pointer; font-size:16px; line-height:22px; width:20px; text-align:center; position:absolute; top:0; right:0; }
 
 
 .htmlarea .tools .image > span { margin:1px; width:14px; height:14px; position:relative; background:#33f; overflow:hidden;
