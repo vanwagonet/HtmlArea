@@ -26,7 +26,7 @@ HtmlArea.Tools.Image = new Class({
 		});
 		this.editTool = new HtmlArea.Tools.Image.Edit(this);
 		this.dropTool = new HtmlArea.Tools.Image.Drop(this);
-		this.uploader = new HtmlArea.Utils.Uploader({
+		this.uploader = new HtmlArea.Utils.Upload({
 			onUploadSuccess: this.uploadSuccess.bind(this),
 			onUploadFailure: this.uploadFailure.bind(this)
 		});
@@ -65,6 +65,7 @@ HtmlArea.Tools.Image = new Class({
 				name: this.options.uploadName
 			})
 		})), editor = this.editor;
+	//	if (this.uploader.canUploadXhr()) { ui.getElement('input[type=file]').set('multiple', true); }
 		ui.getElement('form').addEvent('submit', this.submit.bind(this));
 		ui.getElement('input[type=button]').addEvent('click', this.cancel.bind(this));
 		ui.getElements('input[name=type]').addEvent('change', this.typeChange.bind(this));
@@ -438,7 +439,7 @@ HtmlArea.Tools.Image = new Class({
 				errorTimeout: o.imageDropErrorTimeout || 3000 // ms until error message disappears
 			});
 
-			this.uploader = new HtmlArea.Utils.Uploader({
+			this.uploader = new HtmlArea.Utils.Upload({
 				onUploadSuccess: this.uploadSuccess.bind(this),
 				onUploadFailure: this.uploadFailure.bind(this)
 			});

@@ -1,7 +1,7 @@
 /**
  * Upload data from a <form> or FormData
  **/
-HtmlArea.Utils.Uploader = new Class({
+HtmlArea.Utils.Upload = new Class({
 
 	Implements: [ Events, Options ],
 
