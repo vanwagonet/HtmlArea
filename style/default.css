@@ -3,6 +3,7 @@
 .htmlarea textarea, .htmlarea .content { margin:0; padding:5px; border:none; min-height:169px; outline:none; background:#f7f7f7; resize: none;
 	-moz-box-shadow:inset 0 0 3px rgba(0,0,0,.2); -webkit-box-shadow:inset 0 0 3px rgba(0,0,0,.2); box-shadow:inset 0 0 3px rgba(0,0,0,.2); }
 .htmlarea .content:focus, .htmlarea textarea:focus { background:#fff; }
+.htmlarea textarea { position:relative; z-index:1; }
 
 .htmlarea input[type=text] { margin:4px; outline:none; background:#f7f7f7; border:1px solid #ccc; padding:3px 2px;
 	-moz-box-shadow:inset 0 0 3px rgba(0,0,0,.2); -webkit-box-shadow:inset 0 0 3px rgba(0,0,0,.2); box-shadow:inset 0 0 3px rgba(0,0,0,.2); }
@@ -11,7 +12,9 @@
 .htmlarea .content p { margin:0; padding:0; }
 .htmlarea .content a { text-decoration:none; }
 .htmlarea .content img { max-width:100%; }
-.htmlarea .content > :last-child:after {
+.htmlarea .content img { position:relative; }
+.htmlarea .content img:after { content:"Garbage"; position:absolute; width:100%; height:100%; display:block; background:blue; z-index:99; }
+.htmlarea .content:after {
 	content:" "; display:block; clear:both;
 }
 
@@ -95,34 +98,38 @@
 .htmlarea-image label.upload span, .htmlarea-image label.url span { display:none; }
 .htmlarea-image .error { color:red; font-size:.9em; }
 
-.htmlarea-image-edit { display:block; position:absolute; right:-1px; top:26px; margin:-1px; min-height:20px; min-width:20px; border:1px solid #888; }
-.htmlarea-image-edit img { width:100%; height:100%; opacity:.5; }
-.htmlarea-image-edit .resize a {  position:absolute; width:0; height:0; padding:5px; background:none; border:0 none; margin:-1px; cursor:move; }
-.htmlarea-image-edit .resize span { position:absolute; left:50%; top:50%; height:5px; width:5px; margin:-4px; border:1px solid #888; background:#fff; }
-.htmlarea-image-edit .resize a:hover span { border-color:#fff; background:#888; }
-.htmlarea-image-edit .resize a.resize-top { top:-5px; left:-5px; width:100%; cursor:n-resize; cursor:ns-resize; }
-.htmlarea-image-edit .resize a.resize-left { top:-5px; left:-5px; height:100%; cursor:w-resize; cursor:ew-resize; }
-.htmlarea-image-edit .resize a.resize-right { top:-5px; right:-5px; height:100%; cursor:e-resize; cursor:ew-resize; }
-.htmlarea-image-edit .resize a.resize-bottom { bottom:-5px; left:-5px; width:100%; cursor:s-resize; cursor:ns-resize; }
-.htmlarea-image-edit .resize a.resize-top-left { top:-5px; left:-5px; cursor:nw-resize; cursor:nwse-resize; }
-.htmlarea-image-edit .resize a.resize-top-right { top:-5px; right:-5px; cursor:ne-resize; cursor:nesw-resize; }
-.htmlarea-image-edit .resize a.resize-bottom-left { bottom:-5px; left:-5px; cursor:sw-resize; cursor:nesw-resize; }
-.htmlarea-image-edit .resize a.resize-bottom-right { bottom:-5px; right:-5px; cursor:se-resize; cursor:nwse-resize; }
+.htmlarea-edit-media { display:block; position:absolute; right:-1px; top:26px; margin:-1px; min-height:20px; min-width:20px; border:1px solid #888; }
+.htmlarea-edit-media img { width:100%; height:100%; opacity:.5; }
+.htmlarea-edit-media .resize a {  position:absolute; width:0; height:0; padding:5px; background:none; border:0 none; margin:-1px; cursor:move; }
+.htmlarea-edit-media .resize span { position:absolute; left:50%; top:50%; height:5px; width:5px; margin:-4px; border:1px solid #888; background:#fff; }
+.htmlarea-edit-media .resize a:hover span { border-color:#fff; background:#888; }
+.htmlarea-edit-media .resize a.resize-top { top:-5px; left:-5px; width:100%; cursor:n-resize; cursor:ns-resize; }
+.htmlarea-edit-media .resize a.resize-left { top:-5px; left:-5px; height:100%; cursor:w-resize; cursor:ew-resize; }
+.htmlarea-edit-media .resize a.resize-right { top:-5px; right:-5px; height:100%; cursor:e-resize; cursor:ew-resize; }
+.htmlarea-edit-media .resize a.resize-bottom { bottom:-5px; left:-5px; width:100%; cursor:s-resize; cursor:ns-resize; }
+.htmlarea-edit-media .resize a.resize-top-left { top:-5px; left:-5px; cursor:nw-resize; cursor:nwse-resize; }
+.htmlarea-edit-media .resize a.resize-top-right { top:-5px; right:-5px; cursor:ne-resize; cursor:nesw-resize; }
+.htmlarea-edit-media .resize a.resize-bottom-left { bottom:-5px; left:-5px; cursor:sw-resize; cursor:nesw-resize; }
+.htmlarea-edit-media .resize a.resize-bottom-right { bottom:-5px; right:-5px; cursor:se-resize; cursor:nwse-resize; }
 
-.htmlarea-image-edit .tools { border:1px solid #ccc; position:absolute; top:-32px; left:0; min-width:100%; }
-.htmlarea-image-edit .tools .separator { width:16px; margin-right:4px; }
-.htmlarea-image-edit .tools .remove { position:absolute; top:2px; right:2px; margin:0; font-size:20px; line-height:8px; color:#c00; font-weight:bold; }
+.htmlarea-edit-media .tools { border:1px solid #ccc; position:absolute; top:-32px; left:0; min-width:100%; }
+.htmlarea-edit-media .tools .separator { width:16px; margin-right:4px; }
+.htmlarea-edit-media .tools .remove { position:absolute; top:2px; right:2px; margin:0; font-size:20px; line-height:8px; color:#c00; font-weight:bold; }
 
-.htmlarea-image-edit .tools .float-left span, .htmlarea-image-edit .tools .float-right span, .htmlarea-image-edit .tools .float-none span { margin-top:2px; }
-.htmlarea-image-edit .tools hr { width:6px; height:1px; border:0 none; margin:0 1px 1px 9px; background:#333; }
-.htmlarea-image-edit .tools hr.full { width:14px; margin:0 1px 1px 1px; }
-.htmlarea-image-edit .tools b { position:absolute; left:3px; top:6px; width:5px; height:5px; border:1px solid #333; }
-.htmlarea-image-edit .tools .float-right hr { margin:0 9px 1px 1px; }
-.htmlarea-image-edit .tools .float-right b { left:10px; }
-.htmlarea-image-edit .tools .float-none hr.left { width:2px; height:1px; padding:0; margin:7px 13px 1px 1px; }
-.htmlarea-image-edit .tools .float-none hr.right { width:2px; height:1px; padding:0; margin:-2px 1px 1px 13px; }
-.htmlarea-image-edit .tools .float-none b { left:6px; }
+.htmlarea-edit-media .tools .float-left span, .htmlarea-image-edit .tools .float-right span, .htmlarea-image-edit .tools .float-none span { margin-top:2px; }
+.htmlarea-edit-media .tools hr { width:6px; height:1px; border:0 none; margin:0 1px 1px 9px; background:#333; }
+.htmlarea-edit-media .tools hr.full { width:14px; margin:0 1px 1px 1px; }
+.htmlarea-edit-media .tools b { position:absolute; left:3px; top:6px; width:5px; height:5px; border:1px solid #333; }
+.htmlarea-edit-media .tools .float-right hr { margin:0 9px 1px 1px; }
+.htmlarea-edit-media .tools .float-right b { left:10px; }
+.htmlarea-edit-media .tools .float-none hr.left { width:2px; height:1px; padding:0; margin:7px 13px 1px 1px; }
+.htmlarea-edit-media .tools .float-none hr.right { width:2px; height:1px; padding:0; margin:-2px 1px 1px 13px; }
+.htmlarea-edit-media .tools .float-none b { left:6px; }
+.htmlarea-edit-media-mask { position:absolute; }
 
 .htmlarea-image-drop { position:absolute; left:0; top:0; width:100%; height:100%; background:#888; opacity:.5; }
 .htmlarea-image-drop span { display:block; position:absolute; left:0; top:50%; margin-top:-50px; width:100%; font-size:64px; line-height:100px; color:#fff; text-align:center; }
 .htmlarea-image-drop .mask { position:absolute; left:0; top:0; width:100%; height:100%; }
+
+.htmlarea .tools .youtube > span { font-family:"Arial Narrow", Calibri, Tahoma, sans-serif; color:black; font-weight:bold; font-size:8px; line-height:8px; text-align:center; vertical-align:top; }
+.htmlarea .tools .youtube > span > em { font-style:normal; color:white; display:block; background:#ff3232; width:100%; border-radius:3px; }

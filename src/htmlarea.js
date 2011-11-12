@@ -10,17 +10,15 @@ HtmlArea = new Class({
 		style: 'default',
 		mode: 'visual',
 		toolsgo: 'top',
-		tools: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,mode]'
+		tools: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,mode]',
+		utils: 'EditMedia'
 	},
 
 	initialize: function(content, o) {
 		this.setOptions(o);
 		o = this.options;
-		if (typeOf(o.tools) === 'string') {
-			o.tools = '"' + o.tools.split('|').join(',|,').split(',').join('","') + '"';
-			o.tools = '[' + o.tools.replace(/"\[/g, '["').replace(/\]"/g, '"]') + ']';
-			o.tools = JSON.decode(o.tools);
-		}
+		o.tools = this.optionToArray(o.tools);
+		o.utils = this.optionToArray(o.utils);
 
 		this.content = (content = $(content) || new Element('div', { html:o.value||'' }));
 		this.element = new Element('div');
@@ -55,7 +53,18 @@ HtmlArea = new Class({
 		if (o.toolsgo === 'top') { bar.inject(this.element, 'top'); }
 		else { bar.inject(this.element, 'bottom'); }
 
+		this.utils = this.setupUtils(o.utils);
+
 		return this.addListeners();
+	},
+
+	optionToArray: function(opt) {
+		if (typeOf(opt) === 'string') {
+			opt = '"' + opt.split('|').join(',|,').split(',').join('","') + '"';
+			opt = '[' + opt.replace(/"\[/g, '["').replace(/\]"/g, '"]') + ']';
+			opt = JSON.decode(opt);
+		}
+		return opt;
 	},
 
 	buildTools: function(tools) {
@@ -78,6 +87,18 @@ HtmlArea = new Class({
 			}
 		}
 		return html;
+	},
+
+	setupUtils: function(utils) {
+		var Utils = HtmlArea.Utils, u, uu, util, name, o = this.options, arr = [];
+		for (u = 0, uu = utils.length; u < uu; ++u) {
+			name = utils[u].substr(0, 1).toLowerCase() + utils[u].substr(1);
+			util = Utils[utils[u]];
+			if (typeOf(util) === 'class') {
+				arr.push(this[name+'Util'] = new util(this, o[name+'Options']));
+			}
+		}
+		return arr;
 	},
 
 	addListeners: function() {
@@ -140,6 +161,11 @@ HtmlArea = new Class({
 				else if (state) { btn.addClass('active').removeClass('indeterminate'); }
 				else { btn.removeClass('active').addClass('indeterminate'); }
 			}
+		}
+
+		var utils = this.utils, u, uu, util;
+		for (u = 0, uu = utils.length; u < uu; ++u) {
+			if ((util = utils[u]).update) { util.update(); }
 		}
 	},
 
