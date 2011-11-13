@@ -131,5 +131,12 @@
 .htmlarea-image-drop span { display:block; position:absolute; left:0; top:50%; margin-top:-50px; width:100%; font-size:64px; line-height:100px; color:#fff; text-align:center; }
 .htmlarea-image-drop .mask { position:absolute; left:0; top:0; width:100%; height:100%; }
 
-.htmlarea .tools .youtube > span { font-family:"Arial Narrow", Calibri, Tahoma, sans-serif; color:black; font-weight:bold; font-size:8px; line-height:8px; text-align:center; vertical-align:top; }
-.htmlarea .tools .youtube > span > em { font-style:normal; color:white; display:block; background:#ff3232; width:100%; border-radius:3px; }
+.htmlarea .tools .video > span { font-family:"Arial Narrow", Calibri, Tahoma, sans-serif; color:black; font-weight:bold; font-size:8px; line-height:8px; text-align:center; vertical-align:top; }
+.htmlarea .tools .video > span > em { font-style:normal; color:white; display:block; background:#ff3232; width:100%; border-radius:3px; }
+
+.htmlarea-video { display:block; position:absolute; right:-1px; top:26px; background:#dfdfdf; border:1px solid #ccc; }
+.htmlarea-video form { padding:5px; margin:0; width:auto; }
+.htmlarea-video h6 { padding:0; margin:0; font-size:1em; }
+.htmlarea-video input[type=text] { width:200px; margin:4px; }
+.htmlarea-video label.url { display:block; }
+.htmlarea-video .error { color:red; font-size:.9em; }

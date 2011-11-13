@@ -10,7 +10,7 @@ HtmlArea = new Class({
 		style: 'default',
 		mode: 'visual',
 		toolsgo: 'top',
-		tools: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,mode]',
+		tools: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,video,mode]',
 		utils: 'EditMedia'
 	},
 

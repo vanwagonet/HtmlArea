@@ -10,6 +10,7 @@
 	<script src="../src/utils/editmedia.js"></script>
 	<script src="../src/tools/link.js"></script>
 	<script src="../src/tools/image.js"></script>
+	<script src="../src/tools/video.js"></script>
 </head>
 <body>
 	<form id="editor_options">
@@ -31,8 +32,8 @@
 	</form>
 	<script>
 		var toolbar_presets = {
-			all: '[bold,italic,underline,strike|sub,sup]|[left,center,right]|[bullet,number,indent,outdent]|[undo,redo]|[link,image,mode]',
-			normal: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,mode]',
+			all: '[bold,italic,underline,strike|sub,sup]|[left,center,right]|[bullet,number,indent,outdent]|[undo,redo]|[link,image,video,mode]',
+			normal: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,video,mode]',
 			minimal: '[bold,italic,underline]|[link]'
 		};
 		$('toolbar_custom').set('value', toolbar_presets.all);
