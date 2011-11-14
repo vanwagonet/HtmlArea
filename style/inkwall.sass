@@ -269,6 +269,24 @@
 					color: #cc0
 					text-shadow: 0 0 3px #fff
 
+		.video > span
+			font-family: "Arial Narrow", Calibri, Tahoma, sans-serif
+			color: #{$mainColor}
+			font-weight: bold
+			font-size: 10px
+			line-height: 11px
+			text-align: center
+			vertical-align: top
+			margin-top: 1px
+			& > em
+				font-style: normal
+				color: white
+				display: block
+				background: #ff3232
+				width: 22px
+				border-radius: 3px
+				text-shadow: none
+
 
 	.htmlarea-link
 		display: block
@@ -355,7 +373,7 @@
 			bottom: 6px
 
 
-	.htmlarea-image-edit
+	.htmlarea-edit-media
 		display: block
 		position: absolute
 		right: -1px
@@ -544,3 +562,30 @@
 			top: 0
 			width: 100%
 			height: 100%
+
+	.htmlarea-video
+		display: block
+		position: absolute
+		right: -1px
+		top: 42px
+		background: #dfdfdf
+		border: 1px solid #ccc
+		form
+			padding: 10px
+			margin: 0
+			width: 370px
+		h6
+			padding: 0
+			margin: 0
+			font-size: 1em
+		input[type=text]
+			width: 350px
+			margin: 4px 0 10px 0
+		label.url
+			display: block
+		.error
+			color: red
+			font-size: .9em
+			position: absolute
+			right: 12px
+			bottom: 6px
