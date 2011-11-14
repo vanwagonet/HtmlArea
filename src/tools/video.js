@@ -99,20 +99,28 @@ HtmlArea.Tools.Video = new Class({
 	formats: [
 		{
 			name: 'YouTube',
-			test: /^\s*(?:http:\/\/)?(?:(?:www\.)?youtube\.com\/watch\?v=|youtu.be\/)([A-Za-z0-9_]+).*$/i,
+			test: /^\s*(<iframe\b[^>]+?\bsrc="https?:\/\/www\.youtube(?:\-nocookie)?\.com\/embed\/[^?\/\\]+)(?:\?([^"]+))?([^>]*><\/iframe>)\s*$/i,
+			html: '$1?wmode=transparent&$2$3'
+		}, {
+			name: 'YouTube',
+			test: /^\s*(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?.*?\bv=([^&]+).*$/i,
 			html: '<iframe src="//www.youtube.com/embed/$1?wmode=transparent" style="width:320px;height:240px" frameborder="0" allowfullscreen></iframe>'
 		}, {
 			name: 'YouTube',
-			test: /^\s*(<iframe\b[^>]+?\bsrc="https?:\/\/www\.youtube(?:\-nocookie)?\.com\/embed\/[A-Za-z0-9_]+)(?:\?([^"]+))?([^>]*><\/iframe>)\s*$/i,
-			html: '$1?wmode=transparent&$2$3'
+			test: /^\s*(?:https?:\/\/)?(?:www\.)?youtube\.com\/[^#]*#(?:\w+\/)*(.*)$/i,
+			html: '<iframe src="//www.youtube.com/embed/$1?wmode=transparent" style="width:320px;height:240px" frameborder="0" allowfullscreen></iframe>'
+		}, {
+			name: 'YouTube',
+			test: /^\s*(?:https?:\/\/)?(?:www\.)?youtu.be\/([^?\/\\]+).*$/i,
+			html: '<iframe src="//www.youtube.com/embed/$1?wmode=transparent" style="width:320px;height:240px" frameborder="0" allowfullscreen></iframe>'
+		}, {
+			name: 'Vimeo',
+			test: /^\s*(<iframe\b[^>]+?\bsrc="https?:\/\/player\.vimeo\.com\/video\/\d+[^>]*><\/iframe>)(<p>.*?<\/p>)?\s*$/i,
+			html: '$1$2'
 		}, {
 			name: 'Vimeo',
 			test: /^\s*(?:http:\/\/)vimeo\.com\/(\d+)\s*$/i,
 			html: '<iframe src="//player.vimeo.com/video/$1" style="width:320px;height:240px" frameborder="0" allowFullScreen></iframe>'
-		}, {
-			name: 'Vimeo',
-			test: /^\s*(<iframe\b[^>]+?\bsrc="https?:\/\/player\.vimeo\.com\/video\/\d+[^>]*><\/iframe>(?:<p>.*?<\/p>)?)\s*$/i,
-			html: '$1'
 		}
 	]
 
