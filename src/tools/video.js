@@ -99,11 +99,11 @@ HtmlArea.Tools.Video = new Class({
 	formats: [
 		{
 			name: 'YouTube',
-			test: /^\s*(?:http:\/\/)?(?:(?:www\.)?youtube\.com\/watch\?v=|youtu.be\/)([A-Za-z0-9]+).*$/i,
+			test: /^\s*(?:http:\/\/)?(?:(?:www\.)?youtube\.com\/watch\?v=|youtu.be\/)([A-Za-z0-9_]+).*$/i,
 			html: '<iframe src="//www.youtube.com/embed/$1?wmode=transparent" style="width:320px;height:240px" frameborder="0" allowfullscreen></iframe>'
 		}, {
 			name: 'YouTube',
-			test: /^\s*(<iframe\b[^>]+?\bsrc="https?:\/\/www\.youtube(?:\-nocookie)?\.com\/embed\/[A-Za-z0-9]+)(?:\?([^"]+))?([^>]*><\/iframe>)\s*$/i,
+			test: /^\s*(<iframe\b[^>]+?\bsrc="https?:\/\/www\.youtube(?:\-nocookie)?\.com\/embed\/[A-Za-z0-9_]+)(?:\?([^"]+))?([^>]*><\/iframe>)\s*$/i,
 			html: '$1?wmode=transparent&$2$3'
 		}, {
 			name: 'Vimeo',
