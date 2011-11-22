@@ -1,23 +1,20 @@
-HtmlArea.Utils.EditMedia = new Class({
-
-	Implements: [ Events, Options ],
-
-	options: {
-		tags: 'img,video,iframe,object,embed'
-	},
-
-	initialize: function(editor, o) {
-		this.setOptions(o);
-		this.editor = editor;
-		this.tags = this.options.tags;
-		this.tagExpr = new RegExp('^\\s*<(' + this.tags.split(',').join('|') + ')\\b[^>]*>\\s*$', 'i');
-		this.select = this.select.bind(this);
-		this.maskOut = this.maskOut.bind(this);
-		this.editor.content.addEvents({ mouseover:this.mouseOver.bind(this) });
-		if (this.editor.content.attachEvent) { // prevent IE's img resizers
-			this.editor.content.attachEvent('oncontrolselect', function(e) { e.returnValue = false; });
-		}
-	},
+/**
+ * Manges sizing and placing media elements
+ **/
+HtmlArea.Utils.EditMedia = function(editor, o) {
+	this.editor = editor;
+	this.tags = (o && o.tags) || 'img,video,iframe,object,embed';
+	this.tagExpr = new RegExp('^\\s*<(' + this.tags.split(',').join('|') + ')\\b[^>]*>\\s*$', 'i');
+	var edit = this, utils = HtmlArea.Utils;
+	this.select = utils.bindEvent(edit, edit.select);
+	this.maskOut = utils.bindEvent(edit, edit.maskOut);
+	this.mouseOver = utils.bindEvent(edit, edit.mouseOver);
+	HtmlArea.Utils.onEvent(editor.content, 'mouseover', this.mouseOver);
+	if (editor.content.attachEvent) { // prevent IE's img resizers
+		editor.content.attachEvent('oncontrolselect', function(e) { e.returnValue = false; });
+	}
+};
+HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
 
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 
@@ -43,214 +40,238 @@ HtmlArea.Utils.EditMedia = new Class({
 	],
 
 	mouseOver: function(e) {
-		if (!this.tags.contains($(e.target).get('tag'), ',')) { return; }
+		var target = e.target || e.srcElement;
+		if ((','+this.tags+',').indexOf(','+target.nodeName.toLowerCase()+',') < 0) { return; }
 		if (!this.mask) {
-			this.mask = new Element('img.htmlarea-edit-media-mask');
-			this.mask.set('src', this.emptyGif);
-			this.mask.addEvents({ mouseout:this.maskOut, mousedown:this.select });
+			this.mask = new Image();
+			this.mask.className = 'htmlarea-edit-media-mask';
+			this.mask.src = this.emptyGif;
+			HtmlArea.Utils.onEvent(this.mask, 'mouseout', this.maskOut);
+			HtmlArea.Utils.onEvent(this.mask, 'mousedown', this.select);
 		}
-		this.maskElm($(e.target));
+		this.maskElm(target);
 	},
 
 	maskOut: function(e) {
 		this.masked = null;
-		this.mask.dispose();
+		var parent = this.mask.parentNode;
+		if (parent) { parent.removeChild(this.mask); }
 	},
 
 	maskElm: function(elm) {
-		var size = elm.getSize(), pos = elm.getPosition(this.editor.element);
-		this.mask.setStyles({ width:size.x, height:size.y, left:pos.x, top:pos.y })
-			.inject(this.editor.element);
+		var style = this.mask.style,
+			pos = HtmlArea.Utils.getPosition(elm, this.editor.element);
+		style.width = elm.offsetWidth + 'px';
+		style.height = elm.offsetHeight + 'px';
+		style.left = pos.x + 'px';
+		style.top = pos.y + 'px';
+		this.editor.element.appendChild(this.mask);
 		this.masked = elm;
 	},
 
 	getUI: function() {
 		if (this.ui) { return this.ui; }
-		var data = {
-			emptyGif: this.emptyGif,
-			tools: this.editor.buildTools(this.tools),
-			resizeTools: this.editor.buildTools(this.resizeTools)
-		}
-		this.ui = new Element('div.htmlarea-edit-media', {
-			html:this.template.substitute(data)
-		}).addEvents({ mousedown:this.edit.bind(this) });
-		this.proxy = this.ui.getElement('img');
-		this.resizeMouseMove = this.resizeMouseMove.bind(this);
-		this.resizeMouseDone = this.resizeMouseDone.bind(this);
-		this.editor.fireEvent('buildEditMediaPanel', { editor:this.editor, panel:this.ui, tool:this });
-		return this.ui;
+		var edit = this, utils = HtmlArea.Utils,
+			ui = (edit.ui = document.createElement('div'));
+		ui.className = 'htmlarea-edit-media';
+		ui.innerHTML = edit.template
+			.replace('{emptyGif}', edit.emptyGif)
+			.replace('{tools}', edit.editor.buildTools(edit.tools))
+			.replace('{resizeTools}', edit.editor.buildTools(edit.resizeTools));
+		utils.onEvent(ui, 'mousedown', utils.bindEvent(edit, edit.edit));
+		edit.proxy = ui.getElementsByTagName('img')[0];
+		edit.resizeMouseMove = utils.bindEvent(edit, edit.resizeMouseMove);
+		edit.resizeMouseDone = utils.bindEvent(edit, edit.resizeMouseDone);
+		edit.resizeEvents = {
+			mousemove:edit.resizeMouseMove, mouseup:edit.resizeMouseDone, mouseleave:edit.resizeMouseDone
+		};
+		edit.editor.fireEvent('buildEditMediaPanel', { editor:edit.editor, panel:ui, tool:edit });
+		return ui;
 	},
 
 	select: function(e) {
-		e.preventDefault();
 		this.editor.select(this.masked);
 		if (!this.elm) {
 			this.elm = this.masked;
 			this.show();
 		}
+		if (e.preventDefault) { e.preventDefault(); }
+		return (e.returnValue = false);
 	},
 
 	update: function() {
-		var range = this.editor.getRange(), oRange = range, elm, next, prev, tags = this.tags;
+		var range = this.editor.getRange(), oRange = range, elm, next, prev, tags = ','+this.tags+',';
 		if (range && range.cloneRange) { // W3C Range
-			range = range.cloneRange(); // don't change the position of caret
+			range = oRange.cloneRange(); // don't change the position of caret
 			if (range.startContainer.nodeType === 3 && range.startOffset === range.startContainer.length) { range.setStartAfter(range.startContainer); }
 			while (range.startOffset === range.startContainer.childNodes.length) { range.setStartAfter(range.startContainer); }
-			while (!range.endOffset) { range.setEndBefore(range.endContainer); }
+			if ((next = range.startContainer).nodeType !== 3) { next = next.childNodes[range.startOffset]; }
 
-			next = range.startContainer, prev = range.endContainer;
-			if (next.nodeType !== 3) { next = next.childNodes[range.startOffset]; }
-			if (prev.nodeType !== 3) { prev = prev.childNodes[range.endOffset-1]; }
+			range = oRange.cloneRange(); // another copy since setStartAfter can change the endContainer
+			while (!range.endOffset) { range.setEndBefore(range.endContainer); }
+			if ((prev = range.endContainer).nodeType !== 3) { prev = prev.childNodes[range.endOffset-1]; }
 
 			if (oRange.collapsed) {
-				if (tags.contains(prev.nodeName.toLowerCase(), ',')) { elm = prev; }
-				if (tags.contains(next.nodeName.toLowerCase(), ',')) { elm = next; }
-			} else if (prev == next && tags.contains(next.nodeName.toLowerCase(), ',')) { elm = next; }
+				if (tags.indexOf(','+prev.nodeName.toLowerCase()+',') >= 0) { elm = prev; }
+				if (tags.indexOf(','+next.nodeName.toLowerCase()+',') >= 0) { elm = next; }
+			} else if (prev == next && tags.indexOf(','+next.nodeName.toLowerCase()+',') >= 0) { elm = next; }
 		} else if (range && range.duplicate) { // IE TextRange
 			if (this.tagExpr.test(range.htmlText)) {
 				elm = range.parentElement();
 			}
 		}
 		if (this.masked) { this.maskElm(this.masked); }
-		if (elm) {
-			this.elm = $(elm);
+		if ((this.elm = elm || null)) {
 			this.show();
 		} else {
-			this.elm = null;
 			this.hide();
 		}
 	},
 
 	show: function() {
 		var elm = this.elm, ui = this.getUI(), editor = this.editor,
-			floatd = elm.getStyles('float')['float'] || 'none',
-			pos = elm.getPosition(editor.element), size = elm.getSize();
-		ui.getElements('a').removeClass('active');
-		ui.getElement('.float-' + floatd).addClass('active');
-		ui.setStyles({ width:size.x, height:size.y, left:pos.x, top:pos.y });
-		if (elm.get('tag') === 'img') { this.proxy.set('src', elm.get('src')); }
-		else { this.proxy.set('src', this.emptyGif); }
+			utils = HtmlArea.Utils, nodes, i, l,
+			floatd = utils.getComputedStyle(elm, 'float') || 'none',
+			pos = utils.getPosition(elm, editor.element);
+		nodes = ui.getElementsByTagName('a');
+		for (i = 0, l = nodes.length; i < l; ++i) {
+			utils.removeClass(nodes[i], 'active');
+		}
+		utils.addClass(ui.querySelector('.float-' + floatd), 'active');
+		ui.style.width = elm.offsetWidth + 'px';
+		ui.style.height = elm.offsetHeight + 'px';
+		ui.style.left = pos.x + 'px';
+		ui.style.top = pos.y + 'px';
+		if (elm.nodeName.toLowerCase() === 'img') { this.proxy.src = elm.src; }
+		else { this.proxy.src = this.emptyGif; }
+		editor.element.appendChild(ui);
 		editor.fireEvent('showEditMediaPanel', {
-			editor:editor, panel:ui.inject(editor.element), element:elm, tool:this
+			editor:editor, panel:ui, element:elm, tool:this
 		});
 	},
 
 	hide: function() {
+		var ui = this.getUI(), parent = ui.parentNode;
+		if (parent) { parent.removeChild(ui); }
 		this.editor.fireEvent('hideEditMediaPanel', {
-			editor:this.editor, panel:this.getUI().dispose(), element:this.elm, tool:this
+			editor:this.editor, panel:ui, element:this.elm, tool:this
 		});
 	},
 
 	edit: function(e) {
-		e.preventDefault(); // don't change focus
-		var a = $(e.target), tool;
-		if (!a.get('data-tool')) { a = a.getParent('[data-tool]'); }
-		if (!a || !(tool = a.get('data-tool'))) { return; }
-		if (tool.indexOf('resize-') === 0) {
-			this.runResize(this.elm, e, tool.substr(6).camelCase());
-		} else {
-			this[('run-' + tool).camelCase()](this.elm, e);
+		var a = e.target || e.srcElement, tool;
+		function camel(s) {
+			return String(s).replace(/-\D/g, function(m) {
+				return m.charAt(1).toUpperCase();
+			});
 		}
+		while (a && a != this.editor.element && !a.getAttribute('data-tool')) { a = a.parentNode; }
+		if (!a || !(tool = a.getAttribute('data-tool'))) { return; }
+		if (tool.indexOf('resize-') === 0) {
+			this.runResize(this.elm, e, camel(tool.substr(6)));
+		} else {
+			this[camel('run-' + tool)](this.elm, e);
+		}
+		// don't change focus
+		if (e.preventDefault) { e.preventDefault(); }
+		return (e.returnValue = false);
 	},
 
 	runRemove: function(elm) {
-		if (elm.getParent().get('href') === elm.get('src')) { elm = elm.getParent(); }
-		elm.destroy();
+		if (elm.parentNode.href === elm.src) { elm = elm.parentNode; }
+		var parent = elm.parentNode;
+		if (parent) { parent.removeChild(elm); }
 		this.hide();
 	},
 
 	runFloatLeft: function(elm) {
-		elm.setStyle('float', 'left');
+		elm.style.float = 'left';
 		this.show();
 	},
 
 	runFloatNone: function(elm) {
-		elm.setStyle('float', '');
+		elm.style.float = '';
 		this.show();
 	},
 
 	runFloatRight: function(elm) {
-		elm.setStyle('float', 'right');
+		elm.style.float = 'right';
 		this.show();
 	},
 
 	runResize: function(elm, e, from) {
-		var size = elm.getSize(), pos = elm.getPosition(this.editor.element);
+		var utils = HtmlArea.Utils,
+			size = { x:elm.offsetWidth, y:elm.offsetHeight },
+			pos = utils.getPosition(elm, this.editor.element);
 		this.mouseOffset = { from:from, size:size, pos:pos,
-			x: from.contains('Left') ? (e.page.x + size.x) : (e.page.x - size.x),
-			y: from.contains('Top')  ? (e.page.y + size.y) : (e.page.y - size.y)
+			x: from.indexOf('Left') >= 0 ? (e.screenX + size.x) : (e.screenX - size.x),
+			y: from.indexOf('Top') >= 0 ? (e.screenY + size.y) : (e.screenY - size.y)
 		};
-		this.aspect = (size.x || 1) / (size.y || 1);
-		$(document.body).addEvents({
-			mousemove: this.resizeMouseMove,
-			mouseup: this.resizeMouseDone,
-			mouseleave: this.resizeMouseDone
-		});
+		this.aspect = Math.max(size.x, 1) / Math.max(size.y, 1);
+		utils.onEvents(document.body, this.resizeEvents);
 	},
 
 	resizeMouseMove: function(e) {
-		var off = this.mouseOffset,
+		var off = this.mouseOffset, s, style = this.ui.style,
 			styles = this['resizeMove'+off.from](e, off, off.size, off.pos);
-		this.ui.setStyles(styles);
+		for (s in styles) { style[s] = styles[s] + 'px'; }
 	},
 
 	resizeMouseDone: function(e) {
-		$(document.body)
-			.removeEvent('mousemove', this.resizeMouseMove)
-			.removeEvent('mouseup', this.resizeMouseDone)
-			.removeEvent('mouseleave', this.resizeMouseDone);
-		var elm = this.editor.element, size = this.ui.getStyles('width', 'height'),
-			pos = this.elm.setStyles(size).getPosition(elm);
-		this.ui.setStyles({ left:pos.x, top:pos.y });
+		var utils = HtmlArea.Utils, elm = this.editor.element;
+		utils.unEvents(document.body, this.resizeEvents);
+		this.elm.style.width = utils.getComputedStyle(this.ui, 'width');
+		this.elm.style.height = utils.getComputedStyle(this.ui, 'height');
+		this.show();
 	},
 
 	resizeMoveTop: function(e, off, oSize, oPos) {
-		var size = this.keepAspect(1, (off.y - e.page.y));
+		var size = this.keepAspect(1, (off.y - e.screenY));
 		size.top = oPos.y + (oSize.y - size.height);
 		size.left = oPos.x + ((oSize.x - size.width) / 2);
 		return size;
 	},
 
 	resizeMoveLeft: function(e, off, oSize, oPos) {
-		var size = this.keepAspect((off.x - e.page.x), 1);
+		var size = this.keepAspect((off.x - e.screenX), 1);
 		size.top = oPos.y + ((oSize.y - size.height) / 2);
 		size.left = oPos.x + (oSize.x - size.width);
 		return size;
 	},
 
 	resizeMoveRight: function(e, off, oSize, oPos) {
-		var size = this.keepAspect((e.page.x - off.x), 1);
+		var size = this.keepAspect((e.screenX - off.x), 1);
 		size.top = oPos.y + ((oSize.y - size.height) / 2);
 		return size;
 	},
 
 	resizeMoveBottom: function(e, off, oSize, oPos) {
-		var size = this.keepAspect(1, (e.page.y - off.y));
+		var size = this.keepAspect(1, (e.screenY - off.y));
 		size.left = oPos.x + ((oSize.x - size.width) / 2);
 		return size;
 	},
 
 	resizeMoveTopLeft: function(e, off, oSize, oPos) {
-		var size = this.keepAspect((off.x - e.page.x), (off.y - e.page.y));
+		var size = this.keepAspect((off.x - e.screenX), (off.y - e.screenY));
 		size.left = oPos.x + (oSize.x - size.width);
 		size.top = oPos.y + (oSize.y - size.height);
 		return size;
 	},
 
 	resizeMoveTopRight: function(e, off, oSize, oPos) {
-		var size = this.keepAspect((e.page.x - off.x), (off.y - e.page.y));
+		var size = this.keepAspect((e.screenX - off.x), (off.y - e.screenY));
 		size.top = oPos.y + (oSize.y - size.height);
 		return size;
 	},
 
 	resizeMoveBottomLeft: function(e, off, oSize, oPos) {
-		var size = this.keepAspect((off.x - e.page.x), (e.page.y - off.y));
+		var size = this.keepAspect((off.x - e.screenX), (e.screenY - off.y));
 		size.left = oPos.x + (oSize.x - size.width);
 		return size;
 	},
 
 	resizeMoveBottomRight: function(e, off, oSize, oPos) {
-		return this.keepAspect((e.page.x - off.x), (e.page.y - off.y));
+		return this.keepAspect((e.screenX - off.x), (e.screenY - off.y));
 	},
 
 	keepAspect: function(width, height) {

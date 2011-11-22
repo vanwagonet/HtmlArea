@@ -63,13 +63,13 @@ HtmlArea.Tools.Image = new Class({
 				action: this.options.uploadURL,
 				name: this.options.uploadName
 			})
-		})), editor = this.editor;
+		})), editor = this.editor, validate = this.validate.bind(this);
 	//	if (this.uploader.canUploadXhr()) { ui.getElement('input[type=file]').set('multiple', true); }
 		ui.getElement('form').addEvent('submit', this.submit.bind(this));
 		ui.getElement('input[type=button]').addEvent('click', this.cancel.bind(this));
 		ui.getElements('input[name=type]').addEvent('change', this.typeChange.bind(this));
 		ui.getElement('input[type=file]').addEvent('change', this.fileChange.bind(this));
-		ui.getElement('input[name=url]').addEvent('input', this.validate.bind(this));
+		ui.getElement('input[name=url]').addEvents({ keydown:validate, input:validate, change:validate });
 		editor.fireEvent('buildImagePanel', { editor:editor, panel:ui, tool:this });
 		return ui;
 	},
@@ -95,7 +95,7 @@ HtmlArea.Tools.Image = new Class({
 
 	submit: function(e) {
 		e.preventDefault();
-		if (!this.validate(e)) { return; }
+		if (!this.validate()) { return; }
 		var ui = this.getUI(),
 			src = ui.getElement('input[name=url]').get('value').trim();
 		this.insert(src);
@@ -112,12 +112,12 @@ HtmlArea.Tools.Image = new Class({
 			ui = this.getUI();
 		if (ui.hasClass(type)) { return; }
 		ui.removeClass(type === 'url' ? 'upload' : 'url').addClass(type);
-		this.validate(e);
+		this.validate();
 		ui.getElement('.error').set('text', '');
 	},
 
 	fileChange: function(e) {
-		if (!this.validate(e)) { return; }
+		if (!this.validate()) { return; }
 		var ui = this.getUI();
 		ui.getElement('label.upload').addClass('progress');
 		ui.getElement('input[type=submit],input[type=radio]').set('disabled', true);
@@ -140,7 +140,7 @@ HtmlArea.Tools.Image = new Class({
 		}
 		ui.getElement('.error').set('text', error || '');
 		ui.getElement('input[type=submit]').set('disabled', !!error);
-		return !error;
+		return e ? true : !error;
 	},
 
 	getFileError: function(name, size) {

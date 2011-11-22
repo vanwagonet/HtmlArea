@@ -94,9 +94,7 @@ HtmlArea = new Class({
 		for (u = 0, uu = utils.length; u < uu; ++u) {
 			name = utils[u].substr(0, 1).toLowerCase() + utils[u].substr(1);
 			util = Utils[utils[u]];
-			if (typeOf(util) === 'class') {
-				arr.push(this[name+'Util'] = new util(this, o[name+'Options']));
-			}
+			arr.push(this[name+'Util'] = new util(this, o[name+'Options']));
 		}
 		return arr;
 	},
@@ -371,7 +369,69 @@ HtmlArea = new Class({
 		[ /font-weight:\s*bold;?/g, '', 'b' ]
 	],
 
-	Utils: {},
+	Utils: {
+		onEvent: document.addEventListener ?
+			function(elm, name, fn) { elm.addEventListener(name, fn, false); } :
+			function(elm, name, fn) { elm.attachEvent('on'+name, fn); },
+
+		unEvent: document.removeEventListener ?
+			function(elm, name, fn) { elm.removeEventListener(name, fn, false); } :
+			function(elm, name, fn) { elm.detachEvent('on'+name, fn); },
+
+		onEvents: document.addEventListener ?
+			function(elm, map) { for (var i in map) { elm.addEventListener(i, map[i], false); } } :
+			function(elm, map) { for (var i in map) { elm.attachEvent('on'+i, map[i]); } },
+
+		unEvents: document.removeEventListener ?
+			function(elm, map) { for (var i in map) { elm.removeEventListener(i, map[i], false); } } :
+			function(elm, map) { for (var i in map) { elm.detachEvent('on'+i, map[i]); } },
+
+		bindEvent: function(o, fn) {
+			var slice = Array.prototype.slice, args = slice.call(arguments, 2);
+			return function(e) {
+				e = e || window.event;
+				e.target = e.target || e.srcElement;
+				return fn.apply(o, [e].concat(args, slice.call(arguments, 1)));
+			};
+		},
+
+		getPosition: function(elm, relative) {
+			var utils = HtmlArea.Utils,
+				bound = elm.getBoundingClientRect(),
+				html = document.documentElement,
+				doc = (!document.compatMode || document.compatMode == 'CSS1Compat') ? html : document.body,
+				htmlScroll = { x:window.pageXOffset || doc.scrollLeft, y:window.pageYOffset || doc.scrollTop },
+				isFixed = (utils.getComputedStyle(elm, 'position') == 'fixed'),
+				position = {
+					x:Math.round(bound.left) + ((isFixed) ? 0 : htmlScroll.x) - html.clientLeft,
+					y:Math.round(bound.top)  + ((isFixed) ? 0 : htmlScroll.y) - html.clientTop
+				};
+
+			if (relative) {
+				var rel = utils.getPosition(relative);
+				position.x = position.x - rel.x - parseInt(utils.getComputedStyle(relative, 'borderLeftWidth'), 10);
+				position.y = position.y - rel.y - parseInt(utils.getComputedStyle(relative, 'borderTopWidth'), 10);
+			}
+			return position;
+		},
+		
+		getComputedStyle: function(elm, prop) {
+			var style = window.getComputedStyle ? window.getComputedStyle(elm, null) : elm.currentStyle;
+			return style ? style[prop] : null;
+		},
+
+		addClass: document.documentElement.classList ?
+			function(elm, cls) { elm.classList.add(cls); } :
+			function(elm, cls) { elm.className = ((' '+elm.className+' ').replace(' '+cls+' ', ' ') + ' ' + cls).replace(/^\s+|\s+$/g, ''); },
+
+		removeClass: document.documentElement.classList ?
+			function(elm, cls) { elm.classList.remove(cls); } :
+			function(elm, cls) { elm.className = (' '+elm.className+' ').replace(' '+cls+' ', ' ').replace(/^\s+|\s+$/g, ''); },
+
+		hasClass: document.documentElement.classList ?
+			function(elm, cls) { return elm.classList.contains(cls); } :
+			function(elm, cls) { return (' '+elm.className+' ').indexOf(' '+cls+' ') >= 0; }
+	},
 
 	Tools: {
 		Tool: new Class({

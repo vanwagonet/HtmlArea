@@ -35,7 +35,7 @@ HtmlArea.Tools.Video = new Class({
 		})), editor = this.editor;
 		ui.getElement('form').addEvent('submit', this.submit.bind(this));
 		ui.getElement('input[type=button]').addEvent('click', this.cancel.bind(this));
-		ui.getElement('input[name=url]').addEvent('input', this.validate.bind(this));
+		ui.getElement('input[name=url]').addEvent('keydown', this.validate.bind(this));
 		editor.fireEvent('buildVideoPanel', { editor:editor, panel:ui, tool:this });
 		return ui;
 	},

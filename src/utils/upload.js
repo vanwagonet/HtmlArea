@@ -1,13 +1,8 @@
 /**
  * Upload data from a <form> or FormData
  **/
-HtmlArea.Utils.Upload = new Class({
-
-	Implements: [ Events, Options ],
-
-	initialize: function(o) {
-		this.setOptions(o);
-	},
+HtmlArea.Utils.Upload = function(o) { return this.setupEvents(o); };
+HtmlArea.Utils.Upload.prototype = HtmlArea.Utils.Events({
 
 	canUploadXhr: function() { return window.File && window.FormData && window.XMLHttpRequest && true || false; },
 
@@ -18,10 +13,10 @@ HtmlArea.Utils.Upload = new Class({
 	},
 
 	uploadXhr: function(data, url) {
-		var xhr = new XMLHttpRequest();
-		xhr.onload = this.uploadSuccess.bind(this, xhr);
-		xhr.onabort = xhr.onerror = this.uploadFailure.bind(this, xhr);
-		xhr.upload.onprogress = this.uploadProgress.bind(this, xhr);
+		var xhr = new XMLHttpRequest(), up = this;
+		xhr.onload = function(e) { up.uploadSuccess(e, xhr); };
+		xhr.onabort = xhr.onerror = function(e) { up.uploadFailure(e, xhr); };
+		xhr.upload.onprogress = function(e) { up.uploadProgress(e, xhr); };
 		xhr.open('POST', url, true);
 		xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 		xhr.send(data);
@@ -29,42 +24,51 @@ HtmlArea.Utils.Upload = new Class({
 	},
 
 	uploadIframe: function(form) {
-		this.bindUploadHandlers();
-		var	target = form.get('target'),
-			iframe = new Element('iframe', { name:this.getUploadIframeId(), src:'javascript:""' }),
-			load = this.uploadIframeRSC.bind(this, iframe),
-			fail = this.uploadFailure.bind(this, iframe);
-		iframe.inject(form, 'after').addEvents({
-			error:fail, abort:fail, load:load, readystatechange:load
-		});
-		form.set('target', iframe.name).submit();
-		form.set('target', target);
+		var	target = form.target, upload = this,
+			iframe = document.createElement('iframe');
+		function fail(e) { upload.uploadFailure(e || window.event, iframe); }
+		function load(e) { upload.uploadIframeRSC(e || window.event, iframe); }
+		iframe.id = iframe.name = this.getUploadIframeId();
+		iframe.src = 'javascript:""';
+		iframe.style.cssText = 'position:absolute;left:-9px;top:-9px;width:1px;height:1px';
+		iframe = form.appendChild(iframe);
+		iframe.onerror = iframe.onabort = fail;
+		iframe.onload = iframe.onreadystatechange = load;
+		form.target = iframe.name;
+		form.submit();
+		form.target = target;
 	},
 
-	getUploadIframeId: (function() { return 'htmlarea_utils_upload_iframe_' + (++this.counter); }).bind({ counter:0 }),
+	getUploadIframeId: (function() {
+		var counter = 0;
+		return function() { return 'htmlarea_utils_upload_iframe_' + (++counter); };
+	})(),
 
-	uploadIframeRSC: function(iframe, e) {
+	uploadIframeRSC: function(e, iframe) {
 		if (iframe.readyState && iframe.readyState !== 'loaded' && iframe.readyState !== 'complete') { return; }
 		var body = iframe.contentWindow.document.body,
 			mock = { responseText:(body.textContent || body.innerText) };
-		this.uploadSuccess(mock, e);
-		iframe.destroy();
+		this.uploadSuccess(e, mock);
+		iframe.onerror = iframe.onabort = iframe.onload = iframe.onreadystatechange = null;
+		iframe.parentNode.removeChild(iframe);
 	},
 
-	uploadSuccess: function(xhr, e) {
+	uploadSuccess: function(e, xhr) {
 		var response, error;
-		try { response = JSON.decode(xhr.responseText); }
-		catch(error) { return this.uploadFailure(xhr, e, error); }
-		if (!response) { return this.uploadFailure(xhr, e, null); }
-		if (response.error) { return this.uploadFailure(xhr, e, response.error); }
-		this.fireEvent('uploadSuccess', { response:response, xhr:xhr });
+		try {
+			if (window.JSON && JSON.parse) { response = JSON.parse(xhr.responseText); }
+			else { response = (new Function('return (' + xhr.responseText + ');'))(); }
+		} catch(error) { return this.uploadFailure(e, xhr, error); }
+		if (!response) { return this.uploadFailure(e, xhr, null); }
+		if (response.error) { return this.uploadFailure(e, xhr, response.error); }
+		this.fire('uploadSuccess', { response:response, xhr:xhr });
 	},
 
-	uploadFailure: function(xhr, e, error) {
-		this.fireEvent('uploadFailure', { error:error, event:e, xhr:xhr });
+	uploadFailure: function(e, xhr, error) {
+		this.fire('uploadFailure', { error:error, event:e, xhr:xhr });
 	},
 
-	uploadProgress: function(xhr, e) {
-		this.fireEvent('uploadProgress', { event:e, xhr:xhr });
+	uploadProgress: function(e, xhr) {
+		this.fire('uploadProgress', { event:e, xhr:xhr });
 	}
 });
