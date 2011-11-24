@@ -4,7 +4,6 @@
 	<title>HtmlArea Sandbox</title>
 	<link rel="stylesheet" href="../style/default.css" />
 	<link rel="stylesheet" href="demo.css" />
-	<script src="mootools.js"></script>
 	<script src="../src/htmlarea.js"></script>
 	<script src="../src/utils/events.js"></script>
 	<script src="../src/utils/upload.js"></script>
@@ -36,26 +35,30 @@
 			all: '[bold,italic,underline,strike|sub,sup]|[left,center,right]|[bullet,number,indent,outdent]|[undo,redo]|[link,image,video,mode]',
 			normal: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,video,mode]',
 			minimal: '[bold,italic,underline]|[link]'
+		},
+			toolbar_custom = document.getElementById('toolbar_custom'),
+			toolbar_select = document.getElementById('toolbar_select'),
+			form = document.getElementById('form');
+		toolbar_custom.value = toolbar_presets.all;
+
+		toolbar_select.onchange = function(e) {
+			var value = toolbar_select.options[toolbar_select.selectedIndex].value;
+			if (value === 'custom') { toolbar_custom.style.display = 'inline'; }
+			else { toolbar_custom.style.display = 'none'; }
 		};
-		$('toolbar_custom').set('value', toolbar_presets.all);
 
-		$('toolbar_select').addEvent('change', function(e) {
-			var value = $('toolbar_select').get('value');
-			if (value === 'custom') { $('toolbar_custom').setStyle('display', 'inline'); }
-			else { $('toolbar_custom').setStyle('display', 'none'); }
-		});
-
-		$('editor_options').addEvent('submit', function(e) {
-			e.stop();
-			var tools = $('toolbar_select').get('value'), html = editor.getHTML();
-			tools = toolbar_presets[tools] || $('toolbar_custom').get('value');
-			editor.element.dispose();
+		document.getElementById('editor_options').onsubmit = function(e) {
+			var tools = toolbar_select.options[toolbar_select.selectedIndex].value, html = editor.getHTML();
+			tools = toolbar_presets[tools] || toolbar_custom.value;
+			form.removeChild(editor.element);
 			editor = new HtmlArea(null, { tools:tools, value:html });
-			editor.element.inject($('form'), 'top');
-		});
+			form.insertBefore(editor.element, form.firstChild);
+			if (e.preventDefault) { e.preventDefault(); }
+			return e.returnValue = false;
+		};
 
 		var editor = new HtmlArea(null, { value:'<p><i>Hello</i> <b>World!</b></p>' });
-		editor.element.inject($('form'), 'top');
+		form.insertBefore(editor.element, form.firstChild);
 	</script>
 </body>
 </html>

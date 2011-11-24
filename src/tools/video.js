@@ -1,18 +1,12 @@
 /**
  * Insert videos from a url or embed code
  **/
-HtmlArea.Tools.Video = new Class({
-
-	Implements: [ Events, Options ],
-
-	options: {},
-
-	initialize: function(editor, o) {
-		this.editor = editor;
-		this.setOptions(o);
-		editor.addEvent('modechange', this.hide.bind(this));
-	},
-
+HtmlArea.Tools.Video = function(editor, o) {
+	this.editor = editor;
+	var bind = HtmlArea.Utils.bind;
+	editor.on('modechange', bind(this, this.hide));
+};
+HtmlArea.Tools.Video.prototype = {
 	template:
 	'<form action="{action}" method="post">' +
 		'<h6>' +
@@ -30,53 +24,60 @@ HtmlArea.Tools.Video = new Class({
 
 	getUI: function() {
 		if (this.ui) { return this.ui; }
-		var ui = (this.ui = new Element('div.htmlarea-video', {
-			html: this.template.substitute(this.options)
-		})), editor = this.editor;
-		ui.getElement('form').addEvent('submit', this.submit.bind(this));
-		ui.getElement('input[type=button]').addEvent('click', this.cancel.bind(this));
-		ui.getElement('input[name=url]').addEvent('keydown', this.validate.bind(this));
-		editor.fireEvent('buildVideoPanel', { editor:editor, panel:ui, tool:this });
+		var ui = (this.ui = document.createElement('div')),
+			editor = this.editor, utils = HtmlArea.Utils,
+			validate = utils.bindEvent(this, this.validate);
+		ui.className = 'htmlarea-video';
+		ui.innerHTML = this.template.replace('{action}', '');
+		utils.onEvent(ui.firstChild, 'submit', utils.bindEvent(this, this.submit));
+		utils.onEvent(ui.querySelector('input[type=button]'), 'click', utils.bindEvent(this, this.cancel));
+		utils.onEvents(ui.querySelector('input[name=url]'), { keydown:validate, input:validate, change:validate });
+		editor.fire('buildVideoPanel', { editor:editor, panel:ui, tool:this });
 		return ui;
 	},
 
 	show: function() {
 		var ui = this.getUI(), editor = this.editor;
 		this.range = editor.getRange();
-		ui.getElement('input[name=url]').set('value', '');
-		ui.getElements('input[type=submit]').set('disabled', true);
-		ui.inject(editor.element);
-		editor.fireEvent('showVideoPanel', { editor:editor, panel:ui, tool:this });
+		ui.querySelector('input[name=url]').value = '';
+		ui.querySelector('input[type=submit]').disabled = true;
+		editor.element.appendChild(ui);
+		editor.fire('showVideoPanel', { editor:editor, panel:ui, tool:this });
 	},
 
 	hide: function() {
-		this.editor.fireEvent('hideVideoPanel', {
-			editor:this.editor, panel:this.getUI().dispose(), tool:this
+		var ui = this.getUI(), parent = ui.parentNode;
+		if (parent) { parent.removeChild(ui); }
+		this.editor.fire('hideVideoPanel', {
+			editor:this.editor, panel:ui, tool:this
 		});
 	},
 
 	submit: function(e) {
-		e.preventDefault();
-		if (!this.validate(e)) { return; }
-		var ui = this.getUI(),
-			src = ui.getElement('input[name=url]').get('value').trim();
-		this.insert(this.getHtmlFor(src));
-		this.hide();
+		if (this.validate()) {
+			var ui = this.getUI(), input = ui.querySelector('input[name=url]'),
+				src = input.value.replace(/^\s+|\s+$/g, '');
+			this.insert(this.getHtmlFor(src));
+			this.hide();
+		}
+		if (e.preventDefault) { e.preventDefault(); } // don't submit the form
+		return e.returnValue = false;
 	},
 
 	cancel: function(e) {
-		e.preventDefault();
 		this.hide();
+		if (e.preventDefault) { e.preventDefault(); }
+		return e.returnValue = false;
 	},
 
 	validate: function(e) {
-		var ui = this.getUI(), error,
-			url = ui.getElement('input[name=url]').get('value').trim();
+		var ui = this.getUI(), error, input = ui.querySelector('input[name=url]'),
+			url = input.value.replace(/^\s+|\s+$/g, '');
 		if (!url) { error = 'URL or Embed Code Is Required'; }
 		else if (!this.getHtmlFor(url)) { error = 'Invalid Format'; }
-		ui.getElement('.error').set('text', error || '');
-		ui.getElement('input[type=submit]').set('disabled', !!error);
-		return !error;
+		ui.querySelector('.error').innerHTML = error || '';
+		ui.querySelector('input[type=submit]').disabled = !!error;
+		return e ? true : !error;
 	},
 
 	insert: function(html) {
@@ -123,20 +124,15 @@ HtmlArea.Tools.Video = new Class({
 			html: '<iframe src="//player.vimeo.com/video/$1" style="width:320px;height:240px" frameborder="0" allowFullScreen></iframe>'
 		}
 	]
+};
 
-}).extend({ // static
 
-
-	/**
-	 * Tool interface
-	 **/
-	title:'Add Video', text:'You<em>Tube</em>',
-
-	setup: function(editor) {
-		if (!editor.videoTool) { editor.videoTool = new this(editor); }
-	},
-
-	run: function(editor) { editor.videoTool.show(); }
-});
+/**
+ * Tool interface
+ **/
+HtmlArea.Tools.Video.title = 'Add Video';
+HtmlArea.Tools.Video.text = 'You<em>Tube</em>';
+HtmlArea.Tools.Video.setup = function(e) { if (!e.videoTool) { e.videoTool = new HtmlArea.Tools.Video(e); } };
+HtmlArea.Tools.Video.run = function(editor) { editor.videoTool.show(); };
 
 HtmlArea.Tools.addTool('video', HtmlArea.Tools.Video);

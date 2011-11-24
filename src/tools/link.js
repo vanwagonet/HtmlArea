@@ -1,32 +1,39 @@
 /**
  * Create, update, and remove links
  **/
-HtmlArea.Tools.Link = new Class({
-
-	initialize: function(editor) { this.editor = editor; },
+HtmlArea.Tools.Link = function(editor) { this.editor = editor; };
+HtmlArea.Tools.Link.prototype = {
 
 	update: function(btn) {
-		var link = this.getLink();
-		if (link) { this.show(link.get('href'), link, btn.addClass('active')); }
-		else { this.hide(btn.removeClass('active')); }
+		var link = this.getLink(), utils = HtmlArea.Utils;
+		if (link) {
+			utils.addClass(btn, 'active');
+			this.show(link.getAttribute('href'), link, btn); }
+		else {
+			utils.removeClass(btn, 'active');
+			this.hide(btn);
+		}
 	},
 
 	run: function(btn) {
 		if (this.editor.mode !== 'visual') { return; }
 		if (this.link) { return this.remove(); }
-		var url = this.editor.getRange('text');
+		var text = this.editor.getRange('text'), url = text, link = this;
 		if (/^\S+@\S+\.\S+$/.test(url)) { url = 'mailto:' + url; }
-		else if (!/^(\S)*[:\/?#.](\S)*$/.test(url)) { url = ''; }
+		else if (!/^(\S)*[:\/?#.](\S)*$/.test(url)) { url = 'http://'; }
 		else if (!/^\w+:\/\//.test(url)) { url = 'http://' + url; }
 		editor.exec('createlink', url);
-		editor.exec('underline');
 		this.show(url, this.getLink(), btn);
+		setTimeout(function() {
+			link.getUI().firstChild.focus();
+			link.getUI().firstChild.select();
+		}, 100);
 	},
 
 	getLink: function() {
-		var editor = this.editor, node = editor.getRange('node');
+		var editor = this.editor, node = editor.getRange('node'), utils = HtmlArea.Utils;
 		while (node && node.nodeName.toLowerCase() !== 'a' && node != editor.content) { node = node.parentNode; }
-		return node != editor.content && editor.content.contains(node) && $(node);
+		return node != editor.content && utils.contains(editor.content, node) && node;
 	},
 
 	template:
@@ -35,68 +42,71 @@ HtmlArea.Tools.Link = new Class({
 
 	getUI: function() {
 		if (this.ui) { return this.ui; }
-		var ui = (this.ui = new Element('div.htmlarea-link', { html:this.template }));
-		ui.addEvent('mousedown', this.mouseDown.bind(this));
-		ui.getFirst('input').addEvents({ keypress:this.keyPress.bind(this), blur:this.blur.bind(this) });
-		this.editor.fireEvent('buildLinkPanel', { editor:this.editor, panel:ui, tool:this });
+		var ui = (this.ui = document.createElement('div')), utils = HtmlArea.Utils;
+		ui.className = 'htmlarea-link';
+		ui.innerHTML = this.template;
+		utils.onEvent(ui, 'mousedown', utils.bindEvent(this, this.mouseDown));
+		utils.onEvents(ui.firstChild, {
+			keypress: utils.bindEvent(this, this.keyPress),
+			blur: utils.bindEvent(this, this.blur)
+		});
+		this.editor.fire('buildLinkPanel', { editor:this.editor, panel:ui, tool:this });
 		return ui;
 	},
 
 	show: function(url, link, btn) {
-		var ui = this.getUI(), size = link.getSize(),
-			pos = link.getPosition(this.editor.element);
+		var ui = this.getUI(), utils = HtmlArea.Utils,
+			pos = utils.getPosition(link, this.editor.element);
 		this.link = link;
 		this.range = this.editor.getRange();
-		ui.getFirst('input').set('value', url);
-		ui.setStyles({ left:pos.x, top:pos.y+size.y }).inject(this.editor.element);
-		this.editor.fireEvent('showLinkPanel', {
+		ui.firstChild.value = url;
+		ui.style.left = pos.x + 'px';
+		ui.style.top = pos.y+link.offsetHeight + 'px';
+		this.editor.element.appendChild(ui);
+		this.editor.fire('showLinkPanel', {
 			editor:this.editor, panel:ui, link:link, tool:this
 		});
 	},
 
 	hide: function() {
 		this.link = null;
-		this.editor.fireEvent('hideLinkPanel', {
-			editor:this.editor, panel:this.getUI().dispose(), tool:this
+		var ui = this.getUI(), parent = ui.parentNode;
+		if (parent) { parent.removeChild(ui); }
+		this.editor.fire('hideLinkPanel', {
+			editor:this.editor, panel:ui, tool:this
 		});
 	},
 
 	keyPress: function(e) {
-		if (e.key !== 'enter') { return; }
-		e.preventDefault(); // don't submit the form
+		if ((e.keyCode || e.which || e.charCode) !== 13) { return; }
 		this.editor.setRange(this.range);
+		if (e.preventDefault) { e.preventDefault(); } // don't submit the form
+		return e.returnValue = false;
 	},
 
-	blur: function(e) { this.link.set('href', $(e.target).value); },
+	blur: function(e) { if (this.link) { this.link.href = e.target.value; } },
 
 	mouseDown: function(e) {
-		var tag = $(e.target).get('tag');
+		var tag = e.target.nodeName.toLowerCase();
 		if (tag === 'input') { return; }
 		if (tag === 'a') { this.remove(); }
-		e.preventDefault(); // don't change focus
+		if (e.preventDefault) { e.preventDefault(); } // don't change focus
+		return e.returnValue = false;
 	},
 
 	remove: function() {
-		if (this.link) {
-			this.link.getChildren('u').each(this.editor.unwrap);
-			this.editor.unwrap(this.link);
-		}
+		if (this.link) { HtmlArea.Utils.unwrap(this.link); }
 		this.hide();
 	}
-}).extend({
+};
 
-	/**
-	 * Tool interface
-	 **/
-	title:'Link', text:'link',
-
-	setup: function(editor) {
-		if (!editor.linkTool) { editor.linkTool = new this(editor); }
-	},
-
-	update: function(editor, btn) { editor.linkTool.update(btn); },
-
-	run: function(editor, btn) { editor.linkTool.run(btn); }
-});
+/**
+ * Tool interface
+ **/
+HtmlArea.Tools.Link.title = 'Link';
+HtmlArea.Tools.Link.text = 'link';
+HtmlArea.Tools.Link.setup = function(e) { if (!e.linkTool) { e.linkTool = new HtmlArea.Tools.Link(e); } };
+HtmlArea.Tools.Link.update = function(editor, btn) { editor.linkTool.update(btn); };
+HtmlArea.Tools.Link.run = function(editor, btn) { editor.linkTool.run(btn); };
 
 HtmlArea.Tools.addTool('link', HtmlArea.Tools.Link);

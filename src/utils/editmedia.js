@@ -14,7 +14,7 @@ HtmlArea.Utils.EditMedia = function(editor, o) {
 		editor.content.attachEvent('oncontrolselect', function(e) { e.returnValue = false; });
 	}
 };
-HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
+HtmlArea.Utils.EditMedia.prototype = {
 
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 
@@ -85,7 +85,7 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
 		edit.resizeEvents = {
 			mousemove:edit.resizeMouseMove, mouseup:edit.resizeMouseDone, mouseleave:edit.resizeMouseDone
 		};
-		edit.editor.fireEvent('buildEditMediaPanel', { editor:edit.editor, panel:ui, tool:edit });
+		edit.editor.fire('buildEditMediaPanel', { editor:edit.editor, panel:ui, tool:edit });
 		return ui;
 	},
 
@@ -145,7 +145,7 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
 		if (elm.nodeName.toLowerCase() === 'img') { this.proxy.src = elm.src; }
 		else { this.proxy.src = this.emptyGif; }
 		editor.element.appendChild(ui);
-		editor.fireEvent('showEditMediaPanel', {
+		editor.fire('showEditMediaPanel', {
 			editor:editor, panel:ui, element:elm, tool:this
 		});
 	},
@@ -153,7 +153,7 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
 	hide: function() {
 		var ui = this.getUI(), parent = ui.parentNode;
 		if (parent) { parent.removeChild(ui); }
-		this.editor.fireEvent('hideEditMediaPanel', {
+		this.editor.fire('hideEditMediaPanel', {
 			editor:this.editor, panel:ui, element:this.elm, tool:this
 		});
 	},
@@ -166,11 +166,12 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
 			});
 		}
 		while (a && a != this.editor.element && !a.getAttribute('data-tool')) { a = a.parentNode; }
-		if (!a || !(tool = a.getAttribute('data-tool'))) { return; }
-		if (tool.indexOf('resize-') === 0) {
-			this.runResize(this.elm, e, camel(tool.substr(6)));
-		} else {
-			this[camel('run-' + tool)](this.elm, e);
+		if (a && (tool = a.getAttribute('data-tool'))) {
+			if (tool.indexOf('resize-') === 0) {
+				this.runResize(this.elm, e, camel(tool.substr(6)));
+			} else {
+				this[camel('run-' + tool)](this.elm, e);
+			}
 		}
 		// don't change focus
 		if (e.preventDefault) { e.preventDefault(); }
@@ -284,4 +285,4 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
 		}
 		return { width:width, height:height };
 	}
-});
+};

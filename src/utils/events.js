@@ -4,10 +4,9 @@
 HtmlArea.Utils.Events = function(proto) {
 	proto = proto || {};
 
-	proto.events = {};
-
 	proto.setupEvents = function(o) {
 		o = o || {};
+		this.events = {};
 		for (var i in o) {
 			i = String(i);
 			if (i.substr(0, 2) !== 'on') { continue; }
@@ -46,3 +45,4 @@ HtmlArea.Utils.Events = function(proto) {
 
 	return proto;
 };
+HtmlArea.Utils.Events(HtmlArea.prototype);

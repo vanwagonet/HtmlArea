@@ -3,66 +3,74 @@
  * copyright 2011 - Andy VanWagoner
  * license: MIT
  **/
-HtmlArea = new Class({
-	Implements: [ Events, Options ],
-	options: {
-		name: 'content',
-		style: 'default',
-		mode: 'visual',
-		toolsgo: 'top',
-		tools: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,video,mode]',
-		utils: 'EditMedia'
-	},
+HtmlArea = function(content, o) {
+	this.options = (o = o || {});
+	o.name = o.name || 'content';
+	o.style = o.style || 'default';
+	o.mode = o.mode || 'visual';
+	o.toolsgo = o.toolsgo || 'top';
+	o.tools = o.tools || '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,video,mode]';
+	o.utils = o.utils || 'EditMedia';
+	if (this.setupEvents) { this.setupEvents(o); }
 
-	initialize: function(content, o) {
-		this.setOptions(o);
-		o = this.options;
-		o.tools = this.optionToArray(o.tools);
-		o.utils = this.optionToArray(o.utils);
+	o.tools = this.optionToArray(o.tools);
+	o.utils = this.optionToArray(o.utils);
 
-		this.content = (content = $(content) || new Element('div', { html:o.value||'' }));
-		this.element = new Element('div');
-		if (content.parentNode) { this.element.wraps(content); }
-		else { this.element.grab(content); }
+	var ta, utils = HtmlArea.Utils;
 
-		if (content.get('tag') === 'textarea') {
-			var ta = (this.textarea = content);
-			content = (this.content = new Element('div'))
-				.set('class', ta.get('class'))
-				.set('html', ta.get('value'))
-				.inject(ta.setStyle('display', 'none'), 'before');
-		} else {
-			this.textarea = new Element('textarea')
-				.set('name', o.name)
-				.set('class', content.get('class'))
-				.set('value', this.getHTML())
-				.setStyle('display', 'none').inject(content, 'after');
-		}
-		this.textarea.set('spellcheck', false);
-		this.element.addClass('htmlarea').addClass(o.style);
-		content.addClass('content').set('contentEditable', true).set('spellcheck', true);
-		if (this.query('styleWithCSS', 'support')) { this.exec('styleWithCSS', false); } // prefer tags to styles
-		if (!content.innerHTML.trim()) { content.innerHTML += HtmlArea.pbr; }
+	this.content = (content = content || document.createElement('div'));
+	content.innerHTML = o.value || '';
+	this.element = document.createElement('div');
+	this.element.className = 'htmlarea ' + o.style;
+	if (content.parentNode) {
+		content.parentNode.insertBefore(this.element, content);
+		content.parentNode.removeChild(content);
+	}
+	else { this.element.appendChild(content); }
 
-		if (o.mode === 'html') { this.setHTMLMode(); }
-		else { this.mode = 'visual'; }
+	if (content.nodeName.toLowerCase() === 'textarea') {
+		var ta = (this.textarea = content);
+		content = (this.content = document.createElement('div'));
+		content.className = ta.className;
+		content.innerHTML = ta.value;
+		this.element.insertBefore(ta, content);
+	} else {
+		var ta = (this.textarea = document.createElement('textarea'));
+		ta.name = o.name;
+		ta.className = content.className;
+		ta.value = this.getHTML();
+		this.element.appendChild(ta);
+	}
+	ta.style.display = 'none';
+	ta.spellcheck = false;
+	utils.addClass(content, 'content');
+	content.contentEditable = true;
+	content.spellcheck = true;
+	if (this.query('styleWithCSS', 'support')) { this.exec('styleWithCSS', false); } // prefer tags to styles
+	if (!/\S/.test(content.innerHTML)) { content.innerHTML += HtmlArea.pbr; }
 
-		var bar = (this.tools = new Element('div'))
-			.set('html', this.buildTools(o.tools))
-			.addClass('tools').addClass(o.style);
-		if (o.toolsgo === 'top') { bar.inject(this.element, 'top'); }
-		else { bar.inject(this.element, 'bottom'); }
+	if (o.mode === 'html') { this.setHTMLMode(); }
+	else { this.mode = 'visual'; }
 
-		this.utils = this.setupUtils(o.utils);
+	var bar = (this.tools = document.createElement('div'));
+	bar.className = 'tools ' + o.style;
+	bar.innerHTML = this.buildTools(o.tools);
+	if (o.toolsgo === 'top') { this.element.insertBefore(bar, content); }
+	else { this.element.appendChild(bar); }
 
-		return this.addListeners();
-	},
+	this.utils = this.setupUtils(o.utils);
+
+	return this.addListeners();
+};
+HtmlArea.prototype = {
+	fire: function(){}, // gets replaced
 
 	optionToArray: function(opt) {
-		if (typeOf(opt) === 'string') {
+		if (typeof opt === 'string') {
 			opt = '"' + opt.split('|').join(',|,').split(',').join('","') + '"';
 			opt = '[' + opt.replace(/"\[/g, '["').replace(/\]"/g, '"]') + ']';
-			opt = JSON.decode(opt);
+			if (window.JSON && JSON.parse) { opt = JSON.parse(opt); }
+			else { opt = (new Function('return (' + opt + ');'))(); }
 		}
 		return opt;
 	},
@@ -72,18 +80,18 @@ HtmlArea = new Class({
 			cmd = (navigator.platform.indexOf('Mac') === 0) ? '&#8984;' : 'ctrl ';
 		for (t = 0, tt = tools.length - 1; t <= tt; ++t) {
 			if (tools[t] === '|') { tools[t] = 'separator'; }
-			if (typeOf(tools[t]) === 'array') {
+			if (Object.prototype.toString.call(tools[t]) === '[object Array]') {
 				html += '<span class="tools">' + this.buildTools(tools[t]) + '</span>';
-			} else if (tool = (typeOf(tools[t]) === 'object') ? tools[t] : Tools[tools[t]]) {
+			} else if (tool = (typeof tools[t] === 'object') ? tools[t] : Tools[tools[t]]) {
 				html += '<a data-tool="' + tool.tool + '" class="' + tool.tool;
 				if (!t) { html += ' first'; }
 				if (t === tt) { html += ' last'; }
 
 				html += '" title="' + (tool.title || '');
-				if (tool.key) { html += ' ' + cmd + tool.key.toUpperCase(); }
+				if (tool.key) { html += ' ' + cmd + String.fromCharCode(tool.key).toUpperCase(); }
 
 				html += '"><span>' + (tool.text || tool.tool) + '</span><em></em></a>';
-				if (tool.setup) { tool.setup(this); }
+				if (tool.setup) { tool.setup(this, this.options[tool.tool+'Options']); }
 			}
 		}
 		return html;
@@ -93,57 +101,60 @@ HtmlArea = new Class({
 		var Utils = HtmlArea.Utils, u, uu, util, name, o = this.options, arr = [];
 		for (u = 0, uu = utils.length; u < uu; ++u) {
 			name = utils[u].substr(0, 1).toLowerCase() + utils[u].substr(1);
-			util = Utils[utils[u]];
-			arr.push(this[name+'Util'] = new util(this, o[name+'Options']));
+			arr.push(this[name+'Util'] = new Utils[utils[u]](this, o[name+'Options']));
 		}
 		return arr;
 	},
 
 	addListeners: function() {
-		var updateTools = this.updateTools.bind(this);
-		this.content.addEvents({
-			blur: this.updateTextarea.bind(this),
-			keydown: this.shortcut.bind(this),
+		var bind = HtmlArea.Utils.bindEvent, updateTools = bind(this, this.updateTools);
+		HtmlArea.Utils.onEvents(this.content, {
+			blur: bind(this, this.updateTextarea),
+			keydown: bind(this, this.shortcut),
 			focus:updateTools, keyup:updateTools, mouseup:updateTools
 		});
-		this.tools.addEvents({
-			mousedown: this.toolRun.bind(this),
+		HtmlArea.Utils.onEvents(this.tools, {
+			mousedown: bind(this, this.toolRun),
 			mouseup: updateTools
 		});
 		return this;
 	},
 
 	updateTextarea: function() {
-		this.textarea.set('value', this.getHTML());
+		this.textarea.value = this.getHTML();
 	},
 
 	updateContent: function() {
-		var html = this.cleanHTML(this.textarea.get('value'));
+		var html = this.cleanHTML(this.textarea.value);
 		if (!html) { html = HtmlArea.pbr; }
-		this.content.set('html', html);
+		this.content.innerHTML = html;
 	},
 
 	setHTMLMode: function() {
-		var style = this.content.getStyles('height', 'width');
-		style.display = '';
-		this.element.addClass('html-mode');
+		var utils = HtmlArea.Utils;
+		utils.addClass(this.element, 'html-mode');
 		this.updateTextarea();
-		this.content.setStyle('display', 'none');
-		this.textarea.setStyles(style).focus();
-		this.fireEvent('modechange', { editor:this, mode:(this.mode='html') });
+		this.textarea.style.height = utils.getComputedStyle(this.content, 'height');
+		this.textarea.style.width = utils.getComputedStyle(this.content, 'width');
+		this.textarea.style.display = '';
+		this.textarea.focus();
+		this.content.style.display = 'none';
+		this.fire('modechange', { editor:this, mode:(this.mode='html') });
 	},
 
 	setVisualMode: function() {
-		this.element.removeClass('html-mode');
+		var utils = HtmlArea.Utils;
+		utils.removeClass(this.element, 'html-mode');
 		this.updateContent();
-		this.textarea.setStyle('display', 'none');
-		this.content.setStyle('display', '').focus();
-		this.fireEvent('modechange', { editor:this, mode:(this.mode='visual') });
+		this.textarea.style.display = 'none';
+		this.content.style.display = '';
+		this.content.focus();
+		this.fire('modechange', { editor:this, mode:(this.mode='visual') });
 	},
 
 	updateTools: function(e) {
 		var map = this.updateTools.toolMap, btn, state, cmd,
-			Tools = HtmlArea.Tools, tool, name;
+			Tools = HtmlArea.Tools, tool, name, utils = HtmlArea.Utils;
 
 		if (!map) {
 			map = (this.updateTools.toolMap = {});
@@ -155,9 +166,16 @@ HtmlArea = new Class({
 			} else if (cmd = tool.command) {
 				btn = map[name];
 				state = this.query(cmd);
-				if (state === false) { btn.removeClass('active').removeClass('indeterminate'); }
-				else if (state) { btn.addClass('active').removeClass('indeterminate'); }
-				else { btn.removeClass('active').addClass('indeterminate'); }
+				if (state === false) {
+					utils.removeClass(btn, 'active');
+					utils.removeClass(btn, 'indeterminate');
+				} else if (state) {
+					utils.addClass(btn, 'active');
+					utils.removeClass(btn, 'indeterminate');
+				} else {
+					utils.removeClass(btn, 'active');
+					utils.addClass(btn, 'indeterminate');
+				}
 			}
 		}
 
@@ -171,39 +189,42 @@ HtmlArea = new Class({
 		var t, tt = tools.length, bar = this.tools,
 			Tools = HtmlArea.Tools, tool;
 		for (t = 0; t < tt; ++t) {
-			if (typeOf(tools[t]) === 'array') {
+			if (Object.prototype.toString.call(tools[t]) === '[object Array]') {
 				this.updateToolMap(map, tools[t]);
 			} else if (tool = Tools[tools[t]]) {
 				if (tool.update || tool.command) { // only stateful tools
-					map[tools[t]] = bar.getElement('.' + tools[t]);
+					map[tools[t]] = bar.querySelector('.' + tools[t]);
 				}
 			}
 		}
 	},
 
 	toolRun: function(e) {
-		e.preventDefault(); // prevent losing focus
-		var a = $(e.target), tool;
-		if (!a.get('data-tool')) { a = a.getParent('[data-tool]'); }
-		if (!a) { return; }
-		tool = HtmlArea.Tools[a.get('data-tool')];
-		if (tool) { tool.run(this, a, e); }
+		var a = e.target, tool;
+		while (a && a != this.tools && !a.getAttribute('data-tool')) { a = a.parentNode; }
+		if (a) {
+			tool = HtmlArea.Tools[a.getAttribute('data-tool')];
+			if (tool) { tool.run(this, a, e); }
+		}
+		if (e.preventDefault) { e.preventDefault(); } // prevent losing focus
+		return e.returnValue = false;
 	},
 
 	shortcut: function(e) {
-		if (!e || !(e.control || e.meta)) { return; }
+		if (!e || !(e.ctrlKey || e.metaKey)) { return; }
 
 		var keys = this.shortcut.keys, Tools = HtmlArea.Tools, t;
 		if (!keys) {
 			keys = (this.shortcut.keys = {});
 			for (t in Tools) {
 				if (Tools[t].key && !Tools[t].magic) {
-					keys[Tools[t].key] = Tools[t];
+					keys[Tools[t].key.toLowerCase()] = Tools[t];
+					keys[Tools[t].key.toUpperCase()] = Tools[t];
 				}
 			}
 		}
-		if (t = keys[e.key]) {
-			var a = this.tools.getElement('.' + t.tool);
+		if (t = keys[String.fromCharCode(e.keyCode || e.which || e.charCode)]) {
+			var a = this.tools.querySelector('.' + t.tool);
 			t.run(this, a, e);
 		}
 	},
@@ -227,43 +248,38 @@ HtmlArea = new Class({
 		} else { this.exec('insertHTML', html); }
 	},
 
-	unwrap: function(node) {
-		var parentNode = node.parentNode, child;
-		while (child = node.firstChild) {
-			parentNode.insertBefore(node.removeChild(child), node);
-		}
-		$(node).destroy();
-	},
-
 	beforeGetHTML: function() {
-		var spans = this.content.getElements('font,span,[style]').include(this.content),
+		var spans = this.content.querySelectorAll('font,span,[style]'),
 			styles = HtmlArea.styles, s, ss = styles.length, font,
-			style, span, t, tt = spans.length;
+			style, span, t, tt = spans.length+1;
+		spans = Array.prototype.slice.call(spans, 0).concat(this.content);
 		for (t = 0; t < tt; ++t) {
-			style = (span = spans[t]).get('style').trim();
-			if (span.get('tag') === 'font') {
+			style = (span = spans[t]).style.cssText.replace(/^\s+|\s+$/g, '');
+			if (span.nodeName.toLowerCase() === 'font') {
 				font = span;
-				if (s = font.get('color')) { style += ' color: ' + s; }
-				if (s = font.get('face')) { style += ' font-face: ' + s; }
-				if (s = font.get('size')) { style += ' font-size: ' + s; }
-				font.innerHTML = '<span style="' + style + '">'
-					+ font.innerHTML + '</span>';
-				span = font.firstChild;
-				this.unwrap(font);
+				if (s = font.getAttribute('color')) { style += ' color: ' + s; }
+				if (s = font.getAttribute('face')) { style += ' font-face: ' + s; }
+				if (s = font.getAttribute('size')) { style += ' font-size: ' + s; }
+				span = document.createElement('span');
+				span.style.cssText = style;
+				while (font.firstChild) { span.appendChild(font.removeChild(font.firstChild)); }
+				font.parentNode.insertBefore(span, font);
+				font.parentNode.removeChild(font);
 			}
 			if (style) {
 				for (s = 0; s < ss; ++s) {
 					if (!styles[s][0].test(style)) { continue; }
 					style = style.replace(styles[s][0], styles[s][1]);
 					if (styles[s][2]) {
-						span.innerHTML = '<' + styles[s][2] + '>'
-							+ span.innerHTML + '</' + styles[s][2] + '>';
+						font = document.createElement(styles[s][2]);
+						while (span.firstChild) { font.appendChild(span.removeChild(span.firstChild)); }
+						span.appendChild(font);
 					}
 				}
-				span.set('style', (style = style.trim()));
+				span.style.cssText = (style = style.replace(/^\s+|\s+$/g, ''));
 			}
-			if (!style && span != this.content && span.get('tag') === 'span') {
-				this.unwrap(span);
+			if (!style && span != this.content && span.nodeName.toLowerCase() === 'span') {
+				HtmlArea.Utils.unwrap(span);
 			}
 		}
 	},
@@ -278,12 +294,12 @@ HtmlArea = new Class({
 			html = replace.apply(html, cleanups[c]);
 		} } while (cleaned != html && --max);
 
-		return html.trim();
+		return html.replace(/^\s+|\s+$/g, '');
 	},
 
 	getHTML: function() {
 		this.beforeGetHTML(); 
-		return this.cleanHTML(this.content.get('html'));
+		return this.cleanHTML(this.content.innerHTML);
 	},
 
 	getRange: function(type) {
@@ -319,146 +335,165 @@ HtmlArea = new Class({
 		this.setRange(range);
 	}
 
-}).extend({ // static
+};
 
-	pbr: '<p><br/></p>',
+HtmlArea.pbr = '<p><br/></p>';
 
-	cleanups: [ // got this started by looking at MooRTE. Thanks Sam!
-		// html tidiness
-		[ /<[^> ]*/g, function(m) { return m.toLowerCase(); } ], // lowercase tags
-		[ /<[^>]*>/g, function(m) {	return m
-			.replace(/ [^=]+=/g, function(a) { return a.toLowerCase(); }) // lowercase attributes
-			.replace(/( [^=]+=)([^"][^ >]*)/g, '$1"$2"') // quote attributes
-			.replace(/ slick-uniqueid="[^"]*"/g, ''); // remove slick added attributes
-		} ],
-		[ /(<(?:img|input)\b[^>]*[^\/])>/g, '$1 />' ], // self close tags
+HtmlArea.cleanups = [ // got this started by looking at MooRTE. Thanks Sam!
+	// html tidiness
+	[ /<[^> ]*/g, function(m) { return m.toLowerCase(); } ], // lowercase tags
+	[ /<[^>]*>/g, function(m) {	return m
+		.replace(/ [^=]+=/g, function(a) { return a.toLowerCase(); }) // lowercase attributes
+		.replace(/( [^=]+=)([^"][^ >]*)/g, '$1"$2"') // quote attributes
+		.replace(/ slick-uniqueid="[^"]*"/g, ''); // remove slick added attributes
+	} ],
+	[ /(<(?:img|input)\b[^>]*[^\/])>/g, '$1 />' ], // self close tags
 
-		// <br/> tag cleanup
-		[ /<br\b[^>]*?>/g, '<br/>' ], // normalize <br>
-		[ /><br\/>/g, '>' ], // no <br> directly after something else
-		[ /^<br\/>|<br\/>$/g, '' ], // no leading or trailing <br>
-		[ /<br\/>\s*<\/(h1|h2|h3|h4|h5|h6|li|p|div)/g, '</$1' ], // no <br> at end of block
-		[ /<p>(?:&nbsp;|\s)*<br\/>(?:&nbsp;|\s)*<\/p>/g, '<p><br/></p>' ], // replace padded <p> with pbr
+	// <br/> tag cleanup
+	[ /<br\b[^>]*?>/g, '<br/>' ], // normalize <br>
+	[ /><br\/>/g, '>' ], // no <br> directly after something else
+	[ /^<br\/>|<br\/>$/g, '' ], // no leading or trailing <br>
+	[ /<br\/>\s*<\/(h1|h2|h3|h4|h5|h6|li|p|div)/g, '</$1' ], // no <br> at end of block
+	[ /<p>(?:&nbsp;|\s)*<br\/>(?:&nbsp;|\s)*<\/p>/g, '<p><br/></p>' ], // replace padded <p> with pbr
 
-		// webkit cleanup
-		[ / class="apple-style-span"| style=""/gi, '' ], // remove unhelpful attributes	
-		[ /^([^<]+)(<?)/, '<p>$1</p>$2' ], // wrap first text in <p>
-		[ /<(\/?)div\b/g, '<$1p' ], // change <div> to <p>
+	// webkit cleanup
+	[ / class="apple-style-span"| style=""/gi, '' ], // remove unhelpful attributes	
+	[ /^([^<]+)(<?)/, '<p>$1</p>$2' ], // wrap first text in <p>
+	[ /<(\/?)div\b/g, '<$1p' ], // change <div> to <p>
 
-		// semantic changes, but prefer b, i, and s instead of strong, em, and del
-		[ /<(\/?)strong\b/g, '<$1b' ], // use <b> for bold
-		[ /<(\/?)em\b/g, '<$1i' ], // use <i> for italic
-		[ /<(\/?)(?:strike|del)\b/g, '<$1s' ], // use <s> for strikethrough
+	// semantic changes, but prefer b, i, and s instead of strong, em, and del
+	[ /<(\/?)strong\b/g, '<$1b' ], // use <b> for bold
+	[ /<(\/?)em\b/g, '<$1i' ], // use <i> for italic
+	[ /<(\/?)(?:strike|del)\b/g, '<$1s' ], // use <s> for strikethrough
 
-		// normalize whitespace, tag placement
-		[ /<p>\s*(<img[^>]+>)\s*<\/p>/g, '$1' ], // <p> with only <img>, unwrap
-		[ /\s*<(\/?(?:p|ol|ul)\b[^>]*)>\s*/g, '<$1>\n' ], // newline after <p> </p> <ol> </ol> <ul> </ul>
-		[ /\s*<li([^>]*)>/g, '\n\t<li$1>' ], // indent <li>
-		[ /\s*<\/(p|ol|ul)>/g, '\n</$1>'], // newline before </p> </ol> </ul>
-		[ /\s*<img\b([^>*?])>\s*/g, '\n<img$1>\n'], // <img> on its own line
-		[ /<p\b[^>]*>\s*<\/p>\s*<(ol|ul)\b/g, '<$1' ], // remove empty <p> before <ul> or <ol>
-		[ /(<p\b[^>]*>\s*)(<(ul|ol)\b([^<]|<)*?<\/\3>\s*)/g, '$2$1' ], // move <p> right before <ul> or <ol> to after
-		[ /^\s*$/g, '' ] // no empty lines
-	],
+	// normalize whitespace, tag placement
+	[ /<p>\s*(<img[^>]+>)\s*<\/p>/g, '$1' ], // <p> with only <img>, unwrap
+	[ /\s*<(\/?(?:p|ol|ul)\b[^>]*)>\s*/g, '<$1>\n' ], // newline after <p> </p> <ol> </ol> <ul> </ul>
+	[ /\s*<li([^>]*)>/g, '\n\t<li$1>' ], // indent <li>
+	[ /\s*<\/(p|ol|ul)>/g, '\n</$1>'], // newline before </p> </ol> </ul>
+	[ /\s*<img\b([^>*?])>\s*/g, '\n<img$1>\n'], // <img> on its own line
+	[ /<p\b[^>]*>\s*<\/p>\s*<(ol|ul)\b/g, '<$1' ], // remove empty <p> before <ul> or <ol>
+	[ /(<p\b[^>]*>\s*)(<(ul|ol)\b([^<]|<)*?<\/\3>\s*)/g, '$2$1' ], // move <p> right before <ul> or <ol> to after
+	[ /^\s*$/g, '' ] // no empty lines
+];
 
-	styles: [
-		[ /(text-decoration:.*?)\bline-through\b(;?)/g, '$1$2', 's' ],
-		[ /(text-decoration:.*?)\bunderline\b(;?)/g, '$1$2', 'u' ],
-		[ /text-decoration:\s*;/, '' ],
-		[ /font-style:\s*italic;?/g, '', 'i' ],
-		[ /font-weight:\s*bold;?/g, '', 'b' ]
-	],
+HtmlArea.styles = [
+	[ /(text-decoration:.*?)\bline-through\b(;?)/g, '$1$2', 's' ],
+	[ /(text-decoration:.*?)\bunderline\b(;?)/g, '$1$2', 'u' ],
+	[ /text-decoration:\s*;/, '' ],
+	[ /font-style:\s*italic;?/g, '', 'i' ],
+	[ /font-weight:\s*bold;?/g, '', 'b' ]
+];
 
-	Utils: {
-		onEvent: document.addEventListener ?
-			function(elm, name, fn) { elm.addEventListener(name, fn, false); } :
-			function(elm, name, fn) { elm.attachEvent('on'+name, fn); },
+HtmlArea.Utils = {
+	onEvent: document.addEventListener ?
+		function(elm, name, fn) { elm.addEventListener(name, fn, false); } :
+		function(elm, name, fn) { elm.attachEvent('on'+name, fn); },
 
-		unEvent: document.removeEventListener ?
-			function(elm, name, fn) { elm.removeEventListener(name, fn, false); } :
-			function(elm, name, fn) { elm.detachEvent('on'+name, fn); },
+	unEvent: document.removeEventListener ?
+		function(elm, name, fn) { elm.removeEventListener(name, fn, false); } :
+		function(elm, name, fn) { elm.detachEvent('on'+name, fn); },
 
-		onEvents: document.addEventListener ?
-			function(elm, map) { for (var i in map) { elm.addEventListener(i, map[i], false); } } :
-			function(elm, map) { for (var i in map) { elm.attachEvent('on'+i, map[i]); } },
+	onEvents: document.addEventListener ?
+		function(elm, map) { for (var i in map) { elm.addEventListener(i, map[i], false); } } :
+		function(elm, map) { for (var i in map) { elm.attachEvent('on'+i, map[i]); } },
 
-		unEvents: document.removeEventListener ?
-			function(elm, map) { for (var i in map) { elm.removeEventListener(i, map[i], false); } } :
-			function(elm, map) { for (var i in map) { elm.detachEvent('on'+i, map[i]); } },
+	unEvents: document.removeEventListener ?
+		function(elm, map) { for (var i in map) { elm.removeEventListener(i, map[i], false); } } :
+		function(elm, map) { for (var i in map) { elm.detachEvent('on'+i, map[i]); } },
 
-		bindEvent: function(o, fn) {
-			var slice = Array.prototype.slice, args = slice.call(arguments, 2);
-			return function(e) {
-				e = e || window.event;
-				e.target = e.target || e.srcElement;
-				return fn.apply(o, [e].concat(args, slice.call(arguments, 1)));
-			};
-		},
-
-		getPosition: function(elm, relative) {
-			var utils = HtmlArea.Utils,
-				bound = elm.getBoundingClientRect(),
-				html = document.documentElement,
-				doc = (!document.compatMode || document.compatMode == 'CSS1Compat') ? html : document.body,
-				htmlScroll = { x:window.pageXOffset || doc.scrollLeft, y:window.pageYOffset || doc.scrollTop },
-				isFixed = (utils.getComputedStyle(elm, 'position') == 'fixed'),
-				position = {
-					x:Math.round(bound.left) + ((isFixed) ? 0 : htmlScroll.x) - html.clientLeft,
-					y:Math.round(bound.top)  + ((isFixed) ? 0 : htmlScroll.y) - html.clientTop
-				};
-
-			if (relative) {
-				var rel = utils.getPosition(relative);
-				position.x = position.x - rel.x - parseInt(utils.getComputedStyle(relative, 'borderLeftWidth'), 10);
-				position.y = position.y - rel.y - parseInt(utils.getComputedStyle(relative, 'borderTopWidth'), 10);
-			}
-			return position;
-		},
-		
-		getComputedStyle: function(elm, prop) {
-			var style = window.getComputedStyle ? window.getComputedStyle(elm, null) : elm.currentStyle;
-			return style ? style[prop] : null;
-		},
-
-		addClass: document.documentElement.classList ?
-			function(elm, cls) { elm.classList.add(cls); } :
-			function(elm, cls) { elm.className = ((' '+elm.className+' ').replace(' '+cls+' ', ' ') + ' ' + cls).replace(/^\s+|\s+$/g, ''); },
-
-		removeClass: document.documentElement.classList ?
-			function(elm, cls) { elm.classList.remove(cls); } :
-			function(elm, cls) { elm.className = (' '+elm.className+' ').replace(' '+cls+' ', ' ').replace(/^\s+|\s+$/g, ''); },
-
-		hasClass: document.documentElement.classList ?
-			function(elm, cls) { return elm.classList.contains(cls); } :
-			function(elm, cls) { return (' '+elm.className+' ').indexOf(' '+cls+' ') >= 0; }
+	bindEvent: function(o, fn) {
+		var slice = Array.prototype.slice, args = slice.call(arguments, 2);
+		return function(e) {
+			e = e || window.event;
+			if (e) { e.target = e.target || e.srcElement; }
+			return fn.apply(o, [e].concat(args, slice.call(arguments, 1)));
+		};
 	},
 
-	Tools: {
-		Tool: new Class({
-			initialize: function(o) { for (var k in o) { this[k] = o[k]; } },
+	bind: function(o, fn) {
+		var slice = Array.prototype.slice, args = slice.call(arguments, 2);
+		return function() { return fn.apply(o, args.concat(slice.call(arguments, 0))); };
+	},
 
-			run: function(editor, btn, e) {
-				var cmd = this.command;
-				return cmd ? editor.exec(cmd, this.param, this.ui) : false;
-			}
+	getPosition: function(elm, relative) {
+		var utils = HtmlArea.Utils,
+			bound = elm.getBoundingClientRect(),
+			html = document.documentElement,
+			doc = (!document.compatMode || document.compatMode == 'CSS1Compat') ? html : document.body,
+			htmlScroll = { x:window.pageXOffset || doc.scrollLeft, y:window.pageYOffset || doc.scrollTop },
+			isFixed = (utils.getComputedStyle(elm, 'position') == 'fixed'),
+			position = {
+				x:Math.round(bound.left) + ((isFixed) ? 0 : htmlScroll.x) - html.clientLeft,
+				y:Math.round(bound.top)  + ((isFixed) ? 0 : htmlScroll.y) - html.clientTop
+			};
+
+		if (relative) {
+			var rel = utils.getPosition(relative);
+			position.x = position.x - rel.x - parseInt(utils.getComputedStyle(relative, 'borderLeftWidth'), 10);
+			position.y = position.y - rel.y - parseInt(utils.getComputedStyle(relative, 'borderTopWidth'), 10);
+		}
+		return position;
+	},
+	
+	getComputedStyle: function(elm, prop) {
+		var style = window.getComputedStyle ? window.getComputedStyle(elm, null) : elm.currentStyle;
+		return style ? style[prop] : null;
+	},
+
+	addClass: document.documentElement.classList ?
+		function(elm, cls) { elm.classList.add(cls); } :
+		function(elm, cls) { elm.className = ((' '+elm.className+' ').replace(' '+cls+' ', ' ') + ' ' + cls).replace(/^\s+|\s+$/g, ''); },
+
+	removeClass: document.documentElement.classList ?
+		function(elm, cls) { elm.classList.remove(cls); } :
+		function(elm, cls) { elm.className = (' '+elm.className+' ').replace(' '+cls+' ', ' ').replace(/^\s+|\s+$/g, ''); },
+
+	hasClass: document.documentElement.classList ?
+		function(elm, cls) { return elm.classList.contains(cls); } :
+		function(elm, cls) { return (' '+elm.className+' ').indexOf(' '+cls+' ') >= 0; },
+
+	contains: (/\{\s*\[native code\]\s*\}/).test('' + document.documentElement.contains) ?
+		function(context, node) { return context.contains(node); } :
+	(document.documentElement.compareDocumentPosition ?
+		function(context, node) { return context === node || !!(context.compareDocumentPosition(node) & 16); } :
+		function(context, node) {
+			while (node && node !== context) { node = node.parentNode; }
+			return (node === context);
 		}),
 
-		addTools: function(o) {
-			for (var name in o) { this.addTool(name, o[name]); }
-			return this;
-		},
-
-		addTool: function(name, tool) {
-			var Tool = HtmlArea.Tools.Tool;
-			tool.tool = name;
-			if (!instanceOf(tool, Tool) && !instanceOf(tool, Class)) {
-				tool = new Tool(tool);
-			}
-			this[name] = tool;
-			return this;
+	unwrap: function(node) {
+		var parentNode = node.parentNode, child;
+		while (child = node.firstChild) {
+			parentNode.insertBefore(node.removeChild(child), node);
 		}
+		parentNode.removeChild(node);
 	}
-});
+};
+
+HtmlArea.Tools = {
+	addTools: function(o) {
+		for (var name in o) { this.addTool(name, o[name]); }
+		return this;
+	},
+
+	addTool: function(name, tool) {
+		var Tool = HtmlArea.Tools.Tool;
+		tool.tool = name;
+		if (typeof tool === 'object' && !(tool instanceof Tool)) {
+			tool = new Tool(tool);
+		}
+		this[name] = tool;
+		return this;
+	}
+};
+HtmlArea.Tools.Tool = function(o) { for (var k in o) { this[k] = o[k]; } };
+HtmlArea.Tools.Tool.prototype = {
+	run: function(editor, btn, e) {
+		var cmd = this.command;
+		return cmd ? editor.exec(cmd, this.param, this.ui) : false;
+	}
+};
 
 HtmlArea.Tools.addTools({
 	separator:{ text:'|' },
@@ -473,7 +508,7 @@ HtmlArea.Tools.addTools({
 	left:{ title:'Align Left', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyLeft' },
 	center:{ title:'Align Center', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyCenter' },
 	right:{ title:'Align Right', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyRight' },
-//	justify:{ title:'Justify', text:'<hr/><hr/><hr/><hr/><hr/><hr/>', command:'justifyAll' }, // doesn't seem to work, even though querying says supported
+	justify:{ title:'Justify', text:'<hr/><hr/><hr/><hr/><hr/><hr/>', command:'justifyAll' },
 
 	bullet:{ title:'Bullet List', text:'<ul><li><b>&#9679;</b></li><li><b>&#9679;</b></li><li><b>&#9679;</b></li></ul>', command:'insertunorderedlist' },
 	number:{ title:'Numbered List', text:'<ol><li><b>1</b></li><li><b>2</b></li><li><b>3</b></li></ol>', command:'insertorderedlist' },
@@ -490,10 +525,10 @@ HtmlArea.Tools.addTools({
 	mode:{ title:'View HTML', text:'&lt;/&gt;', key:'<',
 		run: function(editor, btn) {
 			if (editor.mode === 'visual') {
-				btn.addClass('active');
+				HtmlArea.Utils.addClass(btn, 'active');
 				editor.setHTMLMode();
 			} else {
-				btn.removeClass('active');
+				HtmlArea.Utils.removeClass(btn, 'active');
 				editor.setVisualMode();
 			}
 		}
