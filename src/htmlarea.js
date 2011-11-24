@@ -19,22 +19,22 @@ HtmlArea = function(content, o) {
 	var ta, utils = HtmlArea.Utils;
 
 	this.content = (content = content || document.createElement('div'));
-	content.innerHTML = o.value || '';
 	this.element = document.createElement('div');
 	this.element.className = 'htmlarea ' + o.style;
 	if (content.parentNode) {
 		content.parentNode.insertBefore(this.element, content);
 		content.parentNode.removeChild(content);
 	}
-	else { this.element.appendChild(content); }
+	this.element.appendChild(content);
 
 	if (content.nodeName.toLowerCase() === 'textarea') {
 		var ta = (this.textarea = content);
 		content = (this.content = document.createElement('div'));
 		content.className = ta.className;
-		content.innerHTML = ta.value;
-		this.element.insertBefore(ta, content);
+		content.innerHTML = o.value || ta.value;
+		this.element.insertBefore(content, ta);
 	} else {
+		if (o.value) { content.value = o.value; }
 		var ta = (this.textarea = document.createElement('textarea'));
 		ta.name = o.name;
 		ta.className = content.className;

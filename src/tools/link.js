@@ -22,7 +22,7 @@ HtmlArea.Tools.Link.prototype = {
 		if (/^\S+@\S+\.\S+$/.test(url)) { url = 'mailto:' + url; }
 		else if (!/^(\S)*[:\/?#.](\S)*$/.test(url)) { url = 'http://'; }
 		else if (!/^\w+:\/\//.test(url)) { url = 'http://' + url; }
-		editor.exec('createlink', url);
+		this.editor.exec('createlink', url);
 		this.show(url, this.getLink(), btn);
 		setTimeout(function() {
 			link.getUI().firstChild.focus();
