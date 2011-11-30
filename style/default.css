@@ -12,11 +12,7 @@
 .htmlarea .content p { margin:0; padding:0; }
 .htmlarea .content a { text-decoration:none; }
 .htmlarea .content img { max-width:100%; }
-.htmlarea .content img { position:relative; }
-.htmlarea .content img:after { content:"Garbage"; position:absolute; width:100%; height:100%; display:block; background:blue; z-index:99; }
-.htmlarea .content:after {
-	content:" "; display:block; clear:both;
-}
+.htmlarea .content:after { content:"\200B"; display:block; clear:both; }
 
 
 .htmlarea .tools { border-bottom:1px solid #ccc; background:#dfdfdf; white-space:nowrap; user-select:none; -webkit-user-select:none; -moz-user-select:-moz-none; }
