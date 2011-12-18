@@ -31,7 +31,8 @@ HtmlArea.Tools.Link.prototype = {
 	},
 
 	getLink: function() {
-		var editor = this.editor, node = editor.getRange('node'), utils = HtmlArea.Utils;
+		var editor = this.editor, node = editor.getRange('node'), utils = HtmlArea.Utils, ui = this.getUI();
+		if (this.link && ui == node || utils.contains(ui, node)) { return this.link; }
 		while (node && node.nodeName.toLowerCase() !== 'a' && node != editor.content) { node = node.parentNode; }
 		return node != editor.content && utils.contains(editor.content, node) && node;
 	},
@@ -55,6 +56,7 @@ HtmlArea.Tools.Link.prototype = {
 	},
 
 	show: function(url, link, btn) {
+		if (link == this.link) { return; }
 		var ui = this.getUI(), utils = HtmlArea.Utils,
 			pos = utils.getPosition(link, this.editor.element);
 		this.link = link;
