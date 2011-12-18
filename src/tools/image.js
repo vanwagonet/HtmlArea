@@ -186,7 +186,7 @@ HtmlArea.Tools.Image.prototype = {
 		img.src = data.response.upload.url;
 		HtmlArea.Utils.removeClass(img, 'image-placeholder');
 		if (this.options.autoLink) {
-			var a = document.createElement('img');
+			var a = document.createElement('a');
 			a.href = data.response.upload.href || data.response.upload.url;
 			img.parentNode.replaceChild(a, img);
 			a.appendChild(img);
