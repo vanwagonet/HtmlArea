@@ -80,8 +80,8 @@ HtmlArea.Tools.Link.prototype = {
 	keyPress: function(e) {
 		if ((e.keyCode || e.which || e.charCode) !== 13) { return; }
 		this.editor.setRange(this.range);
-		if (e.preventDefault) { e.preventDefault(); } // don't submit the form
-		return e.returnValue = false;
+		e.preventDefault(); // don't submit the form
+		return false;
 	},
 
 	blur: function(e) { if (this.link) { this.link.href = e.target.value; } },
@@ -90,8 +90,8 @@ HtmlArea.Tools.Link.prototype = {
 		var tag = e.target.nodeName.toLowerCase();
 		if (tag === 'input') { return; }
 		if (tag === 'a') { this.remove(); }
-		if (e.preventDefault) { e.preventDefault(); } // don't change focus
-		return e.returnValue = false;
+		e.preventDefault(); // don't change focus
+		return false;
 	},
 
 	remove: function() {

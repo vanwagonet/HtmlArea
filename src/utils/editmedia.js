@@ -95,8 +95,8 @@ HtmlArea.Utils.EditMedia.prototype = {
 			this.elm = this.masked;
 			this.show();
 		}
-		if (e.preventDefault) { e.preventDefault(); }
-		return (e.returnValue = false);
+		e.preventDefault();
+		return false;
 	},
 
 	update: function() {
@@ -174,8 +174,8 @@ HtmlArea.Utils.EditMedia.prototype = {
 			}
 		}
 		// don't change focus
-		if (e.preventDefault) { e.preventDefault(); }
-		return (e.returnValue = false);
+		e.preventDefault();
+		return false;
 	},
 
 	runRemove: function(elm) {

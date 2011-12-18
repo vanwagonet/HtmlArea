@@ -60,14 +60,14 @@ HtmlArea.Tools.Video.prototype = {
 			this.insert(this.getHtmlFor(src));
 			this.hide();
 		}
-		if (e.preventDefault) { e.preventDefault(); } // don't submit the form
-		return e.returnValue = false;
+		e.preventDefault(); // don't submit the form
+		return false;
 	},
 
 	cancel: function(e) {
 		this.hide();
-		if (e.preventDefault) { e.preventDefault(); }
-		return e.returnValue = false;
+		e.preventDefault();
+		return false;
 	},
 
 	validate: function(e) {

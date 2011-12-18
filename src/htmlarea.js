@@ -10,7 +10,7 @@ HtmlArea = function(content, o) {
 	o.mode = o.mode || 'visual';
 	o.toolsgo = o.toolsgo || 'top';
 	o.tools = o.tools || '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,video,mode]';
-	o.utils = o.utils || 'EditMedia';
+	o.utils = o.utils || 'EditMedia,Drop';
 	if (this.setupEvents) { this.setupEvents(o); }
 
 	o.tools = this.optionToArray(o.tools);
