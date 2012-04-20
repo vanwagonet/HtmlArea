@@ -59,12 +59,12 @@ HtmlArea.Tools.Image.prototype = {
 		this.uiLabelSpan = this.uiLabelUpload.querySelector('span');
 		this.uiError = ui.querySelector('.error');
 		if (utils.Upload.prototype.canUploadXhr()) { this.uiFile.multiple = true; }
-		utils.onEvent(ui.querySelector('form'), 'submit', utils.bindEvent(this, this.submit));
-		utils.onEvent(ui.querySelector('input[type=button]'), 'click', utils.bindEvent(this, this.cancel));
-		utils.onEvent(this.uiRadioUpload, 'change', utils.bindEvent(this, this.typeChange));
-		utils.onEvent(this.uiRadioUrl, 'change', utils.bindEvent(this, this.typeChange));
-		utils.onEvent(this.uiFile, 'change', validate);
-		utils.onEvents(this.uiUrl, { keydown:validate, input:validate, change:validate });
+		utils.on(ui.querySelector('form'), 'submit', utils.bindEvent(this, this.submit));
+		utils.on(ui.querySelector('input[type=button]'), 'click', utils.bindEvent(this, this.cancel));
+		utils.on(this.uiRadioUpload, 'change', utils.bindEvent(this, this.typeChange));
+		utils.on(this.uiRadioUrl, 'change', utils.bindEvent(this, this.typeChange));
+		utils.on(this.uiFile, 'change', validate);
+		utils.ons(this.uiUrl, { keydown:validate, input:validate, change:validate });
 		editor.fire('buildImagePanel', { editor:editor, panel:ui, tool:this });
 		return ui;
 	},

@@ -21,7 +21,7 @@ HtmlArea.Utils.Drop = function(editor, o) {
 	this.dragOver = utils.bindEvent(this, this.dragOver);
 	this.drop = utils.bindEvent(this, this.drop);
 	this.hide = utils.bindEvent(this, this.hide);
-	utils.onEvent(editor.element, 'dragenter', this.dragEnter);
+	utils.on(editor.element, 'dragenter', this.dragEnter);
 };
 HtmlArea.Utils.Drop.hasFiles = function(e) {
 	if (!e.dataTransfer || !e.dataTransfer.types) { return false; }
@@ -42,7 +42,7 @@ HtmlArea.Utils.Drop.prototype = {
 			this.mask = document.createElement('div');
 			this.mask.className = 'mask';
 			ui.appendChild(this.mask);
-			utils.onEvents(this.mask, { dragleave:this.dragLeave, dragover:this.dragOver, drop:this.drop });
+			utils.ons(this.mask, { dragleave:this.dragLeave, dragover:this.dragOver, drop:this.drop });
 			this.progress = ui.querySelector('em');
 			this.span = ui.querySelector('span');
 			editor.fire('buildDropPanel', { editor:editor, panel:ui, tool:this });

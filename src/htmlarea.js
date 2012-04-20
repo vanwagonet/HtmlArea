@@ -108,12 +108,12 @@ HtmlArea.prototype = {
 
 	addListeners: function() {
 		var bind = HtmlArea.Utils.bindEvent, updateTools = bind(this, this.updateTools);
-		HtmlArea.Utils.onEvents(this.content, {
+		HtmlArea.Utils.ons(this.content, {
 			blur: bind(this, this.updateTextarea),
 			keydown: bind(this, this.shortcut),
 			focus:updateTools, keyup:updateTools, mouseup:updateTools
 		});
-		HtmlArea.Utils.onEvents(this.tools, {
+		HtmlArea.Utils.ons(this.tools, {
 			mousedown: bind(this, this.toolRun),
 			mouseup: updateTools
 		});
@@ -386,19 +386,19 @@ HtmlArea.styles = [
 ];
 
 HtmlArea.Utils = {
-	onEvent: document.addEventListener ?
+	on: document.addEventListener ?
 		function(elm, name, fn) { elm.addEventListener(name, fn, false); } :
 		function(elm, name, fn) { elm.attachEvent('on'+name, fn); },
 
-	unEvent: document.removeEventListener ?
+	off: document.removeEventListener ?
 		function(elm, name, fn) { elm.removeEventListener(name, fn, false); } :
 		function(elm, name, fn) { elm.detachEvent('on'+name, fn); },
 
-	onEvents: document.addEventListener ?
+	ons: document.addEventListener ?
 		function(elm, map) { for (var i in map) { elm.addEventListener(i, map[i], false); } } :
 		function(elm, map) { for (var i in map) { elm.attachEvent('on'+i, map[i]); } },
 
-	unEvents: document.removeEventListener ?
+	offs: document.removeEventListener ?
 		function(elm, map) { for (var i in map) { elm.removeEventListener(i, map[i], false); } } :
 		function(elm, map) { for (var i in map) { elm.detachEvent('on'+i, map[i]); } },
 

@@ -23,7 +23,7 @@ HtmlArea.Utils.Events = function(proto) {
 		return this;
 	};
 
-	proto.un = function(name, fn) {
+	proto.off = function(name, fn) {
 		var event = this.events[name], i, l;
 		if (!event) { return this; }
 		if (!fn) { event.length = 0; }

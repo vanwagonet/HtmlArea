@@ -9,7 +9,7 @@ HtmlArea.Utils.EditMedia = function(editor, o) {
 	this.select = utils.bindEvent(edit, edit.select);
 	this.maskOut = utils.bindEvent(edit, edit.maskOut);
 	this.mouseOver = utils.bindEvent(edit, edit.mouseOver);
-	HtmlArea.Utils.onEvent(editor.content, 'mouseover', this.mouseOver);
+	HtmlArea.Utils.on(editor.content, 'mouseover', this.mouseOver);
 	if (editor.content.attachEvent) { // prevent IE's img resizers
 		editor.content.attachEvent('oncontrolselect', function(e) { e.returnValue = false; });
 	}
@@ -46,8 +46,8 @@ HtmlArea.Utils.EditMedia.prototype = {
 			this.mask = new Image();
 			this.mask.className = 'htmlarea-edit-media-mask';
 			this.mask.src = this.emptyGif;
-			HtmlArea.Utils.onEvent(this.mask, 'mouseout', this.maskOut);
-			HtmlArea.Utils.onEvent(this.mask, 'mousedown', this.select);
+			HtmlArea.Utils.on(this.mask, 'mouseout', this.maskOut);
+			HtmlArea.Utils.on(this.mask, 'mousedown', this.select);
 		}
 		this.maskElm(target);
 	},
@@ -78,7 +78,7 @@ HtmlArea.Utils.EditMedia.prototype = {
 			.replace('{emptyGif}', edit.emptyGif)
 			.replace('{tools}', edit.editor.buildTools(edit.tools))
 			.replace('{resizeTools}', edit.editor.buildTools(edit.resizeTools));
-		utils.onEvent(ui, 'mousedown', utils.bindEvent(edit, edit.edit));
+		utils.on(ui, 'mousedown', utils.bindEvent(edit, edit.edit));
 		edit.proxy = ui.getElementsByTagName('img')[0];
 		edit.resizeMouseMove = utils.bindEvent(edit, edit.resizeMouseMove);
 		edit.resizeMouseDone = utils.bindEvent(edit, edit.resizeMouseDone);
@@ -209,7 +209,7 @@ HtmlArea.Utils.EditMedia.prototype = {
 			y: from.indexOf('Top') >= 0 ? (e.screenY + size.y) : (e.screenY - size.y)
 		};
 		this.aspect = Math.max(size.x, 1) / Math.max(size.y, 1);
-		utils.onEvents(document.body, this.resizeEvents);
+		utils.ons(document.body, this.resizeEvents);
 	},
 
 	resizeMouseMove: function(e) {
@@ -220,7 +220,7 @@ HtmlArea.Utils.EditMedia.prototype = {
 
 	resizeMouseDone: function(e) {
 		var utils = HtmlArea.Utils, elm = this.editor.element;
-		utils.unEvents(document.body, this.resizeEvents);
+		utils.offs(document.body, this.resizeEvents);
 		this.elm.style.width = utils.getComputedStyle(this.ui, 'width');
 		this.elm.style.height = utils.getComputedStyle(this.ui, 'height');
 		this.show();

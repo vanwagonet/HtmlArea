@@ -9,9 +9,8 @@ While I certainly hope it works for you, I don't aim for the broad compatibility
 
 *I'm not done yet.*
 
-While I'm excited about what I've got so far, the best is yet to come. If you find problems, let me know about it. Comment on this post, or shoot me an email. Also, let me know what you'd like to see. Here's what Dennis and I have in mind:
+While I'm excited about what I've got so far, the best is yet to come. If you find problems, let me know about it. Also, let me know what you'd like to see. Here's what Dennis and I have in mind:
 
-* Drag and drop pictures onto the page, and they will automatically be uploaded and added to your post.
 * Select from preset styles, so you can focus on your content, while we make it look good.
 
 
@@ -24,7 +23,7 @@ If you find a bug in HtmlArea while using the latest version of Chrome, Safari, 
 
 ### Requirements
 
-HtmlArea relies on Mootools Core. I've only tested in version 1.4.
+HtmlArea has no external dependencies. The code base is in vanilla javascript.
 
 
 ### Usage

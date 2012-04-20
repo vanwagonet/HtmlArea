@@ -39,18 +39,20 @@ HtmlArea.Tools.Link.prototype = {
 
 	template:
 		'<input type="text" class="url" placeholder="Enter URL" />' +
-		'<a>&times;</a>',
+		'<a>&times;</a><br/>' +
+		'<label><input type="checkbox" /> <span>Open in a new tab or window</span></label>',
 
 	getUI: function() {
 		if (this.ui) { return this.ui; }
 		var ui = (this.ui = document.createElement('div')), utils = HtmlArea.Utils;
 		ui.className = 'htmlarea-link';
 		ui.innerHTML = this.template;
-		utils.onEvent(ui, 'mousedown', utils.bindEvent(this, this.mouseDown));
-		utils.onEvents(ui.firstChild, {
+		utils.on(ui, 'mousedown', utils.bindEvent(this, this.mouseDown));
+		utils.ons(ui.firstChild, {
 			keypress: utils.bindEvent(this, this.keyPress),
-			blur: utils.bindEvent(this, this.blur)
+			change: utils.bindEvent(this, this.change)
 		});
+		utils.on(ui.lastChild.firstChild, 'change', utils.bindEvent(this, this.change));
 		this.editor.fire('buildLinkPanel', { editor:this.editor, panel:ui, tool:this });
 		return ui;
 	},
@@ -62,6 +64,7 @@ HtmlArea.Tools.Link.prototype = {
 		this.link = link;
 		this.range = this.editor.getRange();
 		ui.firstChild.value = url;
+		ui.lastChild.firstChild.checked = link.target === '_blank';
 		ui.style.left = pos.x + 'px';
 		ui.style.top = pos.y+link.offsetHeight + 'px';
 		this.editor.element.appendChild(ui);
@@ -86,7 +89,17 @@ HtmlArea.Tools.Link.prototype = {
 		return false;
 	},
 
-	blur: function(e) { if (this.link) { this.link.href = e.target.value; } },
+	change: function(e) {
+		if (this.link) {
+			var ui = this.getUI();
+			this.link.href = ui.firstChild.value;
+			if (ui.lastChild.firstChild.checked) {
+				this.link.target = '_blank';
+			} else if (this.link.target === '_blank') {
+				this.link.removeAttribute('target');
+			}
+		}
+	},
 
 	mouseDown: function(e) {
 		var tag = e.target.nodeName.toLowerCase();

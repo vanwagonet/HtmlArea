@@ -29,9 +29,9 @@ HtmlArea.Tools.Video.prototype = {
 			validate = utils.bindEvent(this, this.validate);
 		ui.className = 'htmlarea-video';
 		ui.innerHTML = this.template.replace('{action}', '');
-		utils.onEvent(ui.firstChild, 'submit', utils.bindEvent(this, this.submit));
-		utils.onEvent(ui.querySelector('input[type=button]'), 'click', utils.bindEvent(this, this.cancel));
-		utils.onEvents(ui.querySelector('input[name=url]'), { keydown:validate, input:validate, change:validate });
+		utils.on(ui.firstChild, 'submit', utils.bindEvent(this, this.submit));
+		utils.on(ui.querySelector('input[type=button]'), 'click', utils.bindEvent(this, this.cancel));
+		utils.ons(ui.querySelector('input[name=url]'), { keydown:validate, input:validate, change:validate });
 		editor.fire('buildVideoPanel', { editor:editor, panel:ui, tool:this });
 		return ui;
 	},
