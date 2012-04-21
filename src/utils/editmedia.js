@@ -20,23 +20,31 @@ HtmlArea.Utils.EditMedia.prototype = {
 
 	template: '<img src="{emptyGif}" /><div class="tools">{tools}</div><div class="resize">{resizeTools}</div>',
 
+	strings: {
+		resize: 'Resize',
+		inline: 'Inline',
+		floatLeft: 'Float Left',
+		floatRight: 'Float Right',
+		remove: 'Remove'
+	},
+
 	tools: [
-		{ tool:'float-left', title:'Float Left', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b>' },
-		{ tool:'float-none', title:'Inline', text:'<hr class="full"/><hr/ class="left"><hr class="right"/><hr class="full"/><b></b>' },
-		{ tool:'float-right', title:'Float Right', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b>' },
+		{ tool:'float-left', title:'floatLeft', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b>' },
+		{ tool:'float-none', title:'inline', text:'<hr class="full"/><hr/ class="left"><hr class="right"/><hr class="full"/><b></b>' },
+		{ tool:'float-right', title:'floatRight', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b>' },
 		'|',
-		{ tool:'remove', title:'Remove', text:'&times;' }
+		{ tool:'remove', title:'remove', text:'&times;' }
 	],
 
 	resizeTools: [
-		{ tool:'resize-top', title:'Resize', text:'&nbsp;' },
-		{ tool:'resize-left', title:'Resize', text:'&nbsp;' },
-		{ tool:'resize-right', title:'Resize', text:'&nbsp;' },
-		{ tool:'resize-bottom', title:'Resize', text:'&nbsp;' },
-		{ tool:'resize-top-left', title:'Resize', text:'&nbsp;' },
-		{ tool:'resize-top-right', title:'Resize', text:'&nbsp;' },
-		{ tool:'resize-bottom-left', title:'Resize', text:'&nbsp;' },
-		{ tool:'resize-bottom-right', title:'Resize', text:'&nbsp;' }
+		{ tool:'resize-top', title:'resize', text:'&nbsp;' },
+		{ tool:'resize-left', title:'resize', text:'&nbsp;' },
+		{ tool:'resize-right', title:'resize', text:'&nbsp;' },
+		{ tool:'resize-bottom', title:'resize', text:'&nbsp;' },
+		{ tool:'resize-top-left', title:'resize', text:'&nbsp;' },
+		{ tool:'resize-top-right', title:'resize', text:'&nbsp;' },
+		{ tool:'resize-bottom-left', title:'resize', text:'&nbsp;' },
+		{ tool:'resize-bottom-right', title:'resize', text:'&nbsp;' }
 	],
 
 	mouseOver: function(e) {
@@ -74,10 +82,10 @@ HtmlArea.Utils.EditMedia.prototype = {
 		var edit = this, utils = HtmlArea.Utils,
 			ui = (edit.ui = document.createElement('div'));
 		ui.className = 'htmlarea-edit-media';
-		ui.innerHTML = edit.template
-			.replace('{emptyGif}', edit.emptyGif)
-			.replace('{tools}', edit.editor.buildTools(edit.tools))
-			.replace('{resizeTools}', edit.editor.buildTools(edit.resizeTools));
+		ui.innerHTML = utils.format(edit.template, {
+				tools: edit.editor.buildTools(edit.tools, this.strings),
+				resizeTools: edit.editor.buildTools(edit.resizeTools, this.strings)
+			}, this.strings, this);
 		utils.on(ui, 'mousedown', utils.bindEvent(edit, edit.edit));
 		edit.proxy = ui.getElementsByTagName('img')[0];
 		edit.resizeMouseMove = utils.bindEvent(edit, edit.resizeMouseMove);

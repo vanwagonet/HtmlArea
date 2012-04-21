@@ -1,26 +1,37 @@
 /**
  * Insert videos from a url or embed code
  **/
-HtmlArea.Tools.Video = function(editor, o) {
+HtmlArea.Tools.Video = function(editor, o, s) {
+	var utils = HtmlArea.Utils;
 	this.editor = editor;
-	var bind = HtmlArea.Utils.bind;
-	editor.on('modechange', bind(this, this.hide));
+//	this.options = utils.merge(this.options, o);
+	this.strings = utils.merge(this.strings, s);
+	editor.on('modechange', utils.bind(this, this.hide));
 };
 HtmlArea.Tools.Video.prototype = {
 	template:
-	'<form action="{action}" method="post">' +
+	'<form action="" method="post">' +
 		'<h6>' +
-			'<span>Add Video:</span>' +
+			'<span>{title}</span>' +
 		'</h6>' +
 		'<label class="url">' +
-			'<span>Enter URL or Embed Code</span>' +
-			'<input type="text" name="url" placeholder="Enter URL or Embed Code" />' +
+			'<span>{label}</span>' +
+			'<input type="text" name="url" placeholder="{placeholder}" />' +
 		'</label>' +
-		'<p>Accepts videos from YouTube and Vimeo</p>' +
+		'<p>{explain}</p>' +
 		'<div class="error"></div>' +
-		'<input type="submit" class="button" value="Done" disabled />' +
-		'<input type="button" class="button" value="Cancel" />' +
+		'<input type="submit" class="button" value="{done}" disabled />' +
+		'<input type="button" class="button" value="{cancel}" />' +
 	'</form>',
+
+	strings: {
+		title: 'Add Video:',
+		label: 'Enter URL or Embed Code',
+		placeholder: 'Enter URL or Embed Code',
+		explain: 'Accepts videos from YouTube and Vimeo',
+		done: 'Done',
+		cancel: 'Cancel'
+	},
 
 	getUI: function() {
 		if (this.ui) { return this.ui; }
@@ -28,7 +39,7 @@ HtmlArea.Tools.Video.prototype = {
 			editor = this.editor, utils = HtmlArea.Utils,
 			validate = utils.bindEvent(this, this.validate);
 		ui.className = 'htmlarea-video';
-		ui.innerHTML = this.template.replace('{action}', '');
+		ui.innerHTML = utils.format(this.template, this.options, this.strings, this);
 		utils.on(ui.firstChild, 'submit', utils.bindEvent(this, this.submit));
 		utils.on(ui.querySelector('input[type=button]'), 'click', utils.bindEvent(this, this.cancel));
 		utils.ons(ui.querySelector('input[name=url]'), { keydown:validate, input:validate, change:validate });

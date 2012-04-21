@@ -2,19 +2,16 @@
  * Manages dropping image/media from the desktop
  *
  * editor.options.dropOptions
- *  dropText - (default: Drop to Upload) the text to display when dragging a file over the editor
  *  errorTimeout - (default: 3000) // ms until error message disappears
+ *
+ * editor.options.dropStrings
+ *  drop: 'Drop to Upload' - the text to display when dragging a file over the editor
  **/
-HtmlArea.Utils.Drop = function(editor, o) {
-	var utils = HtmlArea.Utils, imgO = editor.options.imageOptions || {};
+HtmlArea.Utils.Drop = function(editor, o, s) {
+	var utils = HtmlArea.Utils, imgO = editor.options.imageOptions;
 	this.editor = editor;
-	this.options = (o = o || {});
-	o.autoLink = o.autoLink || imgO.autoLink || false; // if true, inserted images are wrapped in a link pointing to the image
-	o.uploadMax = o.uploadMax || imgO.uploadMax || (6 * 1024 * 1024); // [6MB] max number of bytes allowed in image size
-	o.uploadURL = o.uploadURL || imgO.uploadURL || '/upload.json'; // url to post image uploads to
-	o.uploadName = o.uploadName || imgO.uploadName || 'file'; // field name used for image file upload
-	o.dropText = o.dropText || 'Drop to Upload'; // the text to display when dragging a file over the editor
-	o.errorTimeout = o.errorTimeout || 3000; // ms until error message disappears
+	this.options = HtmlArea.Utils.merge(this.options, imgO, o);
+	this.strings = HtmlArea.Utils.merge(this.strings, s);
 
 	this.dragEnter = utils.bindEvent(this, this.dragEnter);
 	this.dragLeave = utils.bindEvent(this, this.dragLeave);
@@ -30,6 +27,18 @@ HtmlArea.Utils.Drop.hasFiles = function(e) {
 	return false;
 };
 HtmlArea.Utils.Drop.prototype = {
+
+	options: {
+		autoLink: false,
+		uploadMax: (6 * 1024 * 1024),
+		uploadURL: '/upload.json',
+		uploadName: 'file',
+		errorTimeout: 3000
+	},
+
+	strings: {
+		drop: 'Drop to Upload'
+	},
 
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 
@@ -54,7 +63,7 @@ HtmlArea.Utils.Drop.prototype = {
 		if (!HtmlArea.Utils.Drop.hasFiles(e)) { return; }
 		var editor = this.editor, utils = HtmlArea.Utils, ui = this.getUI();
 		this.progress.textContent = '';
-		this.span.textContent = this.options.dropText;
+		this.span.textContent = this.strings.drop;
 		utils.removeClass(ui, 'error');
 		ui.width = editor.element.offsetWidth + 'px';
 		ui.height = editor.element.offsetHeight + 'px';

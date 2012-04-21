@@ -6,16 +6,23 @@
  *  uploadMax - (default: 6 * 1024 * 1024 [6MB]) max number of bytes allowed in image size
  *  uploadURL - (default: /upload.json) url to post image uploads to
  *  uploadName - (default: file) field name used for image file uploads
+ *
+ * editor.options.imageStrings
+ *  title: 'Add Picture:'
+ *  local: 'From My Computer'
+ *  remote: 'From the Web'
+ *  choose: 'Choose File'
+ *  urlLabel: 'Enter URL'
+ *  urlPlaceholder: 'Enter URL'
+ *  done: 'Done'
+ *  cancel: 'cancel'
  **/
-HtmlArea.Tools.Image = function(editor, o) {
-	var bind = HtmlArea.Utils.bind;
+HtmlArea.Tools.Image = function(editor, o, s) {
+	var utils = HtmlArea.Utils;
 	this.editor = editor;
-	this.options = (o = o || {});
-	o.autoLink = o.autoLink || false; // if true, inserted images are wrapped in a link pointing to the image
-	o.uploadMax = o.uploadMax || (6 * 1024 * 1024); // [6MB] max number of bytes allowed in image size
-	o.uploadURL = o.uploadURL || '/upload.json'; // url to post image uploads to
-	o.uploadName = o.uploadName || 'file'; // field name used for image file upload
-	editor.on('modechange', bind(this, this.hide));
+	this.options = utils.merge(this.options, o);
+	this.strings = utils.merge(this.strings, s);
+	editor.on('modechange', utils.bind(this, this.hide));
 };
 HtmlArea.Tools.Image.prototype = {
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
@@ -23,33 +30,47 @@ HtmlArea.Tools.Image.prototype = {
 	template:
 	'<form action="{action}" method="post" enctype="multipart/form-data" encoding="multipart/form-data" accept-charset="utf-8">' +
 		'<h6>' +
-			'<span>Add Picture:</span>' +
-			'<label><input type="radio" name="type" value="upload" checked /> From My Computer</label>' +
-			'<label><input type="radio" name="type" value="url" /> From the Web</label>' +
+			'<span>{title}</span>' +
+			'<label><input type="radio" name="type" value="upload" checked /> {local}</label>' +
+			'<label><input type="radio" name="type" value="url" /> {remote}</label>' +
 		'</h6>' +
 		'<label class="upload button choose">' +
-			'<span>Choose File</span>' +
-			'<input type="file" name="{name}" />' +
+			'<span>{choose}</span>' +
+			'<input type="file" name="{uploadName}" />' +
 		'</label>' +
 		'<label class="url">' +
-			'<span>Enter URL</span>' +
-			'<input type="text" name="url" placeholder="Enter URL" />' +
+			'<span>{urlLabel}</span>' +
+			'<input type="text" name="url" placeholder="{urlPlaceholder}" />' +
 		'</label>' +
 		'<div class="error"></div>' +
-		'<input type="submit" class="button" value="Done" disabled />' +
-		'<input type="button" class="button" value="Cancel" />' +
+		'<input type="submit" class="button" value="{done}" disabled />' +
+		'<input type="button" class="button" value="{cancel}" />' +
 	'</form>',
 
-	chooseText: 'Choose File',
+	options: {
+		autoLink: false,
+		uploadMax: (6 * 1024 * 1024),
+		uploadURL: '/upload.json',
+		uploadName: 'file'
+	},
+
+	strings: {
+		title: 'Add Picture:',
+		local: 'From My Computer',
+		remote: 'From the Web',
+		choose: 'Choose File',
+		urlLabel: 'Enter URL',
+		urlPlaceholder: 'Enter URL',
+		done: 'Done',
+		cancel: 'cancel'
+	},
 
 	getUI: function() {
 		if (this.ui) { return this.ui; }
 		var ui = (this.ui = document.createElement('div')), editor = this.editor,
 			utils = HtmlArea.Utils, validate = utils.bindEvent(this, this.validate)
 		ui.className = 'htmlarea-image upload';
-		ui.innerHTML = this.template
-			.replace('{action}', this.options.uploadURL)
-			.replace('{name}', this.options.uploadName);
+		ui.innerHTML = utils.format(this.template, this.options, this.strings, this);
 		this.uiFile = ui.querySelector('input[type=file]');
 		this.uiUrl = ui.querySelector('input[name=url]');
 		this.uiRadioUpload = ui.querySelector('input[name=type][value=upload]');

@@ -1,7 +1,15 @@
 /**
  * Create, update, and remove links
+ *
+ * editor.options.linkStrings
+ *  placeholder: 'Enter URL' - placeholder text in url field
+ *	newWindow: 'Open in a new tab or window' - text for open in new window label
  **/
-HtmlArea.Tools.Link = function(editor) { this.editor = editor; };
+HtmlArea.Tools.Link = function(editor, o, s) {
+	this.editor = editor;
+//	this.options = HtmlArea.Utils.merge(this.options, o);
+	this.strings = HtmlArea.Utils.merge(this.strings, s);
+};
 HtmlArea.Tools.Link.prototype = {
 
 	update: function(btn) {
@@ -13,6 +21,11 @@ HtmlArea.Tools.Link.prototype = {
 			utils.removeClass(btn, 'active');
 			this.hide(btn);
 		}
+	},
+
+	strings: {
+		placeholder: 'Enter URL',
+		newWindow: 'Open in a new tab or window'
 	},
 
 	run: function(btn) {
@@ -38,15 +51,15 @@ HtmlArea.Tools.Link.prototype = {
 	},
 
 	template:
-		'<input type="text" class="url" placeholder="Enter URL" />' +
+		'<input type="text" class="url" placeholder="{placeholder}" />' +
 		'<a>&times;</a><br/>' +
-		'<label><input type="checkbox" /> <span>Open in a new tab or window</span></label>',
+		'<label><input type="checkbox" /> <span>{newWindow}</span></label>',
 
 	getUI: function() {
 		if (this.ui) { return this.ui; }
 		var ui = (this.ui = document.createElement('div')), utils = HtmlArea.Utils;
 		ui.className = 'htmlarea-link';
-		ui.innerHTML = this.template;
+		ui.innerHTML = utils.format(this.template, this.options, this.strings, this);
 		utils.on(ui, 'mousedown', utils.bindEvent(this, this.mouseDown));
 		utils.ons(ui.firstChild, {
 			keypress: utils.bindEvent(this, this.keyPress),

@@ -3,20 +3,15 @@
  * copyright 2011 - Andy VanWagoner
  * license: MIT
  **/
-HtmlArea = function(content, o) {
-	this.options = (o = o || {});
-	o.name = o.name || 'content';
-	o.style = o.style || 'default';
-	o.mode = o.mode || 'visual';
-	o.toolsgo = o.toolsgo || 'top';
-	o.tools = o.tools || '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,video,mode]';
-	o.utils = o.utils || 'EditMedia,Drop';
+HtmlArea = function(content, o, s) {
+	var ta, bar, utils = HtmlArea.Utils;
+
+	this.options = (o = HtmlArea.Utils.merge(this.options, o));
+	this.strings = (s = HtmlArea.Utils.merge(this.strings, s));
 	if (this.setupEvents) { this.setupEvents(o); }
 
 	o.tools = this.optionToArray(o.tools);
 	o.utils = this.optionToArray(o.utils);
-
-	var ta, utils = HtmlArea.Utils;
 
 	this.content = (content = content || document.createElement('div'));
 	this.element = document.createElement('div');
@@ -28,14 +23,14 @@ HtmlArea = function(content, o) {
 	this.element.appendChild(content);
 
 	if (content.nodeName.toLowerCase() === 'textarea') {
-		var ta = (this.textarea = content);
+		ta = (this.textarea = content);
 		content = (this.content = document.createElement('div'));
 		content.className = ta.className;
 		content.innerHTML = o.value || ta.value;
 		this.element.insertBefore(content, ta);
 	} else {
 		if (o.value) { content.value = o.value; }
-		var ta = (this.textarea = document.createElement('textarea'));
+		ta = (this.textarea = document.createElement('textarea'));
 		ta.name = o.name;
 		ta.className = content.className;
 		ta.value = this.getHTML();
@@ -52,9 +47,9 @@ HtmlArea = function(content, o) {
 	if (o.mode === 'html') { this.setHTMLMode(); }
 	else { this.mode = 'visual'; }
 
-	var bar = (this.tools = document.createElement('div'));
+	bar = (this.tools = document.createElement('div'));
 	bar.className = 'tools ' + o.style;
-	bar.innerHTML = this.buildTools(o.tools);
+	bar.innerHTML = this.buildTools(o.tools, s);
 	if (o.toolsgo === 'top') { this.element.insertBefore(bar, content); }
 	else { this.element.appendChild(bar); }
 
@@ -64,6 +59,35 @@ HtmlArea = function(content, o) {
 };
 HtmlArea.prototype = {
 	fire: function(){}, // gets replaced
+
+	options: {
+		name: 'content',
+		style: 'default',
+		mode: 'visual',
+		toolsgo: 'top',
+		tools: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,video,mode]',
+		utils: 'EditMedia,Drop'
+	},
+
+	strings: {
+		bold: 'Bold',
+		italic: 'Italic',
+		underline: 'Underline',
+		strike: 'Strikethrough',
+		sub: 'Subscript',
+		sup: 'Superscript',
+		left: 'Align Left',
+		center: 'Align Center',
+		right: 'Align Right',
+		justify: 'Justify',
+		bullet: 'Bullet List',
+		number: 'Numbered List',
+		indent: 'Increase Indent',
+		outdent: 'Decrease Indent',
+		undo: 'Undo',
+		redo: 'Redo',
+		mode: 'View HTML'
+	},
 
 	optionToArray: function(opt) {
 		if (typeof opt === 'string') {
@@ -75,33 +99,33 @@ HtmlArea.prototype = {
 		return opt;
 	},
 
-	buildTools: function(tools) {
+	buildTools: function(tools, strings) {
 		var Tools = HtmlArea.Tools, html = '', t, tt, tool,
 			cmd = (navigator.platform.indexOf('Mac') === 0) ? '&#8984;' : 'ctrl ';
 		for (t = 0, tt = tools.length - 1; t <= tt; ++t) {
 			if (tools[t] === '|') { tools[t] = 'separator'; }
 			if (Object.prototype.toString.call(tools[t]) === '[object Array]') {
-				html += '<span class="tools">' + this.buildTools(tools[t]) + '</span>';
+				html += '<span class="tools">' + this.buildTools(tools[t], strings) + '</span>';
 			} else if (tool = (typeof tools[t] === 'object') ? tools[t] : Tools[tools[t]]) {
 				html += '<a data-tool="' + tool.tool + '" class="' + tool.tool;
 				if (!t) { html += ' first'; }
 				if (t === tt) { html += ' last'; }
 
-				html += '" title="' + (tool.title || '');
-				if (tool.key) { html += ' ' + cmd + String.fromCharCode(tool.key).toUpperCase(); }
+				html += '" title="' + (strings[tool.title] || tool.title || '');
+				if (tool.key) { html += ' ' + cmd + tool.key.toUpperCase(); }
 
 				html += '"><span>' + (tool.text || tool.tool) + '</span><em></em></a>';
-				if (tool.setup) { tool.setup(this, this.options[tool.tool+'Options']); }
+				if (tool.setup) { tool.setup(this, this.options[tool.tool+'Options'], this.strings[tool.tool+'Strings']); }
 			}
 		}
 		return html;
 	},
 
 	setupUtils: function(utils) {
-		var Utils = HtmlArea.Utils, u, uu, util, name, o = this.options, arr = [];
+		var Utils = HtmlArea.Utils, u, uu, util, name, o = this.options, s = this.strings, arr = [];
 		for (u = 0, uu = utils.length; u < uu; ++u) {
 			name = utils[u].substr(0, 1).toLowerCase() + utils[u].substr(1);
-			arr.push(this[name+'Util'] = new Utils[utils[u]](this, o[name+'Options']));
+			arr.push(this[name+'Util'] = new Utils[utils[u]](this, o[name+'Options'], s[name+'Strings']));
 		}
 		return arr;
 	},
@@ -153,6 +177,11 @@ HtmlArea.prototype = {
 	},
 
 	updateTools: function(e) {
+		if (!/\S/.test(this.content.innerHTML)) {
+			this.content.innerHTML += HtmlArea.pbr;
+			this.select(this.content.firstChild);
+		}
+
 		var map = this.updateTools.toolMap, btn, state, cmd,
 			Tools = HtmlArea.Tools, tool, name, utils = HtmlArea.Utils;
 
@@ -230,6 +259,7 @@ HtmlArea.prototype = {
 	},
 
 	exec: function(cmd, val, ui) {
+		this.content.focus();
 		document.execCommand(cmd, ui || null, val || false);
 	},
 
@@ -367,7 +397,6 @@ HtmlArea.cleanups = [ // got this started by looking at MooRTE. Thanks Sam!
 	[ /<(\/?)(?:strike|del)\b/g, '<$1s' ], // use <s> for strikethrough
 
 	// normalize whitespace, tag placement
-	[ /<p>\s*(<img[^>]+>)\s*<\/p>/g, '$1' ], // <p> with only <img>, unwrap
 	[ /\s*<(\/?(?:p|ol|ul)\b[^>]*)>\s*/g, '<$1>\n' ], // newline after <p> </p> <ol> </ol> <ul> </ul>
 	[ /\s*<li([^>]*)>/g, '\n\t<li$1>' ], // indent <li>
 	[ /\s*<\/(p|ol|ul)>/g, '\n</$1>'], // newline before </p> </ol> </ul>
@@ -468,6 +497,32 @@ HtmlArea.Utils = {
 			parentNode.insertBefore(node.removeChild(child), node);
 		}
 		parentNode.removeChild(node);
+	},
+
+	merge: function() {
+		var o = {}, a, aa = arguments.length, p,
+			type = Object.prototype.toString, object = '[object Object]';
+		for (p in arguments[0]) { o[p] = arguments[0][p]; }
+		for (a = 1; a < aa; ++a) {
+			for (p in arguments[0]) {
+				if (type(o[p]) === object && type(arguments[0][p]) === object) {
+					o[p] = HtmlArea.Utils.merge(o[p], arguments[0][p]);
+				} else {
+					o[p] = arguments[0][p];
+				}
+			}
+		}
+		return o;
+	},
+
+	format: function(str/*, object... */) {
+		var args = arguments;
+		return String(str).replace((/\\?\{([^{}]+)\}/g), function(match, name){
+			if (match.charAt(0) == '\\') return match.slice(1);
+			var a = 1, aa = args.length;
+			while (a < aa && ( ! args[a] || args[a][name] == null)) { ++a; }
+			return (a < aa) ? args[a][name] : '';
+		});
 	}
 };
 
@@ -498,31 +553,31 @@ HtmlArea.Tools.Tool.prototype = {
 HtmlArea.Tools.addTools({
 	separator:{ text:'|' },
 
-	bold:{ title:'Bold', text:'<b>B</b>', command:'bold', key:'b' },
-	italic:{ title:'Italic', text:'<i>I</i>', command:'italic', key:'i' },
-	underline:{ title:'Underline', text:'<u>U</u>', command:'underline', key:'u' },
-	strike:{ title:'Strikethrough', text:'<s>S</s>', command:'strikethrough' },
-	sub:{ title:'Subscript', text:'x<sub>2</sub>', command:'subscript' },
-	sup:{ title:'Superscript', text:'x<sup>2</sup>', command:'superscript' },
+	bold:{ title:'bold', text:'<b>B</b>', command:'bold', key:'b' },
+	italic:{ title:'italic', text:'<i>I</i>', command:'italic', key:'i' },
+	underline:{ title:'underline', text:'<u>U</u>', command:'underline', key:'u' },
+	strike:{ title:'strike', text:'<s>S</s>', command:'strikethrough' },
+	sub:{ title:'sub', text:'x<sub>2</sub>', command:'subscript' },
+	sup:{ title:'sup', text:'x<sup>2</sup>', command:'superscript' },
 
-	left:{ title:'Align Left', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyLeft' },
-	center:{ title:'Align Center', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyCenter' },
-	right:{ title:'Align Right', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyRight' },
-	justify:{ title:'Justify', text:'<hr/><hr/><hr/><hr/><hr/><hr/>', command:'justifyAll' },
+	left:{ title:'left', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyLeft' },
+	center:{ title:'center', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyCenter' },
+	right:{ title:'right', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyRight' },
+	justify:{ title:'justify', text:'<hr/><hr/><hr/><hr/><hr/><hr/>', command:'justifyAll' },
 
-	bullet:{ title:'Bullet List', text:'<ul><li><b>&#9679;</b></li><li><b>&#9679;</b></li><li><b>&#9679;</b></li></ul>', command:'insertunorderedlist' },
-	number:{ title:'Numbered List', text:'<ol><li><b>1</b></li><li><b>2</b></li><li><b>3</b></li></ol>', command:'insertorderedlist' },
-	indent:{ title:'Increase Indent', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b><b></b><b></b>', command:'indent' },
-	outdent:{ title:'Decrease Indent', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b><b></b><b></b>', command:'outdent' },
-//	rule:{ title:'Horizontal Rule', text:'&mdash;', command:'inserthorizontalrule' }, // I don't think you should do this
+	bullet:{ title:'bullet', text:'<ul><li><b>&#9679;</b></li><li><b>&#9679;</b></li><li><b>&#9679;</b></li></ul>', command:'insertunorderedlist' },
+	number:{ title:'number', text:'<ol><li><b>1</b></li><li><b>2</b></li><li><b>3</b></li></ol>', command:'insertorderedlist' },
+	indent:{ title:'indent', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b><b></b><b></b>', command:'indent' },
+	outdent:{ title:'outdent', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b><b></b><b></b>', command:'outdent' },
+//	rule:{ title:'rule', text:'&mdash;', command:'inserthorizontalrule' }, // I don't think you should do this
 
-//	cut:{ title:'Cut', text:'&#9986;', command:'cut', key:'x', magic:true }, // execCommand('cut') doesn't seem to work
-//	copy:{ title:'Copy', text:'&copy;', command:'copy', key:'c', magic:true }, // execCommand('copy') doesn't seem to work
-//	paste:{ title:'Paste', text:'P', command:'paste', key:'v', magic:true }, // execCommand('paste') doesn't seem to work
-	undo:{ title:'Undo', text:'&#8617;', command:'undo', key:'z', magic:true },
-	redo:{ title:'Redo', text:'&#8618;', command:'redo', key:'y', magic:true },
+//	cut:{ title:'cut', text:'&#9986;', command:'cut', key:'x', magic:true }, // execCommand('cut') doesn't seem to work
+//	copy:{ title:'copy', text:'&copy;', command:'copy', key:'c', magic:true }, // execCommand('copy') doesn't seem to work
+//	paste:{ title:'paste', text:'P', command:'paste', key:'v', magic:true }, // execCommand('paste') doesn't seem to work
+	undo:{ title:'undo', text:'&#8617;', command:'undo', key:'z', magic:true },
+	redo:{ title:'redo', text:'&#8618;', command:'redo', key:'y', magic:true },
 
-	mode:{ title:'View HTML', text:'&lt;/&gt;', key:'<',
+	mode:{ title:'mode', text:'&lt;/&gt;', key:'/',
 		run: function(editor, btn) {
 			if (editor.mode === 'visual') {
 				HtmlArea.Utils.addClass(btn, 'active');
