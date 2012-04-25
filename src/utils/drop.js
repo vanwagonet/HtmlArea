@@ -81,7 +81,7 @@ HtmlArea.Utils.Drop.prototype = HtmlArea.Utils.Events({
 	},
 
 	drop: function(e) {
-		var URL = window.URL || window.webkitURL || {}, bind = this.bind,
+		var URL = window.URL || window.webkitURL || {},
 			files = e && e.dataTransfer && e.dataTransfer.files,
 			f, ff = files.length, file, error, ui = this.getUI();
 		this.editor.content.focus();
@@ -95,8 +95,8 @@ HtmlArea.Utils.Drop.prototype = HtmlArea.Utils.Events({
 					data = new FormData(), id = this.insertPlaceholder(src, file.name);
 				data.append(this.options.uploadName, file);
 				(new HtmlArea.Utils.Upload({
-					onUploadSuccess: bind(this, this.uploadSuccess, id, src),
-					onUploadFailure: bind(this, this.uploadFailure, id, src)
+					onUploadSuccess: this.bind(this.uploadSuccess, id, src),
+					onUploadFailure: this.bind(this.uploadFailure, id, src)
 				})).uploadXhr(data, this.options.uploadURL);
 			}
 		}

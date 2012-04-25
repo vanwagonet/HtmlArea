@@ -131,9 +131,10 @@ HtmlArea.prototype = {
 	},
 
 	addListeners: function() {
-		var updateTools = this.bindEvent(this, this.updateTools);
+		var updateTools = this.bindEvent(this.updateTools);
 		this.ons(this.content, { blur:this.updateTextarea, keydown:this.shortcut });
 		this.ons(this.content, { focus:updateTools, keyup:updateTools, mouseup:updateTools }, true);
+		this.on(this.textarea, 'keydown', this.shortcut);
 		this.on(this.tools, 'mousedown', this.toolRun);
 		this.on(this.tools, 'mouseup', updateTools, true);
 		return this;
@@ -575,9 +576,11 @@ HtmlArea.Tools = {
 HtmlArea.Tools.Tool = function(o) { for (var k in o) { this[k] = o[k]; } };
 HtmlArea.Tools.Tool.prototype = {
 	run: function(editor, btn, e) {
+		if (this.mode != editor.mode && this.mode != 'both') { return false; }
 		var cmd = this.command;
 		return cmd ? editor.exec(cmd, this.param, this.ui) : false;
-	}
+	},
+	mode: 'visual'
 };
 
 HtmlArea.Tools.addTools({
@@ -607,7 +610,7 @@ HtmlArea.Tools.addTools({
 	undo:{ title:'undo', text:'&#8617;', command:'undo', key:'z', magic:true },
 	redo:{ title:'redo', text:'&#8618;', command:'redo', key:'y', magic:true },
 
-	mode:{ title:'mode', text:'&lt;/&gt;', key:'/',
+	mode:{ title:'mode', text:'&lt;/&gt;', key:'/', mode:'both',
 		run: function(editor, btn) {
 			if (editor.mode === 'visual') {
 				HtmlArea.Utils.addClass(btn, 'active');

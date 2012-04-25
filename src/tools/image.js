@@ -21,7 +21,7 @@ HtmlArea.Tools.Image = function(editor, o, s) {
 	this.editor = editor;
 	this.options = HtmlArea.Utils.merge(this.options, o);
 	this.strings = HtmlArea.Utils.merge(this.strings, s);
-	editor.on('modechange', this.bind(this, this.hide));
+	editor.on('modechange', this.bind(this.hide));
 };
 HtmlArea.Tools.Image.prototype = HtmlArea.Utils.Events({
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
@@ -67,7 +67,7 @@ HtmlArea.Tools.Image.prototype = HtmlArea.Utils.Events({
 	getUI: function() {
 		if (this.ui) { return this.ui; }
 		var ui = (this.ui = document.createElement('div')), editor = this.editor,
-			utils = HtmlArea.Utils, validate = this.bindEvent(this, this.validate)
+			utils = HtmlArea.Utils, validate = this.bindEvent(this.validate)
 		ui.className = 'htmlarea-image upload';
 		ui.innerHTML = utils.format(this.template, this.options, this.strings, this);
 		this.uiFile = ui.querySelector('input[type=file]');
@@ -111,7 +111,7 @@ HtmlArea.Tools.Image.prototype = HtmlArea.Utils.Events({
 		e.preventDefault(); // don't submit the form
 		if (!this.validate()) { return false; }
 
-		var ui = this.getUI(), bind = this.bind, id;
+		var ui = this.getUI(), id;
 		if (this.uiRadioUrl.checked) {
 			this.insert(this.uiUrl.value.replace(/^\s+|\s+$/g, ''));
 		} else {
@@ -126,15 +126,15 @@ HtmlArea.Tools.Image.prototype = HtmlArea.Utils.Events({
 					data = new FormData();
 					data.append(this.uiFile.name, files[f]);
 					(new HtmlArea.Utils.Upload({
-						onUploadSuccess: bind(this, this.uploadSuccess, id, src),
-						onUploadFailure: bind(this, this.uploadFailure, id, src)
+						onUploadSuccess: this.bind(this.uploadSuccess, id, src),
+						onUploadFailure: this.bind(this.uploadFailure, id, src)
 					})).uploadXhr(data, url);
 				}
 			} else {
 				id = this.insertPlaceholder(this.emptyGif, this.uiFile.value.split(/[\/\\]/).slice(-1).join(''));
 				(new HtmlArea.Utils.Upload({
-					onUploadSuccess: bind(this, this.uploadSuccess, id, this.emptyGif),
-					onUploadFailure: bind(this, this.uploadFailure, id, this.emptyGif)
+					onUploadSuccess: this.bind(this.uploadSuccess, id, this.emptyGif),
+					onUploadFailure: this.bind(this.uploadFailure, id, this.emptyGif)
 				})).uploadForm(ui.firstChild);
 			}
 		}

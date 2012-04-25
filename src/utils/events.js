@@ -11,8 +11,8 @@ HtmlArea.Utils.Events = function(proto) {
 };
 
 HtmlArea.Utils.Events.prototype = {
-	bindEvent: function(o, fn) {
-		var slice = Array.prototype.slice, args = slice.call(arguments, 2);
+	bindEvent: function(fn) {
+		var o = this, slice = Array.prototype.slice, args = slice.call(arguments, 1);
 		return function(e) {
 			e = e || window.event;
 			if (e) { e.target = e.target || e.srcElement; }
@@ -20,8 +20,8 @@ HtmlArea.Utils.Events.prototype = {
 		};
 	},
 
-	bind: function(o, fn) {
-		var slice = Array.prototype.slice, args = slice.call(arguments, 2);
+	bind: function(fn) {
+		var o = this, slice = Array.prototype.slice, args = slice.call(arguments, 1);
 		return function() { return fn.apply(o, args.concat(slice.call(arguments, 0))); };
 	},
 
@@ -38,16 +38,16 @@ HtmlArea.Utils.Events.prototype = {
 
 	on: function(node, name, fn, nobind) {
 		if (node.addEventListener) {
-			if ( ! nobind) { fn = this.bindEvent(this, fn); }
+			if ( ! nobind) { fn = this.bindEvent(fn); }
 			node.addEventListener(name, fn, false);
 		} else if (node.attachEvent) {
-			if ( ! nobind) { fn = this.bindEvent(this, fn); }
+			if ( ! nobind) { fn = this.bindEvent(fn); }
 			node.attachEvent('on'+name, fn);
 		} else {
 			nobind = fn; fn = name; name = node; // shift arguments
 			var event = this.events[name] || (this.events[name] = []),
 				i = 0, l = event.length;
-			if ( ! nobind) { fn = this.bind(this, fn); }
+			if ( ! nobind) { fn = this.bind(fn); }
 			while (i < l && event[i] !== fn) { ++i; } // avoid duplicates
 			event[i] = fn;
 		}

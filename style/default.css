@@ -13,6 +13,7 @@
 .htmlarea .content a { text-decoration:none; }
 .htmlarea .content img { max-width:100%; }
 .htmlarea .content:after { content:"\200B"; display:block; clear:both; }
+.htmlarea .content p:after { content:"\200B"; }
 
 
 .htmlarea .tools { border-bottom:1px solid #ccc; background:#dfdfdf; white-space:nowrap; user-select:none; -webkit-user-select:none; -moz-user-select:-moz-none; }

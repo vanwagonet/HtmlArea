@@ -83,8 +83,8 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
 			}, this.strings, this);
 		this.on(ui, 'mousedown', this.edit);
 		this.proxy = ui.getElementsByTagName('img')[0];
-		this.resizeMouseMove = this.bindEvent(this, this.resizeMouseMove);
-		this.resizeMouseDone = this.bindEvent(this, this.resizeMouseDone);
+		this.resizeMouseMove = this.bindEvent(this.resizeMouseMove);
+		this.resizeMouseDone = this.bindEvent(this.resizeMouseDone);
 		this.resizeEvents = {
 			mousemove:this.resizeMouseMove, mouseup:this.resizeMouseDone, mouseleave:this.resizeMouseDone
 		};

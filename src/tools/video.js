@@ -5,7 +5,7 @@ HtmlArea.Tools.Video = function(editor, o, s) {
 	this.editor = editor;
 //	this.options = HtmlArea.Utils.merge(this.options, o);
 	this.strings = HtmlArea.Utils.merge(this.strings, s);
-	editor.on('modechange', this.bind(this, this.hide));
+	editor.on('modechange', this.bind(this.hide));
 };
 HtmlArea.Tools.Video.prototype = HtmlArea.Utils.Events({
 	template:
@@ -35,7 +35,7 @@ HtmlArea.Tools.Video.prototype = HtmlArea.Utils.Events({
 	getUI: function() {
 		if (this.ui) { return this.ui; }
 		var ui = (this.ui = document.createElement('div')),
-			editor = this.editor, validate = this.bindEvent(this, this.validate);
+			editor = this.editor, validate = this.bindEvent(this.validate);
 		ui.className = 'htmlarea-video';
 		ui.innerHTML = HtmlArea.Utils.format(this.template, this.options, this.strings, this);
 		this.on(ui.firstChild, 'submit', this.submit);
