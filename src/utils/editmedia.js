@@ -5,16 +5,12 @@ HtmlArea.Utils.EditMedia = function(editor, o) {
 	this.editor = editor;
 	this.tags = (o && o.tags) || 'img,video,iframe,object,embed';
 	this.tagExpr = new RegExp('^\\s*<(' + this.tags.split(',').join('|') + ')\\b[^>]*>\\s*$', 'i');
-	var edit = this, utils = HtmlArea.Utils;
-	this.select = utils.bindEvent(edit, edit.select);
-	this.maskOut = utils.bindEvent(edit, edit.maskOut);
-	this.mouseOver = utils.bindEvent(edit, edit.mouseOver);
-	HtmlArea.Utils.on(editor.content, 'mouseover', this.mouseOver);
+	this.on(editor.content, 'mouseover', this.mouseOver);
 	if (editor.content.attachEvent) { // prevent IE's img resizers
 		editor.content.attachEvent('oncontrolselect', function(e) { e.returnValue = false; });
 	}
 };
-HtmlArea.Utils.EditMedia.prototype = {
+HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
 
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 
@@ -50,12 +46,12 @@ HtmlArea.Utils.EditMedia.prototype = {
 	mouseOver: function(e) {
 		var target = e.target || e.srcElement;
 		if ((','+this.tags+',').indexOf(','+target.nodeName.toLowerCase()+',') < 0) { return; }
-		if (!this.mask) {
+		if ( ! this.mask) {
 			this.mask = new Image();
 			this.mask.className = 'htmlarea-edit-media-mask';
 			this.mask.src = this.emptyGif;
-			HtmlArea.Utils.on(this.mask, 'mouseout', this.maskOut);
-			HtmlArea.Utils.on(this.mask, 'mousedown', this.select);
+			this.on(this.mask, 'mouseout', this.maskOut);
+			this.on(this.mask, 'mousedown', this.select);
 		}
 		this.maskElm(target);
 	},
@@ -79,21 +75,20 @@ HtmlArea.Utils.EditMedia.prototype = {
 
 	getUI: function() {
 		if (this.ui) { return this.ui; }
-		var edit = this, utils = HtmlArea.Utils,
-			ui = (edit.ui = document.createElement('div'));
+		var ui = (this.ui = document.createElement('div'));
 		ui.className = 'htmlarea-edit-media';
-		ui.innerHTML = utils.format(edit.template, {
-				tools: edit.editor.buildTools(edit.tools, this.strings),
-				resizeTools: edit.editor.buildTools(edit.resizeTools, this.strings)
+		ui.innerHTML = HtmlArea.Utils.format(this.template, {
+				tools: this.editor.buildTools(this.tools, this.strings),
+				resizeTools: this.editor.buildTools(this.resizeTools, this.strings)
 			}, this.strings, this);
-		utils.on(ui, 'mousedown', utils.bindEvent(edit, edit.edit));
-		edit.proxy = ui.getElementsByTagName('img')[0];
-		edit.resizeMouseMove = utils.bindEvent(edit, edit.resizeMouseMove);
-		edit.resizeMouseDone = utils.bindEvent(edit, edit.resizeMouseDone);
-		edit.resizeEvents = {
-			mousemove:edit.resizeMouseMove, mouseup:edit.resizeMouseDone, mouseleave:edit.resizeMouseDone
+		this.on(ui, 'mousedown', this.edit);
+		this.proxy = ui.getElementsByTagName('img')[0];
+		this.resizeMouseMove = this.bindEvent(this, this.resizeMouseMove);
+		this.resizeMouseDone = this.bindEvent(this, this.resizeMouseDone);
+		this.resizeEvents = {
+			mousemove:this.resizeMouseMove, mouseup:this.resizeMouseDone, mouseleave:this.resizeMouseDone
 		};
-		edit.editor.fire('buildEditMediaPanel', { editor:edit.editor, panel:ui, tool:edit });
+		this.editor.fire('buildEditMediaPanel', { editor:this.editor, panel:ui, tool:this });
 		return ui;
 	},
 
@@ -217,7 +212,7 @@ HtmlArea.Utils.EditMedia.prototype = {
 			y: from.indexOf('Top') >= 0 ? (e.screenY + size.y) : (e.screenY - size.y)
 		};
 		this.aspect = Math.max(size.x, 1) / Math.max(size.y, 1);
-		utils.ons(document.body, this.resizeEvents);
+		this.ons(document.body, this.resizeEvents, true);
 	},
 
 	resizeMouseMove: function(e) {
@@ -228,7 +223,7 @@ HtmlArea.Utils.EditMedia.prototype = {
 
 	resizeMouseDone: function(e) {
 		var utils = HtmlArea.Utils, elm = this.editor.element;
-		utils.offs(document.body, this.resizeEvents);
+		this.offs(document.body, this.resizeEvents);
 		this.elm.style.width = utils.getComputedStyle(this.ui, 'width');
 		this.elm.style.height = utils.getComputedStyle(this.ui, 'height');
 		this.show();
@@ -293,4 +288,5 @@ HtmlArea.Utils.EditMedia.prototype = {
 		}
 		return { width:width, height:height };
 	}
-};
+});
+

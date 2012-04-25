@@ -72,3 +72,4 @@ HtmlArea.Utils.Upload.prototype = HtmlArea.Utils.Events({
 		this.fire('uploadProgress', { event:e, xhr:xhr });
 	}
 });
+

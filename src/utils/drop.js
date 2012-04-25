@@ -8,17 +8,11 @@
  *  drop: 'Drop to Upload' - the text to display when dragging a file over the editor
  **/
 HtmlArea.Utils.Drop = function(editor, o, s) {
-	var utils = HtmlArea.Utils, imgO = editor.options.imageOptions;
+	var imgO = editor.options.imageOptions;
 	this.editor = editor;
 	this.options = HtmlArea.Utils.merge(this.options, imgO, o);
 	this.strings = HtmlArea.Utils.merge(this.strings, s);
-
-	this.dragEnter = utils.bindEvent(this, this.dragEnter);
-	this.dragLeave = utils.bindEvent(this, this.dragLeave);
-	this.dragOver = utils.bindEvent(this, this.dragOver);
-	this.drop = utils.bindEvent(this, this.drop);
-	this.hide = utils.bindEvent(this, this.hide);
-	utils.on(editor.element, 'dragenter', this.dragEnter);
+	this.on(editor.element, 'dragenter', this.dragEnter);
 };
 HtmlArea.Utils.Drop.hasFiles = function(e) {
 	if (!e.dataTransfer || !e.dataTransfer.types) { return false; }
@@ -26,7 +20,7 @@ HtmlArea.Utils.Drop.hasFiles = function(e) {
 	for (t = 0; t < tt; ++t) { if (types[t] === 'Files') { return true; } }
 	return false;
 };
-HtmlArea.Utils.Drop.prototype = {
+HtmlArea.Utils.Drop.prototype = HtmlArea.Utils.Events({
 
 	options: {
 		autoLink: false,
@@ -43,7 +37,7 @@ HtmlArea.Utils.Drop.prototype = {
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 
 	getUI: function() {
-		var ui = this.ui, utils = HtmlArea.Utils;
+		var ui = this.ui;
 		if (!ui) {
 			ui = (this.ui = document.createElement('div'));
 			ui.className = 'htmlarea-drop';
@@ -51,7 +45,7 @@ HtmlArea.Utils.Drop.prototype = {
 			this.mask = document.createElement('div');
 			this.mask.className = 'mask';
 			ui.appendChild(this.mask);
-			utils.ons(this.mask, { dragleave:this.dragLeave, dragover:this.dragOver, drop:this.drop });
+			this.ons(this.mask, { dragleave:this.dragLeave, dragover:this.dragOver, drop:this.drop });
 			this.progress = ui.querySelector('em');
 			this.span = ui.querySelector('span');
 			editor.fire('buildDropPanel', { editor:editor, panel:ui, tool:this });
@@ -61,10 +55,10 @@ HtmlArea.Utils.Drop.prototype = {
 
 	dragEnter: function(e) {
 		if (!HtmlArea.Utils.Drop.hasFiles(e)) { return; }
-		var editor = this.editor, utils = HtmlArea.Utils, ui = this.getUI();
+		var editor = this.editor, ui = this.getUI();
 		this.progress.textContent = '';
 		this.span.textContent = this.strings.drop;
-		utils.removeClass(ui, 'error');
+		HtmlArea.Utils.removeClass(ui, 'error');
 		ui.width = editor.element.offsetWidth + 'px';
 		ui.height = editor.element.offsetHeight + 'px';
 		editor.element.appendChild(ui);
@@ -87,7 +81,7 @@ HtmlArea.Utils.Drop.prototype = {
 	},
 
 	drop: function(e) {
-		var URL = window.URL || window.webkitURL || {}, bind = HtmlArea.Utils.bind,
+		var URL = window.URL || window.webkitURL || {}, bind = this.bind,
 			files = e && e.dataTransfer && e.dataTransfer.files,
 			f, ff = files.length, file, error, ui = this.getUI();
 		this.editor.content.focus();
@@ -171,4 +165,5 @@ HtmlArea.Utils.Drop.prototype = {
 		var id = 0;
 		return function() { return 'img-place-'+(++id); };
 	})()
-};
+});
+

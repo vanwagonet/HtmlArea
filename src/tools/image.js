@@ -18,13 +18,12 @@
  *  cancel: 'cancel'
  **/
 HtmlArea.Tools.Image = function(editor, o, s) {
-	var utils = HtmlArea.Utils;
 	this.editor = editor;
-	this.options = utils.merge(this.options, o);
-	this.strings = utils.merge(this.strings, s);
-	editor.on('modechange', utils.bind(this, this.hide));
+	this.options = HtmlArea.Utils.merge(this.options, o);
+	this.strings = HtmlArea.Utils.merge(this.strings, s);
+	editor.on('modechange', this.bind(this, this.hide));
 };
-HtmlArea.Tools.Image.prototype = {
+HtmlArea.Tools.Image.prototype = HtmlArea.Utils.Events({
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 
 	template:
@@ -68,7 +67,7 @@ HtmlArea.Tools.Image.prototype = {
 	getUI: function() {
 		if (this.ui) { return this.ui; }
 		var ui = (this.ui = document.createElement('div')), editor = this.editor,
-			utils = HtmlArea.Utils, validate = utils.bindEvent(this, this.validate)
+			utils = HtmlArea.Utils, validate = this.bindEvent(this, this.validate)
 		ui.className = 'htmlarea-image upload';
 		ui.innerHTML = utils.format(this.template, this.options, this.strings, this);
 		this.uiFile = ui.querySelector('input[type=file]');
@@ -80,18 +79,18 @@ HtmlArea.Tools.Image.prototype = {
 		this.uiLabelSpan = this.uiLabelUpload.querySelector('span');
 		this.uiError = ui.querySelector('.error');
 		if (utils.Upload.prototype.canUploadXhr()) { this.uiFile.multiple = true; }
-		utils.on(ui.querySelector('form'), 'submit', utils.bindEvent(this, this.submit));
-		utils.on(ui.querySelector('input[type=button]'), 'click', utils.bindEvent(this, this.cancel));
-		utils.on(this.uiRadioUpload, 'change', utils.bindEvent(this, this.typeChange));
-		utils.on(this.uiRadioUrl, 'change', utils.bindEvent(this, this.typeChange));
-		utils.on(this.uiFile, 'change', validate);
-		utils.ons(this.uiUrl, { keydown:validate, input:validate, change:validate });
+		this.on(ui.querySelector('form'), 'submit',this.submit);
+		this.on(ui.querySelector('input[type=button]'), 'click', this.cancel);
+		this.on(this.uiRadioUpload, 'change', this.typeChange);
+		this.on(this.uiRadioUrl, 'change', this.typeChange);
+		this.on(this.uiFile, 'change', validate, true);
+		this.ons(this.uiUrl, { keydown:validate, input:validate, change:validate }, true);
 		editor.fire('buildImagePanel', { editor:editor, panel:ui, tool:this });
 		return ui;
 	},
 
 	show: function() {
-		var ui = this.getUI(), editor = this.editor, utils = HtmlArea.Utils;
+		var ui = this.getUI(), editor = this.editor;
 		this.range = editor.getRange();
 		this.uiFile.value = this.uiUrl.value = '';
 		this.uiSubmit.disabled = true;
@@ -112,7 +111,7 @@ HtmlArea.Tools.Image.prototype = {
 		e.preventDefault(); // don't submit the form
 		if (!this.validate()) { return false; }
 
-		var ui = this.getUI(), bind = HtmlArea.Utils.bind, id;
+		var ui = this.getUI(), bind = this.bind, id;
 		if (this.uiRadioUrl.checked) {
 			this.insert(this.uiUrl.value.replace(/^\s+|\s+$/g, ''));
 		} else {
@@ -251,7 +250,7 @@ HtmlArea.Tools.Image.prototype = {
 		var id = 0;
 		return function() { return 'img-place-'+(++id); };
 	})()
-};
+});
 
 /**
  * Tool interface
@@ -262,3 +261,4 @@ HtmlArea.Tools.Image.setup = function(e, o) { if (!e.imageTool) { e.imageTool = 
 HtmlArea.Tools.Image.run = function(editor) { editor.imageTool.show(); };
 
 HtmlArea.Tools.addTool('image', HtmlArea.Tools.Image);
+

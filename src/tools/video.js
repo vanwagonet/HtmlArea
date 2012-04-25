@@ -2,13 +2,12 @@
  * Insert videos from a url or embed code
  **/
 HtmlArea.Tools.Video = function(editor, o, s) {
-	var utils = HtmlArea.Utils;
 	this.editor = editor;
-//	this.options = utils.merge(this.options, o);
-	this.strings = utils.merge(this.strings, s);
-	editor.on('modechange', utils.bind(this, this.hide));
+//	this.options = HtmlArea.Utils.merge(this.options, o);
+	this.strings = HtmlArea.Utils.merge(this.strings, s);
+	editor.on('modechange', this.bind(this, this.hide));
 };
-HtmlArea.Tools.Video.prototype = {
+HtmlArea.Tools.Video.prototype = HtmlArea.Utils.Events({
 	template:
 	'<form action="" method="post">' +
 		'<h6>' +
@@ -36,13 +35,12 @@ HtmlArea.Tools.Video.prototype = {
 	getUI: function() {
 		if (this.ui) { return this.ui; }
 		var ui = (this.ui = document.createElement('div')),
-			editor = this.editor, utils = HtmlArea.Utils,
-			validate = utils.bindEvent(this, this.validate);
+			editor = this.editor, validate = this.bindEvent(this, this.validate);
 		ui.className = 'htmlarea-video';
-		ui.innerHTML = utils.format(this.template, this.options, this.strings, this);
-		utils.on(ui.firstChild, 'submit', utils.bindEvent(this, this.submit));
-		utils.on(ui.querySelector('input[type=button]'), 'click', utils.bindEvent(this, this.cancel));
-		utils.ons(ui.querySelector('input[name=url]'), { keydown:validate, input:validate, change:validate });
+		ui.innerHTML = HtmlArea.Utils.format(this.template, this.options, this.strings, this);
+		this.on(ui.firstChild, 'submit', this.submit);
+		this.on(ui.querySelector('input[type=button]'), 'click', this.cancel);
+		this.ons(ui.querySelector('input[name=url]'), { keydown:validate, input:validate, change:validate }, true);
 		editor.fire('buildVideoPanel', { editor:editor, panel:ui, tool:this });
 		return ui;
 	},
@@ -135,7 +133,7 @@ HtmlArea.Tools.Video.prototype = {
 			html: '<iframe src="//player.vimeo.com/video/$1" style="width:320px;height:240px" frameborder="0" allowFullScreen></iframe>'
 		}
 	]
-};
+});
 
 
 /**
@@ -147,3 +145,4 @@ HtmlArea.Tools.Video.setup = function(e) { if (!e.videoTool) { e.videoTool = new
 HtmlArea.Tools.Video.run = function(editor) { editor.videoTool.show(); };
 
 HtmlArea.Tools.addTool('video', HtmlArea.Tools.Video);
+

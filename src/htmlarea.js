@@ -4,7 +4,7 @@
  * license: MIT
  **/
 HtmlArea = function(content, o, s) {
-	var ta, bar, utils = HtmlArea.Utils;
+	var ta, bar;
 
 	this.options = (o = HtmlArea.Utils.merge(this.options, o));
 	this.strings = (s = HtmlArea.Utils.merge(this.strings, s));
@@ -38,7 +38,7 @@ HtmlArea = function(content, o, s) {
 	}
 	ta.style.display = 'none';
 	ta.spellcheck = false;
-	utils.addClass(content, 'content');
+	HtmlArea.Utils.addClass(content, 'content');
 	content.contentEditable = true;
 	content.spellcheck = true;
 	if (this.query('styleWithCSS', 'support')) { this.exec('styleWithCSS', false); } // prefer tags to styles
@@ -131,16 +131,11 @@ HtmlArea.prototype = {
 	},
 
 	addListeners: function() {
-		var bind = HtmlArea.Utils.bindEvent, updateTools = bind(this, this.updateTools);
-		HtmlArea.Utils.ons(this.content, {
-			blur: bind(this, this.updateTextarea),
-			keydown: bind(this, this.shortcut),
-			focus:updateTools, keyup:updateTools, mouseup:updateTools
-		});
-		HtmlArea.Utils.ons(this.tools, {
-			mousedown: bind(this, this.toolRun),
-			mouseup: updateTools
-		});
+		var updateTools = this.bindEvent(this, this.updateTools);
+		this.ons(this.content, { blur:this.updateTextarea, keydown:this.shortcut });
+		this.ons(this.content, { focus:updateTools, keyup:updateTools, mouseup:updateTools }, true);
+		this.on(this.tools, 'mousedown', this.toolRun);
+		this.on(this.tools, 'mouseup', updateTools, true);
 		return this;
 	},
 
@@ -242,17 +237,18 @@ HtmlArea.prototype = {
 	shortcut: function(e) {
 		if (!e || !(e.ctrlKey || e.metaKey)) { return; }
 
-		var keys = this.shortcut.keys, Tools = HtmlArea.Tools, t;
+		var keys = this.shortcut.keys, Tools = HtmlArea.Tools, t, k;
 		if (!keys) {
 			keys = (this.shortcut.keys = {});
 			for (t in Tools) {
 				if (Tools[t].key && !Tools[t].magic) {
 					keys[Tools[t].key.toLowerCase()] = Tools[t];
-					keys[Tools[t].key.toUpperCase()] = Tools[t];
 				}
 			}
 		}
-		if (t = keys[String.fromCharCode(e.keyCode || e.which || e.charCode)]) {
+		k = e.keyCode || e.which || e.charCode;
+		k = HtmlArea.keys[k] || String.fromCharCode(k);
+		if (t = keys[k.toLowerCase()]) {
 			var a = this.tools.querySelector('.' + t.tool);
 			t.run(this, a, e);
 		}
@@ -381,7 +377,6 @@ HtmlArea.cleanups = [ // got this started by looking at MooRTE. Thanks Sam!
 
 	// <br/> tag cleanup
 	[ /<br\b[^>]*?>/g, '<br/>' ], // normalize <br>
-	[ /><br\/>/g, '>' ], // no <br> directly after something else
 	[ /^<br\/>|<br\/>$/g, '' ], // no leading or trailing <br>
 	[ /<br\/>\s*<\/(h1|h2|h3|h4|h5|h6|li|p|div)/g, '</$1' ], // no <br> at end of block
 	[ /<p>(?:&nbsp;|\s)*<br\/>(?:&nbsp;|\s)*<\/p>/g, '<p><br/></p>' ], // replace padded <p> with pbr
@@ -414,37 +409,72 @@ HtmlArea.styles = [
 	[ /font-weight:\s*bold;?/g, '', 'b' ]
 ];
 
+HtmlArea.keys = {
+	8: 'backspace',
+	9: 'tab',
+	13: 'enter',
+	16: 'shift',
+	17: 'ctrl',
+	18: 'alt',
+	19: 'pause_break',
+	20: 'caps_lock',
+	27: 'escape',
+	33: 'page_up',
+	34: 'page_down',
+	35: 'end',
+	36: 'home',
+	37: 'left',
+	38: 'up',
+	39: 'right',
+	40: 'down',
+	45: 'insert',
+	46: 'delete',
+	91: 'windows',
+	92: 'windows',
+	93: 'context',
+	96: '0',
+	97: '1',
+	98: '2',
+	99: '3',
+	100: '4',
+	101: '5',
+	102: '6',
+	103: '7',
+	104: '8',
+	105: '9',
+	106: '*',
+	107: '+',
+	109: '-',
+	110: '.',
+	111: '/',
+	112: 'f1',
+	113: 'f2',
+	114: 'f3',
+	115: 'f4',
+	116: 'f5',
+	117: 'f6',
+	118: 'f7',
+	119: 'f8',
+	120: 'f9',
+	121: 'f10',
+	122: 'f11',
+	123: 'f12',
+	144: 'num_lock',
+	145: 'scroll_lock',
+	186: ';',
+	187: '=',
+	188: ',',
+	189: '-',
+	190: '.',
+	191: '/',
+	192: '`',
+	219: '[',
+	220: '\\',
+	221: ']',
+	222: '\''
+}
+
 HtmlArea.Utils = {
-	on: document.addEventListener ?
-		function(elm, name, fn) { elm.addEventListener(name, fn, false); } :
-		function(elm, name, fn) { elm.attachEvent('on'+name, fn); },
-
-	off: document.removeEventListener ?
-		function(elm, name, fn) { elm.removeEventListener(name, fn, false); } :
-		function(elm, name, fn) { elm.detachEvent('on'+name, fn); },
-
-	ons: document.addEventListener ?
-		function(elm, map) { for (var i in map) { elm.addEventListener(i, map[i], false); } } :
-		function(elm, map) { for (var i in map) { elm.attachEvent('on'+i, map[i]); } },
-
-	offs: document.removeEventListener ?
-		function(elm, map) { for (var i in map) { elm.removeEventListener(i, map[i], false); } } :
-		function(elm, map) { for (var i in map) { elm.detachEvent('on'+i, map[i]); } },
-
-	bindEvent: function(o, fn) {
-		var slice = Array.prototype.slice, args = slice.call(arguments, 2);
-		return function(e) {
-			e = e || window.event;
-			if (e) { e.target = e.target || e.srcElement; }
-			return fn.apply(o, [e].concat(args, slice.call(arguments, 1)));
-		};
-	},
-
-	bind: function(o, fn) {
-		var slice = Array.prototype.slice, args = slice.call(arguments, 2);
-		return function() { return fn.apply(o, args.concat(slice.call(arguments, 0))); };
-	},
-
 	getPosition: function(elm, relative) {
 		var utils = HtmlArea.Utils,
 			bound = elm.getBoundingClientRect(),
@@ -589,3 +619,4 @@ HtmlArea.Tools.addTools({
 		}
 	}
 });
+
