@@ -1,16 +1,16 @@
 /**
  * Creates a prototype including event handling
  **/
-HtmlArea.Utils.Events = function(proto) {
-	if (this instanceof HtmlArea.Utils.Events) { return HtmlArea.Utils.Events(proto); }
+HtmlArea.Events = function(proto) {
+	if (this instanceof HtmlArea.Events) { return HtmlArea.Events(proto); }
 
 	proto = proto || {};
-	var mixin = HtmlArea.Utils.Events.prototype, m;
+	var mixin = HtmlArea.Events.prototype, m;
 	for (m in mixin) { proto[m] = mixin[m]; }
 	return proto;
 };
 
-HtmlArea.Utils.Events.prototype = {
+HtmlArea.Events.prototype = {
 	bindEvent: function(fn) {
 		var o = this, slice = Array.prototype.slice, args = slice.call(arguments, 1);
 		return function(e) {
@@ -101,5 +101,5 @@ HtmlArea.Utils.Events.prototype = {
 	}
 };
 
-HtmlArea.Utils.Events(HtmlArea.prototype);
+HtmlArea.Events(HtmlArea.prototype);
 

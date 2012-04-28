@@ -3,11 +3,12 @@
  **/
 HtmlArea.Tools.Video = function(editor, o, s) {
 	this.editor = editor;
-//	this.options = HtmlArea.Utils.merge(this.options, o);
+	this.options = HtmlArea.Utils.merge(this.options, o);
 	this.strings = HtmlArea.Utils.merge(this.strings, s);
+	this.setupEvents(this.options);
 	editor.on('modechange', this.bind(this.hide));
 };
-HtmlArea.Tools.Video.prototype = HtmlArea.Utils.Events({
+HtmlArea.Tools.Video.prototype = HtmlArea.Events({
 	template:
 	'<form action="" method="post">' +
 		'<h6>' +

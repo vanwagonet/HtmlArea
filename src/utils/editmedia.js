@@ -1,20 +1,26 @@
 /**
  * Manges sizing and placing media elements
  **/
-HtmlArea.Utils.EditMedia = function(editor, o) {
+HtmlArea.Utils.EditMedia = function(editor, o, s) {
 	this.editor = editor;
-	this.tags = (o && o.tags) || 'img,video,iframe,object,embed';
-	this.tagExpr = new RegExp('^\\s*<(' + this.tags.split(',').join('|') + ')\\b[^>]*>\\s*$', 'i');
+	this.options = HtmlArea.Utils.merge(this.options, o);
+	this.strings = HtmlArea.Utils.merge(this.strings, s);
+	this.setupEvents(this.options);
+	this.tagExpr = new RegExp('^\\s*<(' + this.options.tags.split(',').join('|') + ')\\b[^>]*>\\s*$', 'i');
 	this.on(editor.content, 'mouseover', this.mouseOver);
 	if (editor.content.attachEvent) { // prevent IE's img resizers
 		editor.content.attachEvent('oncontrolselect', function(e) { e.returnValue = false; });
 	}
 };
-HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
+HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 
 	template: '<img src="{emptyGif}" /><div class="tools">{tools}</div><div class="resize">{resizeTools}</div>',
+
+	options: {
+		tags: 'img,video,iframe,object,embed'
+	},
 
 	strings: {
 		resize: 'Resize',
@@ -45,7 +51,7 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
 
 	mouseOver: function(e) {
 		var target = e.target || e.srcElement;
-		if ((','+this.tags+',').indexOf(','+target.nodeName.toLowerCase()+',') < 0) { return; }
+		if ((','+this.options.tags+',').indexOf(','+target.nodeName.toLowerCase()+',') < 0) { return; }
 		if ( ! this.mask) {
 			this.mask = new Image();
 			this.mask.className = 'htmlarea-edit-media-mask';
@@ -103,7 +109,7 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Utils.Events({
 	},
 
 	update: function() {
-		var range = this.editor.getRange(), oRange = range, elm, next, prev, tags = ','+this.tags+',';
+		var range = this.editor.getRange(), oRange = range, elm, next, prev, tags = ','+this.options.tags+',';
 		if (range && range.cloneRange) { // W3C Range
 			range = oRange.cloneRange(); // don't change the position of caret
 			if (range.startContainer.nodeType === 3 && range.startOffset === range.startContainer.length) { range.setStartAfter(range.startContainer); }

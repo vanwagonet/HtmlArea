@@ -12,6 +12,7 @@ HtmlArea.Utils.Drop = function(editor, o, s) {
 	this.editor = editor;
 	this.options = HtmlArea.Utils.merge(this.options, imgO, o);
 	this.strings = HtmlArea.Utils.merge(this.strings, s);
+	this.setupEvents(this.options);
 	this.on(editor.element, 'dragenter', this.dragEnter);
 };
 HtmlArea.Utils.Drop.hasFiles = function(e) {
@@ -20,7 +21,7 @@ HtmlArea.Utils.Drop.hasFiles = function(e) {
 	for (t = 0; t < tt; ++t) { if (types[t] === 'Files') { return true; } }
 	return false;
 };
-HtmlArea.Utils.Drop.prototype = HtmlArea.Utils.Events({
+HtmlArea.Utils.Drop.prototype = HtmlArea.Events({
 
 	options: {
 		autoLink: false,

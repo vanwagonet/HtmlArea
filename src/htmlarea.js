@@ -29,7 +29,7 @@ HtmlArea = function(content, o, s) {
 		content.innerHTML = o.value || ta.value;
 		this.element.insertBefore(content, ta);
 	} else {
-		if (o.value) { content.value = o.value; }
+		if (o.value) { content.innerHTML = o.value; }
 		ta = (this.textarea = document.createElement('textarea'));
 		ta.name = o.name;
 		ta.className = content.className;
@@ -41,7 +41,7 @@ HtmlArea = function(content, o, s) {
 	HtmlArea.Utils.addClass(content, 'content');
 	content.contentEditable = true;
 	content.spellcheck = true;
-	if (this.query('styleWithCSS', 'support')) { this.exec('styleWithCSS', false); } // prefer tags to styles
+	if (this.can('styleWithCSS')) { this.exec('styleWithCSS', false); } // prefer tags to styles
 	if (!/\S/.test(content.innerHTML)) { content.innerHTML += HtmlArea.pbr; }
 
 	if (o.mode === 'html') { this.setHTMLMode(); }
@@ -58,7 +58,6 @@ HtmlArea = function(content, o, s) {
 	return this.addListeners();
 };
 HtmlArea.prototype = {
-	fire: function(){}, // gets replaced
 
 	options: {
 		name: 'content',
@@ -145,8 +144,7 @@ HtmlArea.prototype = {
 	},
 
 	updateContent: function() {
-		var html = this.cleanHTML(this.textarea.value);
-		if (!html) { html = HtmlArea.pbr; }
+		var html = HtmlArea.Cleaner.clean(this.textarea.value) || HtmlArea.pbr;
 		this.content.innerHTML = html;
 	},
 
@@ -190,7 +188,7 @@ HtmlArea.prototype = {
 				tool.update(this, map[name], e);
 			} else if (cmd = tool.command) {
 				btn = map[name];
-				state = this.query(cmd);
+				state = this.has(cmd);
 				if (state === false) {
 					utils.removeClass(btn, 'active');
 					utils.removeClass(btn, 'indeterminate');
@@ -260,13 +258,17 @@ HtmlArea.prototype = {
 		document.execCommand(cmd, ui || null, val || false);
 	},
 
-	query: function(cmd, type) {
-		try {
-			if (type === 'support') { return document.queryCommandSupported(cmd); }
-			if (type === 'value') { return document.queryCommandValue(cmd); }
-			return document.queryCommandIndeterm(cmd) ? undefined :
-				document.queryCommandState(cmd);
-		} catch(ex) {}
+	has: function(cmd) {
+		return document.queryCommandIndeterm(cmd) ? undefined :
+			document.queryCommandState(cmd);
+	},
+
+	can: function(cmd) {
+		try { return document.queryCommandSupported(cmd); } catch(ex) {}
+	},
+
+	get: function(cmd) {
+		return document.queryCommandValue(cmd);
 	},
 
 	insert: function(html) {
@@ -275,58 +277,8 @@ HtmlArea.prototype = {
 		} else { this.exec('insertHTML', html); }
 	},
 
-	beforeGetHTML: function() {
-		var spans = this.content.querySelectorAll('font,span,[style]'),
-			styles = HtmlArea.styles, s, ss = styles.length, font,
-			style, span, t, tt = spans.length+1;
-		spans = Array.prototype.slice.call(spans, 0).concat(this.content);
-		for (t = 0; t < tt; ++t) {
-			style = (span = spans[t]).style.cssText.replace(/^\s+|\s+$/g, '');
-			if (span.nodeName.toLowerCase() === 'font') {
-				font = span;
-				if (s = font.getAttribute('color')) { style += ' color: ' + s; }
-				if (s = font.getAttribute('face')) { style += ' font-face: ' + s; }
-				if (s = font.getAttribute('size')) { style += ' font-size: ' + s; }
-				span = document.createElement('span');
-				span.style.cssText = style;
-				while (font.firstChild) { span.appendChild(font.removeChild(font.firstChild)); }
-				font.parentNode.insertBefore(span, font);
-				font.parentNode.removeChild(font);
-			}
-			if (style) {
-				for (s = 0; s < ss; ++s) {
-					if (!styles[s][0].test(style)) { continue; }
-					style = style.replace(styles[s][0], styles[s][1]);
-					if (styles[s][2]) {
-						font = document.createElement(styles[s][2]);
-						while (span.firstChild) { font.appendChild(span.removeChild(span.firstChild)); }
-						span.appendChild(font);
-					}
-				}
-				span.style.cssText = (style = style.replace(/^\s+|\s+$/g, ''));
-			}
-			if (!style && span != this.content && span.nodeName.toLowerCase() === 'span') {
-				HtmlArea.Utils.unwrap(span);
-			}
-		}
-	},
-
-	cleanHTML: function(html) {
-		var options = this.options.cleanOptions || {},
-			cleanups = HtmlArea.cleanups,
-			cleaned, c, cc = cleanups.length,
-			replace = html.replace, max = 10;
-
-		do { for (c = 0, cleaned = html; c < cc; ++c) {
-			html = replace.apply(html, cleanups[c]);
-		} } while (cleaned != html && --max);
-
-		return html.replace(/^\s+|\s+$/g, '');
-	},
-
 	getHTML: function() {
-		this.beforeGetHTML(); 
-		return this.cleanHTML(this.content.innerHTML);
+		return HtmlArea.Cleaner.clean(this.content);
 	},
 
 	getRange: function(type) {
@@ -361,265 +313,7 @@ HtmlArea.prototype = {
 		}
 		this.setRange(range);
 	}
-
 };
 
 HtmlArea.pbr = '<p><br/></p>';
-
-HtmlArea.cleanups = [ // got this started by looking at MooRTE. Thanks Sam!
-	// html tidiness
-	[ /<[^> ]*/g, function(m) { return m.toLowerCase(); } ], // lowercase tags
-	[ /<[^>]*>/g, function(m) {	return m
-		.replace(/ [^=]+=/g, function(a) { return a.toLowerCase(); }) // lowercase attributes
-		.replace(/( [^=]+=)([^"][^ >]*)/g, '$1"$2"') // quote attributes
-		.replace(/ slick-uniqueid="[^"]*"/g, ''); // remove slick added attributes
-	} ],
-	[ /(<(?:img|input)\b[^>]*[^\/])>/g, '$1 />' ], // self close tags
-
-	// <br/> tag cleanup
-	[ /<br\b[^>]*?>/g, '<br/>' ], // normalize <br>
-	[ /^<br\/>|<br\/>$/g, '' ], // no leading or trailing <br>
-	[ /<br\/>\s*<\/(h1|h2|h3|h4|h5|h6|li|p|div)/g, '</$1' ], // no <br> at end of block
-	[ /<p>(?:&nbsp;|\s)*<br\/>(?:&nbsp;|\s)*<\/p>/g, '<p><br/></p>' ], // replace padded <p> with pbr
-
-	// webkit cleanup
-	[ / class="apple-style-span"| style=""/gi, '' ], // remove unhelpful attributes	
-	[ /^([^<]+)(<?)/, '<p>$1</p>$2' ], // wrap first text in <p>
-	[ /<(\/?)div\b/g, '<$1p' ], // change <div> to <p>
-
-	// semantic changes, but prefer b, i, and s instead of strong, em, and del
-	[ /<(\/?)strong\b/g, '<$1b' ], // use <b> for bold
-	[ /<(\/?)em\b/g, '<$1i' ], // use <i> for italic
-	[ /<(\/?)(?:strike|del)\b/g, '<$1s' ], // use <s> for strikethrough
-
-	// normalize whitespace, tag placement
-	[ /\s*<(\/?(?:p|ol|ul)\b[^>]*)>\s*/g, '<$1>\n' ], // newline after <p> </p> <ol> </ol> <ul> </ul>
-	[ /\s*<li([^>]*)>/g, '\n\t<li$1>' ], // indent <li>
-	[ /\s*<\/(p|ol|ul)>/g, '\n</$1>'], // newline before </p> </ol> </ul>
-	[ /\s*<img\b([^>*?])>\s*/g, '\n<img$1>\n'], // <img> on its own line
-	[ /<p\b[^>]*>\s*<\/p>\s*<(ol|ul)\b/g, '<$1' ], // remove empty <p> before <ul> or <ol>
-	[ /(<p\b[^>]*>\s*)(<(ul|ol)\b([^<]|<)*?<\/\3>\s*)/g, '$2$1' ], // move <p> right before <ul> or <ol> to after
-	[ /^\s*$/g, '' ] // no empty lines
-];
-
-HtmlArea.styles = [
-	[ /(text-decoration:.*?)\bline-through\b(;?)/g, '$1$2', 's' ],
-	[ /(text-decoration:.*?)\bunderline\b(;?)/g, '$1$2', 'u' ],
-	[ /text-decoration:\s*;/, '' ],
-	[ /font-style:\s*italic;?/g, '', 'i' ],
-	[ /font-weight:\s*bold;?/g, '', 'b' ]
-];
-
-HtmlArea.keys = {
-	8: 'backspace',
-	9: 'tab',
-	13: 'enter',
-	16: 'shift',
-	17: 'ctrl',
-	18: 'alt',
-	19: 'pause_break',
-	20: 'caps_lock',
-	27: 'escape',
-	33: 'page_up',
-	34: 'page_down',
-	35: 'end',
-	36: 'home',
-	37: 'left',
-	38: 'up',
-	39: 'right',
-	40: 'down',
-	45: 'insert',
-	46: 'delete',
-	91: 'windows',
-	92: 'windows',
-	93: 'context',
-	96: '0',
-	97: '1',
-	98: '2',
-	99: '3',
-	100: '4',
-	101: '5',
-	102: '6',
-	103: '7',
-	104: '8',
-	105: '9',
-	106: '*',
-	107: '+',
-	109: '-',
-	110: '.',
-	111: '/',
-	112: 'f1',
-	113: 'f2',
-	114: 'f3',
-	115: 'f4',
-	116: 'f5',
-	117: 'f6',
-	118: 'f7',
-	119: 'f8',
-	120: 'f9',
-	121: 'f10',
-	122: 'f11',
-	123: 'f12',
-	144: 'num_lock',
-	145: 'scroll_lock',
-	186: ';',
-	187: '=',
-	188: ',',
-	189: '-',
-	190: '.',
-	191: '/',
-	192: '`',
-	219: '[',
-	220: '\\',
-	221: ']',
-	222: '\''
-}
-
-HtmlArea.Utils = {
-	getPosition: function(elm, relative) {
-		var utils = HtmlArea.Utils,
-			bound = elm.getBoundingClientRect(),
-			html = document.documentElement,
-			doc = (!document.compatMode || document.compatMode == 'CSS1Compat') ? html : document.body,
-			htmlScroll = { x:window.pageXOffset || doc.scrollLeft, y:window.pageYOffset || doc.scrollTop },
-			isFixed = (utils.getComputedStyle(elm, 'position') == 'fixed'),
-			position = {
-				x:Math.round(bound.left) + ((isFixed) ? 0 : htmlScroll.x) - html.clientLeft,
-				y:Math.round(bound.top)  + ((isFixed) ? 0 : htmlScroll.y) - html.clientTop
-			};
-
-		if (relative) {
-			var rel = utils.getPosition(relative);
-			position.x = position.x - rel.x - parseInt(utils.getComputedStyle(relative, 'borderLeftWidth'), 10);
-			position.y = position.y - rel.y - parseInt(utils.getComputedStyle(relative, 'borderTopWidth'), 10);
-		}
-		return position;
-	},
-	
-	getComputedStyle: function(elm, prop) {
-		var style = window.getComputedStyle ? window.getComputedStyle(elm, null) : elm.currentStyle;
-		return style ? style[prop] : null;
-	},
-
-	addClass: document.documentElement.classList ?
-		function(elm, cls) { elm.classList.add(cls); } :
-		function(elm, cls) { elm.className = ((' '+elm.className+' ').replace(' '+cls+' ', ' ') + ' ' + cls).replace(/^\s+|\s+$/g, ''); },
-
-	removeClass: document.documentElement.classList ?
-		function(elm, cls) { elm.classList.remove(cls); } :
-		function(elm, cls) { elm.className = (' '+elm.className+' ').replace(' '+cls+' ', ' ').replace(/^\s+|\s+$/g, ''); },
-
-	hasClass: document.documentElement.classList ?
-		function(elm, cls) { return elm.classList.contains(cls); } :
-		function(elm, cls) { return (' '+elm.className+' ').indexOf(' '+cls+' ') >= 0; },
-
-	contains: (/\{\s*\[native code\]\s*\}/).test('' + document.documentElement.contains) ?
-		function(context, node) { return context.contains(node); } :
-	(document.documentElement.compareDocumentPosition ?
-		function(context, node) { return context === node || !!(context.compareDocumentPosition(node) & 16); } :
-		function(context, node) {
-			while (node && node !== context) { node = node.parentNode; }
-			return (node === context);
-		}),
-
-	unwrap: function(node) {
-		var parentNode = node.parentNode, child;
-		while (child = node.firstChild) {
-			parentNode.insertBefore(node.removeChild(child), node);
-		}
-		parentNode.removeChild(node);
-	},
-
-	merge: function() {
-		var o = {}, a, aa = arguments.length, p,
-			type = Object.prototype.toString, object = '[object Object]';
-		for (p in arguments[0]) { o[p] = arguments[0][p]; }
-		for (a = 1; a < aa; ++a) {
-			for (p in arguments[0]) {
-				if (type(o[p]) === object && type(arguments[0][p]) === object) {
-					o[p] = HtmlArea.Utils.merge(o[p], arguments[0][p]);
-				} else {
-					o[p] = arguments[0][p];
-				}
-			}
-		}
-		return o;
-	},
-
-	format: function(str/*, object... */) {
-		var args = arguments;
-		return String(str).replace((/\\?\{([^{}]+)\}/g), function(match, name){
-			if (match.charAt(0) == '\\') return match.slice(1);
-			var a = 1, aa = args.length;
-			while (a < aa && ( ! args[a] || args[a][name] == null)) { ++a; }
-			return (a < aa) ? args[a][name] : '';
-		});
-	}
-};
-
-HtmlArea.Tools = {
-	addTools: function(o) {
-		for (var name in o) { this.addTool(name, o[name]); }
-		return this;
-	},
-
-	addTool: function(name, tool) {
-		var Tool = HtmlArea.Tools.Tool;
-		tool.tool = name;
-		if (typeof tool === 'object' && !(tool instanceof Tool)) {
-			tool = new Tool(tool);
-		}
-		this[name] = tool;
-		return this;
-	}
-};
-HtmlArea.Tools.Tool = function(o) { for (var k in o) { this[k] = o[k]; } };
-HtmlArea.Tools.Tool.prototype = {
-	run: function(editor, btn, e) {
-		if (this.mode != editor.mode && this.mode != 'both') { return false; }
-		var cmd = this.command;
-		return cmd ? editor.exec(cmd, this.param, this.ui) : false;
-	},
-	mode: 'visual'
-};
-
-HtmlArea.Tools.addTools({
-	separator:{ text:'|' },
-
-	bold:{ title:'bold', text:'<b>B</b>', command:'bold', key:'b' },
-	italic:{ title:'italic', text:'<i>I</i>', command:'italic', key:'i' },
-	underline:{ title:'underline', text:'<u>U</u>', command:'underline', key:'u' },
-	strike:{ title:'strike', text:'<s>S</s>', command:'strikethrough' },
-	sub:{ title:'sub', text:'x<sub>2</sub>', command:'subscript' },
-	sup:{ title:'sup', text:'x<sup>2</sup>', command:'superscript' },
-
-	left:{ title:'left', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyLeft' },
-	center:{ title:'center', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyCenter' },
-	right:{ title:'right', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyRight' },
-	justify:{ title:'justify', text:'<hr/><hr/><hr/><hr/><hr/><hr/>', command:'justifyAll' },
-
-	bullet:{ title:'bullet', text:'<ul><li><b>&#9679;</b></li><li><b>&#9679;</b></li><li><b>&#9679;</b></li></ul>', command:'insertunorderedlist' },
-	number:{ title:'number', text:'<ol><li><b>1</b></li><li><b>2</b></li><li><b>3</b></li></ol>', command:'insertorderedlist' },
-	indent:{ title:'indent', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b><b></b><b></b>', command:'indent' },
-	outdent:{ title:'outdent', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b><b></b><b></b>', command:'outdent' },
-//	rule:{ title:'rule', text:'&mdash;', command:'inserthorizontalrule' }, // I don't think you should do this
-
-//	cut:{ title:'cut', text:'&#9986;', command:'cut', key:'x', magic:true }, // execCommand('cut') doesn't seem to work
-//	copy:{ title:'copy', text:'&copy;', command:'copy', key:'c', magic:true }, // execCommand('copy') doesn't seem to work
-//	paste:{ title:'paste', text:'P', command:'paste', key:'v', magic:true }, // execCommand('paste') doesn't seem to work
-	undo:{ title:'undo', text:'&#8617;', command:'undo', key:'z', magic:true },
-	redo:{ title:'redo', text:'&#8618;', command:'redo', key:'y', magic:true },
-
-	mode:{ title:'mode', text:'&lt;/&gt;', key:'/', mode:'both',
-		run: function(editor, btn) {
-			if (editor.mode === 'visual') {
-				HtmlArea.Utils.addClass(btn, 'active');
-				editor.setHTMLMode();
-			} else {
-				HtmlArea.Utils.removeClass(btn, 'active');
-				editor.setVisualMode();
-			}
-		}
-	}
-});
 

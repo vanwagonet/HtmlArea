@@ -2,7 +2,7 @@
  * Upload data from a <form> or FormData
  **/
 HtmlArea.Utils.Upload = function(o) { return this.setupEvents(o); };
-HtmlArea.Utils.Upload.prototype = HtmlArea.Utils.Events({
+HtmlArea.Utils.Upload.prototype = HtmlArea.Events({
 
 	canUploadXhr: function() { return window.File && window.FormData && window.XMLHttpRequest && true || false; },
 

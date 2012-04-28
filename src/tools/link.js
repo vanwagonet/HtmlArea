@@ -7,10 +7,11 @@
  **/
 HtmlArea.Tools.Link = function(editor, o, s) {
 	this.editor = editor;
-//	this.options = HtmlArea.Utils.merge(this.options, o);
+	this.options = HtmlArea.Utils.merge(this.options, o);
 	this.strings = HtmlArea.Utils.merge(this.strings, s);
+	this.setupEvents(this.options);
 };
-HtmlArea.Tools.Link.prototype = HtmlArea.Utils.Events({
+HtmlArea.Tools.Link.prototype = HtmlArea.Events({
 
 	update: function(btn) {
 		var link = this.getLink();

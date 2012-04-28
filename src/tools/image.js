@@ -21,9 +21,10 @@ HtmlArea.Tools.Image = function(editor, o, s) {
 	this.editor = editor;
 	this.options = HtmlArea.Utils.merge(this.options, o);
 	this.strings = HtmlArea.Utils.merge(this.strings, s);
+	this.setupEvents(this.options);
 	editor.on('modechange', this.bind(this.hide));
 };
-HtmlArea.Tools.Image.prototype = HtmlArea.Utils.Events({
+HtmlArea.Tools.Image.prototype = HtmlArea.Events({
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 
 	template:
