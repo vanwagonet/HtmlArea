@@ -121,7 +121,10 @@ HtmlArea.Tools.Link.prototype = HtmlArea.Events({
 	},
 
 	remove: function() {
-		if (this.link) { HtmlArea.Utils.unwrap(this.link); }
+		if (this.link) {
+			this.editor.select(this.link);
+			this.editor.exec('unlink');
+		}
 		this.hide();
 	}
 });

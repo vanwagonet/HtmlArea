@@ -4,8 +4,7 @@
 	<title>HtmlArea Sandbox</title>
 	<link rel="stylesheet" href="../style/default.css" />
 	<link rel="stylesheet" href="demo.css" />
-	<script src="../htmlarea.min.js"></script>
-	<!--
+	<!--<script src="../htmlarea.min.js"></script>-->
 	<script src="../src/htmlarea.js"></script>
 	<script src="../src/keys.js"></script>
 	<script src="../src/cleaner.js"></script>
@@ -18,7 +17,6 @@
 	<script src="../src/tools/link.js"></script>
 	<script src="../src/tools/image.js"></script>
 	<script src="../src/tools/video.js"></script>
-	-->
 </head>
 <body>
 	<form id="editor_options">
@@ -35,6 +33,11 @@
 		<input id="toolbar_custom" style="display:none" />
 	</form>
 	<form id="form">
+		<textarea id="editor">
+			<p><i>Hello</i> <b>World!</b></p>
+			<p><a href="http://inkwall.com">Inkwall</a></p>
+			<p><img src="http://inkpageant.com/images/inkpageant.jpg" /></p>
+		</textarea>
 		<input type="submit" value="submit" />
 	</form>
 	<script>
@@ -64,7 +67,7 @@
 			return e.returnValue = false;
 		};
 
-		var editor = new HtmlArea(null, { value:'<p><i>Hello</i> <b>World!</b></p>' });
+		var editor = new HtmlArea('#editor');
 		form.insertBefore(editor.element, form.firstChild);
 	</script>
 </body>

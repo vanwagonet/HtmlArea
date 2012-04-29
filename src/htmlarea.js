@@ -13,6 +13,9 @@ HtmlArea = function(content, o, s) {
 	o.tools = this.optionToArray(o.tools);
 	o.utils = this.optionToArray(o.utils);
 
+	if (this.typeOf(content) === 'String') {
+		content = document.querySelector(content);
+	}
 	this.content = (content = content || document.createElement('div'));
 	this.element = document.createElement('div');
 	this.element.className = 'htmlarea ' + o.style;
@@ -41,7 +44,8 @@ HtmlArea = function(content, o, s) {
 	HtmlArea.Utils.addClass(content, 'content');
 	content.contentEditable = true;
 	content.spellcheck = true;
-	if (this.can('styleWithCSS')) { this.exec('styleWithCSS', false); } // prefer tags to styles
+	if (this.can('styleWithCSS')) { this.exec('styleWithCSS', false); } // prefer tags to styles 
+	if (this.can('2d-position')) { this.exec('2d-position', false); } // don't use native absolute moving
 	if (!/\S/.test(content.innerHTML)) { content.innerHTML += HtmlArea.pbr; }
 
 	if (o.mode === 'html') { this.setHTMLMode(); }
@@ -103,7 +107,7 @@ HtmlArea.prototype = {
 			cmd = (navigator.platform.indexOf('Mac') === 0) ? '&#8984;' : 'ctrl ';
 		for (t = 0, tt = tools.length - 1; t <= tt; ++t) {
 			if (tools[t] === '|') { tools[t] = 'separator'; }
-			if (Object.prototype.toString.call(tools[t]) === '[object Array]') {
+			if (this.typeOf(tools[t]) === 'Array') {
 				html += '<span class="tools">' + this.buildTools(tools[t], strings) + '</span>';
 			} else if (tool = (typeof tools[t] === 'object') ? tools[t] : Tools[tools[t]]) {
 				html += '<a data-tool="' + tool.tool + '" class="' + tool.tool;
@@ -132,7 +136,10 @@ HtmlArea.prototype = {
 	addListeners: function() {
 		var updateTools = this.bindEvent(this.updateTools);
 		this.ons(this.content, { blur:this.updateTextarea, keydown:this.shortcut });
-		this.ons(this.content, { focus:updateTools, keyup:updateTools, mouseup:updateTools }, true);
+		this.ons(this.content, {
+				focus:updateTools, keyup:updateTools, mouseup:updateTools,
+				controlselect:function() { return false; } // don't allow native IE resizers
+			}, true);
 		this.on(this.textarea, 'keydown', this.shortcut);
 		this.on(this.tools, 'mousedown', this.toolRun);
 		this.on(this.tools, 'mouseup', updateTools, true);
@@ -212,7 +219,7 @@ HtmlArea.prototype = {
 		var t, tt = tools.length, bar = this.tools,
 			Tools = HtmlArea.Tools, tool;
 		for (t = 0; t < tt; ++t) {
-			if (Object.prototype.toString.call(tools[t]) === '[object Array]') {
+			if (this.typeOf(tools[t]) === 'Array') {
 				this.updateToolMap(map, tools[t]);
 			} else if (tool = Tools[tools[t]]) {
 				if (tool.update || tool.command) { // only stateful tools
@@ -312,6 +319,10 @@ HtmlArea.prototype = {
 			range.moveToElementText(node);
 		}
 		this.setRange(range);
+	},
+
+	typeOf: function(v) {
+		return Object.prototype.toString.call(v).slice(1, -1).split(' ')[1];
 	}
 };
 

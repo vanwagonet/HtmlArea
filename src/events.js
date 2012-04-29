@@ -15,7 +15,11 @@ HtmlArea.Events.prototype = {
 		var o = this, slice = Array.prototype.slice, args = slice.call(arguments, 1);
 		return function(e) {
 			e = e || window.event;
-			if (e) { e.target = e.target || e.srcElement; }
+			if (e && ! e.target) { // IE <= 8
+				e.target = e.srcElement;
+				e.preventDefault = function() { e.returnValue = false; };
+				e.stopPropagation = function() { e.cancelBubble = true; };
+			}
 			return fn.apply(o, [e].concat(args, slice.call(arguments, 1)));
 		};
 	},

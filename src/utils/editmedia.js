@@ -6,11 +6,7 @@ HtmlArea.Utils.EditMedia = function(editor, o, s) {
 	this.options = HtmlArea.Utils.merge(this.options, o);
 	this.strings = HtmlArea.Utils.merge(this.strings, s);
 	this.setupEvents(this.options);
-	this.tagExpr = new RegExp('^\\s*<(' + this.options.tags.split(',').join('|') + ')\\b[^>]*>\\s*$', 'i');
 	this.on(editor.content, 'mouseover', this.mouseOver);
-	if (editor.content.attachEvent) { // prevent IE's img resizers
-		editor.content.attachEvent('oncontrolselect', function(e) { e.returnValue = false; });
-	}
 };
 HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 
@@ -50,7 +46,7 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 	],
 
 	mouseOver: function(e) {
-		var target = e.target || e.srcElement;
+		var target = e.target;
 		if ((','+this.options.tags+',').indexOf(','+target.nodeName.toLowerCase()+',') < 0) { return; }
 		if ( ! this.mask) {
 			this.mask = new Image();
@@ -110,7 +106,7 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 
 	update: function() {
 		var range = this.editor.getRange(), oRange = range, elm, next, prev, tags = ','+this.options.tags+',';
-		if (range && range.cloneRange) { // W3C Range
+		if (range && range.cloneRange) { // W3C Range, IE <= 8 has to click
 			range = oRange.cloneRange(); // don't change the position of caret
 			if (range.startContainer.nodeType === 3 && range.startOffset === range.startContainer.length) { range.setStartAfter(range.startContainer); }
 			while (range.startOffset === range.startContainer.childNodes.length) { range.setStartAfter(range.startContainer); }
@@ -124,10 +120,6 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 				if (tags.indexOf(','+prev.nodeName.toLowerCase()+',') >= 0) { elm = prev; }
 				if (tags.indexOf(','+next.nodeName.toLowerCase()+',') >= 0) { elm = next; }
 			} else if (prev == next && tags.indexOf(','+next.nodeName.toLowerCase()+',') >= 0) { elm = next; }
-		} else if (range && range.duplicate) { // IE TextRange
-			if (this.tagExpr.test(range.htmlText)) {
-				elm = range.parentElement();
-			}
 		}
 		if (this.masked) { this.maskElm(this.masked); }
 		if ((this.elm = elm || null)) {
@@ -168,7 +160,7 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 	},
 
 	edit: function(e) {
-		var a = e.target || e.srcElement, tool;
+		var a = e.target, tool;
 		function camel(s) {
 			return String(s).replace(/-\D/g, function(m) {
 				return m.charAt(1).toUpperCase();
@@ -189,8 +181,8 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 
 	runRemove: function(elm) {
 		if (elm.parentNode.href === elm.src) { elm = elm.parentNode; }
-		var parent = elm.parentNode;
-		if (parent) { parent.removeChild(elm); }
+		this.editor.select(elm);
+		this.editor.exec('delete');
 		this.hide();
 	},
 

@@ -23,8 +23,16 @@ HtmlArea.Utils = {
 	},
 	
 	getComputedStyle: function(elm, prop) {
-		var style = window.getComputedStyle ? window.getComputedStyle(elm, null) : elm.currentStyle;
-		return style ? style[prop] : null;
+		var style = window.getComputedStyle ? window.getComputedStyle(elm) : elm.currentStyle;
+		return style ? style[prop] : undefined;
+	},
+
+	classes: function(elm) {
+		return elm.classList || {
+			add: function(cls) { elm.className = ((' '+elm.className+' ').replace(' '+cls+' ', ' ') + ' ' + cls).replace(/^\s+|\s+$/g, ''); },
+			remove: function(cls) { elm.className = (' '+elm.className+' ').replace(' '+cls+' ', ' ').replace(/^\s+|\s+$/g, ''); },
+			contains: function(cls) { return (' '+elm.className+' ').indexOf(' '+cls+' ') >= 0; }
+		};
 	},
 
 	addClass: document.documentElement.classList ?
@@ -48,21 +56,13 @@ HtmlArea.Utils = {
 			return (node === context);
 		}),
 
-	unwrap: function(node) {
-		var parentNode = node.parentNode, child;
-		while (child = node.firstChild) {
-			parentNode.insertBefore(node.removeChild(child), node);
-		}
-		parentNode.removeChild(node);
-	},
-
 	merge: function() {
 		var o = {}, a, aa = arguments.length, p,
 			type = Object.prototype.toString, object = '[object Object]';
 		for (p in arguments[0]) { o[p] = arguments[0][p]; }
 		for (a = 1; a < aa; ++a) {
 			for (p in arguments[a]) {
-				if (type(o[p]) === object && type(arguments[a][p]) === object) {
+				if (type.call(o[p]) === object && type.call(arguments[a][p]) === object) {
 					o[p] = HtmlArea.Utils.merge(o[p], arguments[a][p]);
 				} else {
 					o[p] = arguments[a][p];

@@ -12,12 +12,11 @@ HtmlArea.Cleaner = {
 		}
 
 		// do all manipulation outside of rendered tree
-		var spans = content.querySelectorAll('font,span,[style]'),
-			span, t, tt = spans.length+1, font,
+		var spans = tree.querySelectorAll('font,span,[style]'),
+			span, t, tt = spans.length, font,
 			styles = HtmlArea.Cleaner.styleRules,
 			style, s, ss = styles.length, wrap;
 
-		spans = Array.prototype.slice.call(spans, 0).concat(content);
 		for (t = 0; t < tt; ++t) {
 			style = (span = spans[t]).style.cssText.replace(/^\s+|\s+$/g, '');
 			if (span.nodeName.toLowerCase() === 'font') {
