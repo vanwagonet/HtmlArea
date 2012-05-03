@@ -28,29 +28,41 @@ HtmlArea has no external dependencies. The code base is in vanilla javascript.
 
 ### Usage
 
-	var htmlarea = new HtmlArea(content, options);
+```javascript
+// generate new element, and use defaults
+var area = new HtmlArea();
+document.body.appendChild(area.element);
 
-content may be any div or textarea. It will be wrapped with a div.
+// use selector, specify options
+var options = {
+		style:'inkwall-dark', toolsgo:'bottom',
+		tools:'[bold,italic,underline][left,center,right]'
+	},
+	htmlarea = new HtmlArea('article > textarea', options);
+```
+
+content may be any div, textarea, or a css selector string.
 
 options is an object with any of the following properties
 
-* name - deafults to 'content' - String name attribute to add to the generated textarea, only used if a textarea was not passed in as content
+* name - deafults to 'content' - String name attribute to add to the generated textarea, only used if a textarea was not specified as content
 * style - defaults to 'default' - css class name appended to the wrapper div, designates the theme to use
 * mode - defaults to 'visual' - may also be 'html' signifying the editor starts by showing raw html
 * toolsgo - defaults to 'top' - may also be 'bottom' denoting where in the wrapper the toolbar should be added
 * tools - defaults to '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,mode]' - an array or string denoting the actions to add to the toolbar
 * * [] denotes a group, wrapped in span.tools
-* * | is a shortcut for separator
+* * | is a shortcut for separator, a.separator
 
 
 ## License
 
 The code is available under the MIT License. If you find it useful, send me shout out.
 
-Copyright (c) 2011 Andy VanWagoner
+Copyright (c) 2012 Andy VanWagoner
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
