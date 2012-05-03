@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Htmlarea by thetalecrafter</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>Htmlarea</h1>
+        <p>Inkwall's simple but extensible rich-text editor</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/thetalecrafter/HtmlArea" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/thetalecrafter/HtmlArea/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/thetalecrafter/HtmlArea/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>Inkwall's HtmlArea</h1>
+
+<p>This is Inkwall's HtmlArea. Here's what I hope you find:</p>
+
+<ol>
+<li>Super easy to use. I want to step out of the pattern of Office 95 wannabes, without making you have to think twice about how to do something.</li>
+<li>Lightweight. You shouldn't have to wait for lots of files to load up when all you want to do is fix a typo in your blog post. HtmlArea should stay out of your way.</li>
+<li>Extensible. If you are blogger on Inkwall, you probably don't care at all, but I had a terrible experience trying to reskin and add features to other editors, and I don't want other programmer to have to go through that.
+While I certainly hope it works for you, I don't aim for the broad compatibility many editors claim. If you aren't using the latest version of a popular browser, you have bigger problems to worry about than any bug you find in HtmlArea.</li>
+</ol><p><em>I'm not done yet.</em></p>
+
+<p>While I'm excited about what I've got so far, the best is yet to come. If you find problems, let me know about it. Also, let me know what you'd like to see. Here's what Dennis and I have in mind:</p>
+
+<ul>
+<li>Select from preset styles, so you can focus on your content, while we make it look good.</li>
+</ul><h2>Specifics</h2>
+
+<h3>Browser Compatibility</h3>
+
+<p>If you find a bug in HtmlArea while using the latest version of Chrome, Safari, Firefox, or Internet Explorer, I'd like to fix it... perhaps Opera if the bug is nasty, and you ask me real nice like.</p>
+
+<h3>Requirements</h3>
+
+<p>HtmlArea has no external dependencies. The code base is in vanilla javascript.</p>
+
+<h3>Usage</h3>
+
+<div class="highlight">
+<pre><span class="c1">// generate new element, and use defaults</span>
+<span class="kd">var</span> <span class="nx">area</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HtmlArea</span><span class="p">();</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">area</span><span class="p">.</span><span class="nx">element</span><span class="p">);</span>
+
+<span class="c1">// use selector, specify options</span>
+<span class="kd">var</span> <span class="nx">options</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nx">style</span><span class="o">:</span><span class="s1">'inkwall-dark'</span><span class="p">,</span> <span class="nx">toolsgo</span><span class="o">:</span><span class="s1">'bottom'</span><span class="p">,</span>
+        <span class="nx">tools</span><span class="o">:</span><span class="s1">'[bold,italic,underline][left,center,right]'</span>
+    <span class="p">},</span>
+    <span class="nx">htmlarea</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">HtmlArea</span><span class="p">(</span><span class="s1">'article &gt; textarea'</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+</pre>
+</div>
+
+
+<p>content may be any div, textarea, or a css selector string.</p>
+
+<p>options is an object with any of the following properties</p>
+
+<ul>
+<li>name - deafults to 'content' - String name attribute to add to the generated textarea, only used if a textarea was not specified as content</li>
+<li>style - defaults to 'default' - css class name appended to the wrapper div, designates the theme to use</li>
+<li>mode - defaults to 'visual' - may also be 'html' signifying the editor starts by showing raw html</li>
+<li>toolsgo - defaults to 'top' - may also be 'bottom' denoting where in the wrapper the toolbar should be added</li>
+<li>tools - defaults to '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,mode]' - an array or string denoting the actions to add to the toolbar</li>
+<li>* [] denotes a group, wrapped in span.tools</li>
+<li>* | is a shortcut for separator, a.separator</li>
+</ul><h2>License</h2>
+
+<p>The code is available under the MIT License. If you find it useful, send me shout out.</p>
+
+<p>Copyright (c) 2012 Andy VanWagoner</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/thetalecrafter">thetalecrafter</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+    
+  </body>
+</html>
