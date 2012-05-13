@@ -17,14 +17,11 @@
  *  done: 'Done'
  *  cancel: 'cancel'
  **/
-HtmlArea.Tools.Image = function(editor, o, s) {
-	this.editor = editor;
-	this.options = HtmlArea.Utils.merge(this.options, o);
-	this.strings = HtmlArea.Utils.merge(this.strings, s);
-	this.setupEvents(this.options);
-	editor.on('modechange', this.bind(this.hide));
+HtmlArea.Tools.Image = function(editor) {
+	HtmlArea.Tool.apply(this, arguments);
+	editor.on('modechange', this.bind(this.hide), true);
 };
-HtmlArea.Tools.Image.prototype = HtmlArea.Events({
+HtmlArea.Tools.Image.prototype = HtmlArea.merge(new HtmlArea.Tool(), {
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 
 	template:
@@ -65,12 +62,16 @@ HtmlArea.Tools.Image.prototype = HtmlArea.Events({
 		cancel: 'cancel'
 	},
 
+	run: function() {
+		this.show();
+	},
+
 	getUI: function() {
 		if (this.ui) { return this.ui; }
 		var ui = (this.ui = document.createElement('div')), editor = this.editor,
-			utils = HtmlArea.Utils, validate = this.bindEvent(this.validate)
+			validate = this.bindEvent(this.validate)
 		ui.className = 'htmlarea-image upload';
-		ui.innerHTML = utils.format(this.template, this.options, this.strings, this);
+		ui.innerHTML = this.format(this.template, this.options, this.strings, this);
 		this.uiFile = ui.querySelector('input[type=file]');
 		this.uiUrl = ui.querySelector('input[name=url]');
 		this.uiRadioUpload = ui.querySelector('input[name=type][value=upload]');
@@ -79,7 +80,7 @@ HtmlArea.Tools.Image.prototype = HtmlArea.Events({
 		this.uiLabelUpload = ui.querySelector('label.upload');
 		this.uiLabelSpan = this.uiLabelUpload.querySelector('span');
 		this.uiError = ui.querySelector('.error');
-		if (utils.Upload.prototype.canUploadXhr()) { this.uiFile.multiple = true; }
+		if (HtmlArea.Utils.Upload.prototype.canUploadXhr()) { this.uiFile.multiple = true; }
 		this.on(ui.querySelector('form'), 'submit',this.submit);
 		this.on(ui.querySelector('input[type=button]'), 'click', this.cancel);
 		this.on(this.uiRadioUpload, 'change', this.typeChange);
@@ -150,11 +151,11 @@ HtmlArea.Tools.Image.prototype = HtmlArea.Events({
 	},
 
 	typeChange: function(e) {
-		var input = e.target, type = input.value, ui = this.getUI(),
-			utils = HtmlArea.Utils;
-		if (utils.hasClass(ui, type)) { return; }
-		utils.removeClass(ui, type === 'url' ? 'upload' : 'url');
-		utils.addClass(ui, type);
+		var input = e.target, type = input.value,
+			ui = this.getUI(), cls = this.classes(ui);
+		if (cls.contains(type)) { return; }
+		cls.remove(type === 'url' ? 'upload' : 'url');
+		cls.add(type);
 		this.validate();
 		this.uiError.innerHTML = '';
 	},
@@ -205,7 +206,7 @@ HtmlArea.Tools.Image.prototype = HtmlArea.Events({
 
 		img.id = '';
 		img.src = data.response.upload.url;
-		HtmlArea.Utils.removeClass(img, 'image-placeholder');
+		this.classes(img).remove('image-placeholder');
 		if (this.options.autoLink) {
 			var a = document.createElement('a');
 			a.href = data.response.upload.href || data.response.upload.url;
@@ -252,14 +253,4 @@ HtmlArea.Tools.Image.prototype = HtmlArea.Events({
 		return function() { return 'img-place-'+(++id); };
 	})()
 });
-
-/**
- * Tool interface
- **/
-HtmlArea.Tools.Image.title = 'Add Picture';
-HtmlArea.Tools.Image.text = '<b>&#9679;</b><span>&#9728;</span>';
-HtmlArea.Tools.Image.setup = function(e, o) { if (!e.imageTool) { e.imageTool = new HtmlArea.Tools.Image(e, o); } };
-HtmlArea.Tools.Image.run = function(editor) { editor.imageTool.show(); };
-
-HtmlArea.Tools.addTool('image', HtmlArea.Tools.Image);
 

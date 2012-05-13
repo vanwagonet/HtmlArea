@@ -1,21 +1,38 @@
 /**
  * Manges sizing and placing media elements
  **/
-HtmlArea.Utils.EditMedia = function(editor, o, s) {
-	this.editor = editor;
-	this.options = HtmlArea.Utils.merge(this.options, o);
-	this.strings = HtmlArea.Utils.merge(this.strings, s);
-	this.setupEvents(this.options);
+HtmlArea.Utils.Media = function(editor) {
+	HtmlArea.Widget.apply(this, arguments);
+	var o = this.options;
 	this.on(editor.content, 'mouseover', this.mouseOver);
 };
-HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
+HtmlArea.Utils.Media.prototype = HtmlArea.merge(new HtmlArea.Widget(), {
 
 	emptyGif: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 
-	template: '<img src="{emptyGif}" /><div class="tools">{tools}</div><div class="resize">{resizeTools}</div>',
+	template:
+		'<img src="{emptyGif}" />' +
+		'<div class="tools">' +
+			'<a data-tool="float-left" class="float-left" title="{floatLeft}"><span></span></a>' +
+			'<a data-tool="float-none" class="float-none" title="{inline}"><span></span></a>' +
+			'<a data-tool="float-right" class="float-right" title="{floatRight}"><span></span></a>' +
+			'<a data-tool="remove" class="remove" title="{remove}"><span></span></a>' +
+		'</div>' +
+		'<div class="resize">' +
+			'<a data-tool="resize-top" class="resize-top" title="{resize}"><span></span></a>' +
+			'<a data-tool="resize-left" class="resize-left" title="{resize}"><span></span></a>' +
+			'<a data-tool="resize-right" class="resize-right" title="{resize}"><span></span></a>' +
+			'<a data-tool="resize-bottom" class="resize-bottom" title="{resize}"><span></span></a>' +
+			'<a data-tool="resize-top-left" class="resize-top-left" title="{resize}"><span></span></a>' +
+			'<a data-tool="resize-top-right" class="resize-top-right" title="{resize}"><span></span></a>' +
+			'<a data-tool="resize-bottom-left" class="resize-bottom-left" title="{resize}"><span></span></a>' +
+			'<a data-tool="resize-bottom-right" class="resize-bottom-right" title="{resize}"><span></span></a>' +
+		'</div>',
 
 	options: {
-		tags: 'img,video,iframe,object,embed'
+		tags: 'img,video,iframe,object,embed',
+		tools: 'float-left,float-none,float-right,remove',
+		resize: 'resize-top,resize-left,resize-right,resize-bottom,resize-top-left,resize-top-right,resize-bottom-left,resize-bottom-right'
 	},
 
 	strings: {
@@ -25,25 +42,6 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 		floatRight: 'Float Right',
 		remove: 'Remove'
 	},
-
-	tools: [
-		{ tool:'float-left', title:'floatLeft', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b>' },
-		{ tool:'float-none', title:'inline', text:'<hr class="full"/><hr/ class="left"><hr class="right"/><hr class="full"/><b></b>' },
-		{ tool:'float-right', title:'floatRight', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b>' },
-		'|',
-		{ tool:'remove', title:'remove', text:'&times;' }
-	],
-
-	resizeTools: [
-		{ tool:'resize-top', title:'resize', text:'&nbsp;' },
-		{ tool:'resize-left', title:'resize', text:'&nbsp;' },
-		{ tool:'resize-right', title:'resize', text:'&nbsp;' },
-		{ tool:'resize-bottom', title:'resize', text:'&nbsp;' },
-		{ tool:'resize-top-left', title:'resize', text:'&nbsp;' },
-		{ tool:'resize-top-right', title:'resize', text:'&nbsp;' },
-		{ tool:'resize-bottom-left', title:'resize', text:'&nbsp;' },
-		{ tool:'resize-bottom-right', title:'resize', text:'&nbsp;' }
-	],
 
 	mouseOver: function(e) {
 		var target = e.target;
@@ -66,7 +64,7 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 
 	maskElm: function(elm) {
 		var style = this.mask.style,
-			pos = HtmlArea.Utils.getPosition(elm, this.editor.element);
+			pos = this.getPosition(elm, this.editor.element);
 		style.width = elm.offsetWidth + 'px';
 		style.height = elm.offsetHeight + 'px';
 		style.left = pos.x + 'px';
@@ -77,14 +75,12 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 
 	getUI: function() {
 		if (this.ui) { return this.ui; }
-		var ui = (this.ui = document.createElement('div'));
+		var ui = (this.ui = document.createElement('div')), bar;
 		ui.className = 'htmlarea-edit-media';
-		ui.innerHTML = HtmlArea.Utils.format(this.template, {
-				tools: this.editor.buildTools(this.tools, this.strings),
-				resizeTools: this.editor.buildTools(this.resizeTools, this.strings)
-			}, this.strings, this);
+		ui.innerHTML = this.format(this.template, this.options, this.strings, this);
+		this.proxy = ui.firstChild;
+
 		this.on(ui, 'mousedown', this.edit);
-		this.proxy = ui.getElementsByTagName('img')[0];
 		this.resizeMouseMove = this.bindEvent(this.resizeMouseMove);
 		this.resizeMouseDone = this.bindEvent(this.resizeMouseDone);
 		this.resizeEvents = {
@@ -130,15 +126,15 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 	},
 
 	show: function() {
-		var elm = this.elm, ui = this.getUI(), editor = this.editor,
-			utils = HtmlArea.Utils, nodes, i, l,
-			floatd = utils.getComputedStyle(elm, 'float') || 'none',
-			pos = utils.getPosition(elm, editor.element);
+		var elm = this.elm, ui = this.getUI(),
+			editor = this.editor, nodes, i, l,
+			floatd = this.getStyle(elm, 'float') || 'none',
+			pos = this.getPosition(elm, editor.element);
 		nodes = ui.getElementsByTagName('a');
 		for (i = 0, l = nodes.length; i < l; ++i) {
-			utils.removeClass(nodes[i], 'active');
+			this.classes(nodes[i]).remove('active');
 		}
-		utils.addClass(ui.querySelector('.float-' + floatd), 'active');
+		this.classes(ui.querySelector('.float-' + floatd)).add('active');
 		ui.style.width = elm.offsetWidth + 'px';
 		ui.style.height = elm.offsetHeight + 'px';
 		ui.style.left = pos.x + 'px';
@@ -202,9 +198,8 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 	},
 
 	runResize: function(elm, e, from) {
-		var utils = HtmlArea.Utils,
-			size = { x:elm.offsetWidth, y:elm.offsetHeight },
-			pos = utils.getPosition(elm, this.editor.element);
+		var size = { x:elm.offsetWidth, y:elm.offsetHeight },
+			pos = this.getPosition(elm, this.editor.element);
 		this.mouseOffset = { from:from, size:size, pos:pos,
 			x: from.indexOf('Left') >= 0 ? (e.screenX + size.x) : (e.screenX - size.x),
 			y: from.indexOf('Top') >= 0 ? (e.screenY + size.y) : (e.screenY - size.y)
@@ -220,10 +215,10 @@ HtmlArea.Utils.EditMedia.prototype = HtmlArea.Events({
 	},
 
 	resizeMouseDone: function(e) {
-		var utils = HtmlArea.Utils, elm = this.editor.element;
+		var elm = this.editor.element;
 		this.offs(document.body, this.resizeEvents);
-		this.elm.style.width = utils.getComputedStyle(this.ui, 'width');
-		this.elm.style.height = utils.getComputedStyle(this.ui, 'height');
+		this.elm.style.width = this.getStyle(this.ui, 'width');
+		this.elm.style.height = this.getStyle(this.ui, 'height');
 		this.show();
 	},
 

@@ -10,9 +10,9 @@
 HtmlArea.Utils.Drop = function(editor, o, s) {
 	var imgO = editor.options.imageOptions;
 	this.editor = editor;
-	this.options = HtmlArea.Utils.merge(this.options, imgO, o);
-	this.strings = HtmlArea.Utils.merge(this.strings, s);
-	this.setupEvents(this.options);
+	this.options = this.merge({}, this.options, imgO, o);
+	this.strings = this.merge({}, this.strings, s);
+	HtmlArea.Events.call(this, this.options);
 	this.on(editor.element, 'dragenter', this.dragEnter);
 };
 HtmlArea.Utils.Drop.hasFiles = function(e) {
@@ -21,7 +21,7 @@ HtmlArea.Utils.Drop.hasFiles = function(e) {
 	for (t = 0; t < tt; ++t) { if (types[t] === 'Files') { return true; } }
 	return false;
 };
-HtmlArea.Utils.Drop.prototype = HtmlArea.Events({
+HtmlArea.Utils.Drop.prototype = HtmlArea.merge(new HtmlArea.Widget(), {
 
 	options: {
 		autoLink: false,
@@ -59,7 +59,7 @@ HtmlArea.Utils.Drop.prototype = HtmlArea.Events({
 		var editor = this.editor, ui = this.getUI();
 		this.progress.textContent = '';
 		this.span.textContent = this.strings.drop;
-		HtmlArea.Utils.removeClass(ui, 'error');
+		this.classes(ui).remove('error');
 		ui.width = editor.element.offsetWidth + 'px';
 		ui.height = editor.element.offsetHeight + 'px';
 		editor.element.appendChild(ui);
@@ -117,7 +117,7 @@ HtmlArea.Utils.Drop.prototype = HtmlArea.Events({
 
 		img.id = '';
 		img.src = data.response.upload.url;
-		HtmlArea.Utils.removeClass(img, 'image-placeholder');
+		this.classes(img).remove('image-placeholder');
 		if (this.options.autoLink) {
 			var a = document.createElement('a');
 			a.href = data.response.upload.href || data.response.upload.url;

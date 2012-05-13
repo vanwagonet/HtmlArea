@@ -1,14 +1,12 @@
 /**
  * Insert videos from a url or embed code
  **/
-HtmlArea.Tools.Video = function(editor, o, s) {
-	this.editor = editor;
-	this.options = HtmlArea.Utils.merge(this.options, o);
-	this.strings = HtmlArea.Utils.merge(this.strings, s);
-	this.setupEvents(this.options);
-	editor.on('modechange', this.bind(this.hide));
+HtmlArea.Tools.Video = function(editor) {
+	HtmlArea.Tool.apply(this, arguments);
+	editor.on('modechange', this.bind(this.hide), true);
 };
-HtmlArea.Tools.Video.prototype = HtmlArea.Events({
+
+HtmlArea.Tools.Video.prototype = HtmlArea.merge(new HtmlArea.Tool(), {
 	template:
 	'<form action="" method="post">' +
 		'<h6>' +
@@ -33,12 +31,16 @@ HtmlArea.Tools.Video.prototype = HtmlArea.Events({
 		cancel: 'Cancel'
 	},
 
+	run: function() {
+		this.show();
+	},
+
 	getUI: function() {
 		if (this.ui) { return this.ui; }
 		var ui = (this.ui = document.createElement('div')),
 			editor = this.editor, validate = this.bindEvent(this.validate);
 		ui.className = 'htmlarea-video';
-		ui.innerHTML = HtmlArea.Utils.format(this.template, this.options, this.strings, this);
+		ui.innerHTML = this.format(this.template, this.options, this.strings, this);
 		this.on(ui.firstChild, 'submit', this.submit);
 		this.on(ui.querySelector('input[type=button]'), 'click', this.cancel);
 		this.ons(ui.querySelector('input[name=url]'), { keydown:validate, input:validate, change:validate }, true);
@@ -135,15 +137,4 @@ HtmlArea.Tools.Video.prototype = HtmlArea.Events({
 		}
 	]
 });
-
-
-/**
- * Tool interface
- **/
-HtmlArea.Tools.Video.title = 'Add Video';
-HtmlArea.Tools.Video.text = 'You<em>Tube</em>';
-HtmlArea.Tools.Video.setup = function(e) { if (!e.videoTool) { e.videoTool = new HtmlArea.Tools.Video(e); } };
-HtmlArea.Tools.Video.run = function(editor) { editor.videoTool.show(); };
-
-HtmlArea.Tools.addTool('video', HtmlArea.Tools.Video);
 

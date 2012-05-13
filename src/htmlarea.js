@@ -4,11 +4,10 @@
  * license: MIT
  **/
 HtmlArea = function(content, o, s) {
-	var ta, bar;
+	HtmlArea.Widget.call(this, true, o, s);
+	o = this.options; s = this.strings;
 
-	this.options = (o = HtmlArea.Utils.merge(this.options, o));
-	this.strings = (s = HtmlArea.Utils.merge(this.strings, s));
-	if (this.setupEvents) { this.setupEvents(o); }
+	var ta, bar;
 
 	o.tools = this.optionToArray(o.tools);
 	o.utils = this.optionToArray(o.utils);
@@ -41,7 +40,7 @@ HtmlArea = function(content, o, s) {
 	}
 	ta.style.display = 'none';
 	ta.spellcheck = false;
-	HtmlArea.Utils.addClass(content, 'content');
+	this.classes(content).add('content');
 	content.contentEditable = true;
 	content.spellcheck = true;
 	if (this.can('styleWithCSS')) { this.exec('styleWithCSS', false); } // prefer tags to styles 
@@ -51,25 +50,24 @@ HtmlArea = function(content, o, s) {
 	if (o.mode === 'html') { this.setHTMLMode(); }
 	else { this.mode = 'visual'; }
 
-	bar = (this.tools = document.createElement('div'));
+	bar = (this.toolbar = document.createElement('div'));
 	bar.className = 'tools ' + o.style;
-	bar.innerHTML = this.buildTools(o.tools, s);
-	if (o.toolsgo === 'top') { this.element.insertBefore(bar, content); }
-	else { this.element.appendChild(bar); }
+	this.tools = this.buildTools(o.tools, s, bar);
+	this.element.appendChild(bar);
 
-	this.utils = this.setupUtils(o.utils);
+	this.utils = this.setupUtils(o.utils, s);
 
 	return this.addListeners();
 };
+
 HtmlArea.prototype = {
 
 	options: {
 		name: 'content',
 		style: 'default',
 		mode: 'visual',
-		toolsgo: 'top',
 		tools: '[bold,italic,underline,strike]|[sub,sup|left,center,right]|[bullet,number,indent,outdent]|[link,image,video,mode]',
-		utils: 'EditMedia,Drop'
+		utils: 'Media,Drop'
 	},
 
 	strings: {
@@ -102,30 +100,41 @@ HtmlArea.prototype = {
 		return opt;
 	},
 
-	buildTools: function(tools, strings) {
-		var Tools = HtmlArea.Tools, html = '', t, tt, tool,
-			cmd = (navigator.platform.indexOf('Mac') === 0) ? '&#8984;' : 'ctrl ';
+	buildTools: function(tools, s, bar) {
+		function camel(s) {
+			return String(s).replace(/-\D/g, function(m) {
+				return m.charAt(1).toUpperCase();
+			});
+		}
+		var Tools = HtmlArea.Tools, html = '', t, tt, name,
+			o = this.options, a, list = [], tool, sub;
+		s = s || this.strings;
 		for (t = 0, tt = tools.length - 1; t <= tt; ++t) {
 			if (tools[t] === '|') { tools[t] = 'separator'; }
 			if (this.typeOf(tools[t]) === 'Array') {
-				html += '<span class="tools">' + this.buildTools(tools[t], strings) + '</span>';
-			} else if (tool = (typeof tools[t] === 'object') ? tools[t] : Tools[tools[t]]) {
-				html += '<a data-tool="' + tool.tool + '" class="' + tool.tool;
-				if (!t) { html += ' first'; }
-				if (t === tt) { html += ' last'; }
-
-				html += '" title="' + (strings[tool.title] || tool.title || '');
-				if (tool.key) { html += ' ' + cmd + tool.key.toUpperCase(); }
-
-				html += '"><span>' + (tool.text || tool.tool) + '</span><em></em></a>';
-				if (tool.setup) { tool.setup(this, this.options[tool.tool+'Options'], this.strings[tool.tool+'Strings']); }
+				sub = bar.appendChild(document.createElement('span'));
+				sub.className = 'tools';
+				list = list.concat(this.buildTools(tools[t], s, sub));
+			} else {
+				name = camel('-'+tools[t]); // capital camel case
+				if (Tools[name]) {
+					a = document.createElement('a');
+					tool = new Tools[name](this, o[name+'Options'], s[name+'Strings'], a);
+					list.push(tool);
+					a.setAttribute('data-tool', name);
+					a.className = name.toLowerCase();
+					a.title = tool.getTitle(tool.name = name);
+					a.appendChild(document.createElement('span'));
+					bar.appendChild(a);
+				}
 			}
 		}
 		return html;
 	},
 
-	setupUtils: function(utils) {
-		var Utils = HtmlArea.Utils, u, uu, util, name, o = this.options, s = this.strings, arr = [];
+	setupUtils: function(utils, s) {
+		var Utils = HtmlArea.Utils, u, uu, util, name, o = this.options, arr = [];
+		s = s || this.strings;
 		for (u = 0, uu = utils.length; u < uu; ++u) {
 			name = utils[u].substr(0, 1).toLowerCase() + utils[u].substr(1);
 			arr.push(this[name+'Util'] = new Utils[utils[u]](this, o[name+'Options'], s[name+'Strings']));
@@ -141,8 +150,8 @@ HtmlArea.prototype = {
 				controlselect:function() { return false; } // don't allow native IE resizers
 			}, true);
 		this.on(this.textarea, 'keydown', this.shortcut);
-		this.on(this.tools, 'mousedown', this.toolRun);
-		this.on(this.tools, 'mouseup', updateTools, true);
+		this.on(this.toolbar, 'mousedown', this.toolRun);
+		this.on(this.toolbar, 'mouseup', updateTools, true);
 		return this;
 	},
 
@@ -156,11 +165,10 @@ HtmlArea.prototype = {
 	},
 
 	setHTMLMode: function() {
-		var utils = HtmlArea.Utils;
-		utils.addClass(this.element, 'html-mode');
+		this.classes(this.element).add('html-mode');
 		this.updateTextarea();
-		this.textarea.style.height = utils.getComputedStyle(this.content, 'height');
-		this.textarea.style.width = utils.getComputedStyle(this.content, 'width');
+		this.textarea.style.height = this.getStyle(this.content, 'height');
+		this.textarea.style.width = this.getStyle(this.content, 'width');
 		this.textarea.style.display = '';
 		this.textarea.focus();
 		this.content.style.display = 'none';
@@ -168,8 +176,7 @@ HtmlArea.prototype = {
 	},
 
 	setVisualMode: function() {
-		var utils = HtmlArea.Utils;
-		utils.removeClass(this.element, 'html-mode');
+		this.classes(this.element).remove('html-mode');
 		this.updateContent();
 		this.textarea.style.display = 'none';
 		this.content.style.display = '';
@@ -178,33 +185,28 @@ HtmlArea.prototype = {
 	},
 
 	updateTools: function(e) {
-		if (!/\S/.test(this.content.innerHTML)) {
-			this.content.innerHTML += HtmlArea.pbr;
+		if ( ! /\S/.test(this.content.innerHTML)) {
+			this.content.innerHTML = HtmlArea.pbr;
 			this.select(this.content.firstChild);
 		}
 
-		var map = this.updateTools.toolMap, btn, state, cmd,
-			Tools = HtmlArea.Tools, tool, name, utils = HtmlArea.Utils;
-
-		if (!map) {
-			map = (this.updateTools.toolMap = {});
-			this.updateToolMap(map, this.options.tools);
-		}
-		for (name in map) {
-			if ((tool = Tools[name]).update) {
-				tool.update(this, map[name], e);
+		var state, cmd, tool, cls,
+			tools = this.tools, t, tt = tools.length;
+		for (t = 0; t < tt; ++t) {
+			if ((tool = tools[t]).update) {
+				tool.update(e);
 			} else if (cmd = tool.command) {
-				btn = map[name];
+				cls = this.classes(tool.button);
 				state = this.has(cmd);
 				if (state === false) {
-					utils.removeClass(btn, 'active');
-					utils.removeClass(btn, 'indeterminate');
+					cls.remove('active');
+					cls.remove('indeterminate');
 				} else if (state) {
-					utils.addClass(btn, 'active');
-					utils.removeClass(btn, 'indeterminate');
+					cls.add('active');
+					cls.remove('indeterminate');
 				} else {
-					utils.removeClass(btn, 'active');
-					utils.addClass(btn, 'indeterminate');
+					cls.remove('active');
+					cls.add('indeterminate');
 				}
 			}
 		}
@@ -215,29 +217,12 @@ HtmlArea.prototype = {
 		}
 	},
 
-	updateToolMap: function(map, tools) {
-		var t, tt = tools.length, bar = this.tools,
-			Tools = HtmlArea.Tools, tool;
-		for (t = 0; t < tt; ++t) {
-			if (this.typeOf(tools[t]) === 'Array') {
-				this.updateToolMap(map, tools[t]);
-			} else if (tool = Tools[tools[t]]) {
-				if (tool.update || tool.command) { // only stateful tools
-					map[tools[t]] = bar.querySelector('.' + tools[t]);
-				}
-			}
-		}
-	},
-
 	toolRun: function(e) {
 		var a = e.target, tool;
-		while (a && a != this.tools && !a.getAttribute('data-tool')) { a = a.parentNode; }
-		if (a) {
-			tool = HtmlArea.Tools[a.getAttribute('data-tool')];
-			if (tool) { tool.run(this, a, e); }
-		}
-		if (e.preventDefault) { e.preventDefault(); } // prevent losing focus
-		return e.returnValue = false;
+		while (a && a != this.toolbar && ! a.getAttribute('data-tool')) { a = a.parentNode; }
+		if (a && (tool = this.tools[a.getAttribute('data-tool')])) { tool.run(e); }
+		e.preventDefault(); // prevent losing focus
+		return false;
 	},
 
 	shortcut: function(e) {
@@ -255,7 +240,7 @@ HtmlArea.prototype = {
 		k = e.keyCode || e.which || e.charCode;
 		k = HtmlArea.keys[k] || String.fromCharCode(k);
 		if (t = keys[k.toLowerCase()]) {
-			var a = this.tools.querySelector('.' + t.tool);
+			var a = this.toolbar.querySelector('.' + t.tool);
 			t.run(this, a, e);
 		}
 	},
@@ -323,8 +308,25 @@ HtmlArea.prototype = {
 
 	typeOf: function(v) {
 		return Object.prototype.toString.call(v).slice(1, -1).split(' ')[1];
+	},
+
+	merge: function() {
+		var o = arguments[0], a, aa = arguments.length, p,
+			type = Object.prototype.toString, object = '[object Object]';
+		for (a = 1; a < aa; ++a) {
+			for (p in arguments[a]) {
+				if (type.call(o[p]) === object && type.call(arguments[a][p]) === object) {
+					o[p] = this.merge(o[p], arguments[a][p]);
+				} else {
+					o[p] = arguments[a][p];
+				}
+			}
+		}
+		return o;
 	}
 };
 
 HtmlArea.pbr = '<p><br/></p>';
+HtmlArea.merge = HtmlArea.prototype.merge;
+HtmlArea.Utils = {}; // Namespace for useful functions and features not exposed in the toolbar
 

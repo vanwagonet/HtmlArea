@@ -5,22 +5,20 @@
  *  placeholder: 'Enter URL' - placeholder text in url field
  *	newWindow: 'Open in a new tab or window' - text for open in new window label
  **/
-HtmlArea.Tools.Link = function(editor, o, s) {
-	this.editor = editor;
-	this.options = HtmlArea.Utils.merge(this.options, o);
-	this.strings = HtmlArea.Utils.merge(this.strings, s);
-	this.setupEvents(this.options);
+HtmlArea.Tools.Link = function() {
+	HtmlArea.Tool.apply(this, arguments);
 };
-HtmlArea.Tools.Link.prototype = HtmlArea.Events({
 
-	update: function(btn) {
-		var link = this.getLink();
+HtmlArea.Tools.Link.prototype = HtmlArea.merge(new HtmlArea.Tool(), {
+
+	update: function() {
+		var link = this.getLink(), cls = this.classes(this.button);
 		if (link) {
-			HtmlArea.Utils.addClass(btn, 'active');
-			this.show(link.getAttribute('href'), link, btn); }
+			cls.add('active');
+			this.show(link.getAttribute('href'), link); }
 		else {
-			HtmlArea.Utils.removeClass(btn, 'active');
-			this.hide(btn);
+			cls.remove('active');
+			this.hide();
 		}
 	},
 
@@ -29,7 +27,7 @@ HtmlArea.Tools.Link.prototype = HtmlArea.Events({
 		newWindow: 'Open in a new tab or window'
 	},
 
-	run: function(btn) {
+	run: function() {
 		if (this.editor.mode !== 'visual') { return; }
 		if (this.link) { return this.remove(); }
 		var text = this.editor.getRange('text'), url = text, link = this;
@@ -37,7 +35,7 @@ HtmlArea.Tools.Link.prototype = HtmlArea.Events({
 		else if (!/^(\S)*[:\/?#.](\S)*$/.test(url)) { url = 'http://'; }
 		else if (!/^\w+:\/\//.test(url)) { url = 'http://' + url; }
 		this.editor.exec('createlink', url);
-		this.show(url, this.getLink(), btn);
+		this.show(url, this.getLink());
 		setTimeout(function() {
 			link.getUI().firstChild.focus();
 			link.getUI().firstChild.select();
@@ -46,9 +44,9 @@ HtmlArea.Tools.Link.prototype = HtmlArea.Events({
 
 	getLink: function() {
 		var editor = this.editor, node = editor.getRange('node'), ui = this.getUI();
-		if (this.link && ui == node || HtmlArea.Utils.contains(ui, node)) { return this.link; }
+		if (this.link && ui == node || ui.contains(node)) { return this.link; }
 		while (node && node.nodeName.toLowerCase() !== 'a' && node != editor.content) { node = node.parentNode; }
-		return node != editor.content && HtmlArea.Utils.contains(editor.content, node) && node;
+		return node != editor.content && editor.content.contains(node) && node;
 	},
 
 	template:
@@ -60,7 +58,7 @@ HtmlArea.Tools.Link.prototype = HtmlArea.Events({
 		if (this.ui) { return this.ui; }
 		var ui = (this.ui = document.createElement('div'));
 		ui.className = 'htmlarea-link';
-		ui.innerHTML = HtmlArea.Utils.format(this.template, this.options, this.strings, this);
+		ui.innerHTML = this.format(this.template, this.options, this.strings, this);
 		this.on(ui, 'mousedown', this.mouseDown);
 		this.ons(ui.firstChild, { keypress:this.keyPress, change:this.change });
 		this.on(ui.lastChild.firstChild, 'change', this.change);
@@ -68,10 +66,10 @@ HtmlArea.Tools.Link.prototype = HtmlArea.Events({
 		return ui;
 	},
 
-	show: function(url, link, btn) {
+	show: function(url, link) {
 		if (link == this.link) { return; }
 		var ui = this.getUI(),
-			pos = HtmlArea.Utils.getPosition(link, this.editor.element);
+			pos = this.getPosition(link, this.editor.element);
 		this.link = link;
 		this.range = this.editor.getRange();
 		ui.firstChild.value = url;
@@ -128,15 +126,4 @@ HtmlArea.Tools.Link.prototype = HtmlArea.Events({
 		this.hide();
 	}
 });
-
-/**
- * Tool interface
- **/
-HtmlArea.Tools.Link.title = 'Link';
-HtmlArea.Tools.Link.text = 'link';
-HtmlArea.Tools.Link.setup = function(e) { if (!e.linkTool) { e.linkTool = new HtmlArea.Tools.Link(e); } };
-HtmlArea.Tools.Link.update = function(editor, btn) { editor.linkTool.update(btn); };
-HtmlArea.Tools.Link.run = function(editor, btn) { editor.linkTool.run(btn); };
-
-HtmlArea.Tools.addTool('link', HtmlArea.Tools.Link);
 

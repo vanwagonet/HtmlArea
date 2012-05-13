@@ -1,66 +1,75 @@
 /**
  * Namespace and base class for all items in the toolbar
  **/
+HtmlArea.Tool = function() {
+	HtmlArea.Widget.apply(this, arguments);
+	this.button = arguments[3];
+};
+
+HtmlArea.Tool.prototype = HtmlArea.merge(new HtmlArea.Widget(), {
+	run: function(e) {
+		var cmd = this.command, mode = this.mode, editor = this.editor;
+		if (mode != editor.mode && mode != 'both') { return false; }
+		return cmd ? editor.exec(cmd) : false;
+	},
+	mode: 'visual',
+	getTitle: function(name) {
+		var title = this.strings.title || this.editor.strings[name] || name || '',
+			cmd = (navigator.platform.indexOf('Mac') === 0) ? '&#8984;' : 'ctrl ';
+		if (this.key) { title += ' ' + cmd + this.key.toUpperCase(); }
+		return title;
+	}
+});
+
+
 HtmlArea.Tools = {
 	addTools: function(o) {
 		for (var name in o) { this.addTool(name, o[name]); }
-		return this;
 	},
 
 	addTool: function(name, tool) {
-		var Tool = HtmlArea.Tools.Tool;
-		tool.tool = name;
-		if (typeof tool === 'object' && !(tool instanceof Tool)) {
-			tool = new Tool(tool);
-		}
-		this[name] = tool;
-		return this;
+		var Tool = HtmlArea.Tool;
+		function T() { Tool.apply(this, arguments); }
+		T.prototype = HtmlArea.merge(new Tool(), tool);
+		return this[name] = T;
 	}
-};
-HtmlArea.Tools.Tool = function(o) { for (var k in o) { this[k] = o[k]; } };
-HtmlArea.Tools.Tool.prototype = {
-	run: function(editor, btn, e) {
-		if (this.mode != editor.mode && this.mode != 'both') { return false; }
-		var cmd = this.command;
-		return cmd ? editor.exec(cmd, this.param, this.ui) : false;
-	},
-	mode: 'visual'
 };
 
 HtmlArea.Tools.addTools({
-	separator:{ text:'|' },
+	Separator:{},
 
-	bold:{ title:'bold', text:'<b>B</b>', command:'bold', key:'b' },
-	italic:{ title:'italic', text:'<i>I</i>', command:'italic', key:'i' },
-	underline:{ title:'underline', text:'<u>U</u>', command:'underline', key:'u' },
-	strike:{ title:'strike', text:'<s>S</s>', command:'strikethrough' },
-	sub:{ title:'sub', text:'x<sub>2</sub>', command:'subscript' },
-	sup:{ title:'sup', text:'x<sup>2</sup>', command:'superscript' },
+	Bold:{ command:'bold', key:'b' },
+	Italic:{ command:'italic', key:'i' },
+	Underline:{ command:'underline', key:'u' },
+	Strike:{ command:'strikethrough' },
+	Sub:{ command:'subscript' },
+	Sup:{ command:'superscript' },
 
-	left:{ title:'left', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyLeft' },
-	center:{ title:'center', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyCenter' },
-	right:{ title:'right', text:'<hr/><hr class="odd"/><hr/><hr class="odd"/><hr/><hr class="odd"/>', command:'justifyRight' },
-	justify:{ title:'justify', text:'<hr/><hr/><hr/><hr/><hr/><hr/>', command:'justifyAll' },
+	Left:{ command:'justifyLeft' },
+	Center:{ command:'justifyCenter' },
+	Right:{ command:'justifyRight' },
+	Justify:{ command:'justifyAll' },
 
-	bullet:{ title:'bullet', text:'<ul><li><b>&#9679;</b></li><li><b>&#9679;</b></li><li><b>&#9679;</b></li></ul>', command:'insertunorderedlist' },
-	number:{ title:'number', text:'<ol><li><b>1</b></li><li><b>2</b></li><li><b>3</b></li></ol>', command:'insertorderedlist' },
-	indent:{ title:'indent', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b><b></b><b></b>', command:'indent' },
-	outdent:{ title:'outdent', text:'<hr class="full"/><hr/><hr/><hr/><hr/><hr class="full"/><b></b><b></b><b></b>', command:'outdent' },
-//	rule:{ title:'rule', text:'&mdash;', command:'inserthorizontalrule' }, // I don't think you should do this
+	Bullet:{ command:'insertunorderedlist' },
+	Number:{ command:'insertorderedlist' },
+	Indent:{ command:'indent' },
+	Outdent:{ command:'outdent' },
+//	Rule:{ command:'inserthorizontalrule' }, // I don't think you should do this
 
-//	cut:{ title:'cut', text:'&#9986;', command:'cut', key:'x', magic:true }, // execCommand('cut') doesn't seem to work
-//	copy:{ title:'copy', text:'&copy;', command:'copy', key:'c', magic:true }, // execCommand('copy') doesn't seem to work
-//	paste:{ title:'paste', text:'P', command:'paste', key:'v', magic:true }, // execCommand('paste') doesn't seem to work
-	undo:{ title:'undo', text:'&#8617;', command:'undo', key:'z', magic:true },
-	redo:{ title:'redo', text:'&#8618;', command:'redo', key:'y', magic:true },
+//	Cut:{ command:'cut', key:'x', magic:true }, // execCommand('cut') doesn't seem to work
+//	Copy:{ command:'copy', key:'c', magic:true }, // execCommand('copy') doesn't seem to work
+//	Paste:{ command:'paste', key:'v', magic:true }, // execCommand('paste') doesn't seem to work
+	Undo:{ command:'undo', key:'z', magic:true },
+	Redo:{ command:'redo', key:'y', magic:true },
 
-	mode:{ title:'mode', text:'&lt;/&gt;', key:'/', mode:'both',
-		run: function(editor, btn) {
+	Mode:{ key:'/', mode:'both',
+		run: function() {
+			var editor = this.editor, cls = this.classes(this.button);
 			if (editor.mode === 'visual') {
-				HtmlArea.Utils.addClass(btn, 'active');
+				cls.add('active');
 				editor.setHTMLMode();
 			} else {
-				HtmlArea.Utils.removeClass(btn, 'active');
+				cls.remove('active');
 				editor.setVisualMode();
 			}
 		}

@@ -1,13 +1,14 @@
 /**
  * Creates a prototype including event handling
  **/
-HtmlArea.Events = function(proto) {
-	if (this instanceof HtmlArea.Events) { return HtmlArea.Events(proto); }
-
-	proto = proto || {};
-	var mixin = HtmlArea.Events.prototype, m;
-	for (m in mixin) { proto[m] = mixin[m]; }
-	return proto;
+HtmlArea.Events = function(o) {
+	o = o || {};
+	this.events = {};
+	for (var i in o) {
+		i = String(i);
+		if (i.substr(0, 2) !== 'on') { continue; }
+		this.on(i.substr(2, 1).toLowerCase() + i.substr(3), o[i]);
+	}
 };
 
 HtmlArea.Events.prototype = {
@@ -27,17 +28,6 @@ HtmlArea.Events.prototype = {
 	bind: function(fn) {
 		var o = this, slice = Array.prototype.slice, args = slice.call(arguments, 1);
 		return function() { return fn.apply(o, args.concat(slice.call(arguments, 0))); };
-	},
-
-	setupEvents: function(o) {
-		o = o || {};
-		this.events = {};
-		for (var i in o) {
-			i = String(i);
-			if (i.substr(0, 2) !== 'on') { continue; }
-			this.on(i.substr(2, 1).toLowerCase() + i.substr(3), o[i]);
-		}
-		return this;
 	},
 
 	on: function(node, name, fn, nobind) {
@@ -104,6 +94,4 @@ HtmlArea.Events.prototype = {
 		return result;
 	}
 };
-
-HtmlArea.Events(HtmlArea.prototype);
 

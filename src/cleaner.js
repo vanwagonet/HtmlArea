@@ -58,13 +58,14 @@ HtmlArea.Cleaner = {
 
 		do { for (c = 0, cleaned = html; c < cc; ++c) {
 			html = replace.apply(html, cleanups[c]);
-		} } while (cleaned != html && --max);
+		} } while (--max && cleaned != html);
 
-		return html.replace(/^\s+|\s+$/g, '');
+		return html;
 	},
 
 	tagRules: [ // got this started by looking at MooRTE. Thanks Sam!
 		// html tidiness
+		[ /^\s+|\s+$/g, '' ], // no trailing or leading whitespace
 		[ /<[^> ]*/g, function(m) { return m.toLowerCase(); } ], // lowercase tags
 		[ /<[^>]*>/g, function(m) {	return m
 			.replace(/ [^=]+=/g, function(a) { return a.toLowerCase(); }) // lowercase attributes
@@ -76,8 +77,8 @@ HtmlArea.Cleaner = {
 		// <br/> tag cleanup
 		[ /<br\b[^>]*?>/g, '<br/>' ], // normalize <br>
 		[ /^<br\/>|<br\/>$/g, '' ], // no leading or trailing <br>
-		[ /<br\/>\s*<\/(h1|h2|h3|h4|h5|h6|li|p|div)/g, '</$1' ], // no <br> at end of block
-		[ /<p>(?:&nbsp;|\s)*<br\/>(?:&nbsp;|\s)*<\/p>/g, '<p></p>' ], // replace padded <p> with empty <p>
+		[ /<br\/>\s*<\/(h1|h2|h3|h4|h5|h6|li|p|div)/g, '</$1' ], // remove all <br> at end of block
+		[ /<(h1|h2|h3|h4|h5|h6|li|p|div)\b[^>]*>\s*<\/\1>/g, '<$1><br/></$1>' ], // add <br> to empty block
 
 		// webkit cleanup
 		[ / class="apple-style-span"| style=""/gi, '' ], // remove unhelpful attributes	
@@ -90,13 +91,15 @@ HtmlArea.Cleaner = {
 		[ /<(\/?)(?:strike|del)\b/g, '<$1s' ], // use <s> for strikethrough
 
 		// normalize whitespace, tag placement
-		[ /\s*<(\/?(?:p|ol|ul)\b[^>]*)>\s*/g, '<$1>\n' ], // newline after <p> </p> <ol> </ol> <ul> </ul>
-		[ /\s*<li([^>]*)>/g, '\n\t<li$1>' ], // indent <li>
-		[ /\s*<\/(p|ol|ul)>/g, '\n</$1>'], // newline before </p> </ol> </ul>
-		[ /\s*<img\b([^>*?])>\s*/g, '\n<img$1>\n'], // <img> on its own line
-		[ /<p\b[^>]*>\s*<\/p>\s*<(ol|ul)\b/g, '<$1' ], // remove empty <p> before <ul> or <ol>
-		[ /(<p\b[^>]*>\s*)(<(ul|ol)\b([^<]|<)*?<\/\3>\s*)/g, '$2$1' ], // move <p> right before <ul> or <ol> to after
-		[ /^\s*$/g, '' ] // no empty lines
+		[ /\r\n/g, '\n' ],
+		[ /\s*(<p\b[^>]*>)\s*/g, '\n$1\n\t' ], // newline <p> newline tab
+		[ /\s*(<li[^>]*>)\s*/g, '\n\t$1' ], // indent <li>
+		[ /\s*(<(\/p|ol|ul)\b[^>]*>)\s*/g, '$1\n'], // newline after </p> <ol> <ul>
+		[ /\s*<\/(p|ol|ul)>\s*/g, '\n</$1>\n'], // newline before and after </ol> </ul>
+		[ /\s*(<img\b[^>]*>)\s*/g, '\n\t$1\n'], // <img> on its own line, indented
+		[ /<p\b[^>]*>\s*(<(ul|ol)\b([^<]|<)*?<\/\2>)\s*<\/p>/g, '$1' ], // unwrap <p> from around <ul> or <ol>
+		[ /<p>(?:&nbsp;|\s)*<br\/>(?:&nbsp;|\s)*<\/p>/g, '<p><br/></p>' ], // normalize padded <p>
+		[ /^\s+|\s+$/g, '' ] // no trailing or leading whitespace, yes this is duplicated on purpose
 	],
 
 	styleRules: [

@@ -4,10 +4,10 @@ cat src/htmlarea.js \
 	src/keys.js \
 	src/cleaner.js \
 	src/events.js \
+	src/widget.js \
 \
-	src/utils.js \
 	src/utils/upload.js \
-	src/utils/editmedia.js \
+	src/utils/media.js \
 	src/utils/drop.js \
 \
 	src/tools.js \
