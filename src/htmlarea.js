@@ -52,7 +52,8 @@ HtmlArea = function(content, o, s) {
 
 	bar = (this.toolbar = document.createElement('div'));
 	bar.className = 'tools ' + o.style;
-	this.tools = this.buildTools(o.tools, s, bar);
+	this.tools = {};
+	this.buildTools(o.tools, s, bar);
 	this.element.appendChild(bar);
 
 	this.utils = this.setupUtils(o.utils, s);
@@ -107,20 +108,20 @@ HtmlArea.prototype = {
 			});
 		}
 		var Tools = HtmlArea.Tools, html = '', t, tt, name,
-			o = this.options, a, list = [], tool, sub;
+			o = this.options, a, tool, sub;
 		s = s || this.strings;
 		for (t = 0, tt = tools.length - 1; t <= tt; ++t) {
 			if (tools[t] === '|') { tools[t] = 'separator'; }
 			if (this.typeOf(tools[t]) === 'Array') {
 				sub = bar.appendChild(document.createElement('span'));
 				sub.className = 'tools';
-				list = list.concat(this.buildTools(tools[t], s, sub));
+				this.buildTools(tools[t], s, sub);
 			} else {
 				name = camel('-'+tools[t]); // capital camel case
 				if (Tools[name]) {
 					a = document.createElement('a');
 					tool = new Tools[name](this, o[name+'Options'], s[name+'Strings'], a);
-					list.push(tool);
+					this.tools[name] = tool;
 					a.setAttribute('data-tool', name);
 					a.className = name.toLowerCase();
 					a.title = tool.getTitle(tool.name = name);
@@ -129,7 +130,6 @@ HtmlArea.prototype = {
 				}
 			}
 		}
-		return html;
 	},
 
 	setupUtils: function(utils, s) {
@@ -190,24 +190,10 @@ HtmlArea.prototype = {
 			this.select(this.content.firstChild);
 		}
 
-		var state, cmd, tool, cls,
-			tools = this.tools, t, tt = tools.length;
-		for (t = 0; t < tt; ++t) {
+		var state, cmd, tool, cls, tools = this.tools, t;
+		for (t in tools) {
 			if ((tool = tools[t]).update) {
 				tool.update(e);
-			} else if (cmd = tool.command) {
-				cls = this.classes(tool.button);
-				state = this.has(cmd);
-				if (state === false) {
-					cls.remove('active');
-					cls.remove('indeterminate');
-				} else if (state) {
-					cls.add('active');
-					cls.remove('indeterminate');
-				} else {
-					cls.remove('active');
-					cls.add('indeterminate');
-				}
 			}
 		}
 

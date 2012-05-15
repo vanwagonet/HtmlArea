@@ -18,6 +18,20 @@ HtmlArea.Tool.prototype = HtmlArea.merge(new HtmlArea.Widget(), {
 			cmd = (navigator.platform.indexOf('Mac') === 0) ? '&#8984;' : 'ctrl ';
 		if (this.key) { title += ' ' + cmd + this.key.toUpperCase(); }
 		return title;
+	},
+	update: function() {
+		var cls = this.classes(this.button),
+			state = this.editor.has(this.command);
+		if (state === false) {
+			cls.remove('active');
+			cls.remove('indeterminate');
+		} else if (state) {
+			cls.add('active');
+			cls.remove('indeterminate');
+		} else {
+			cls.remove('active');
+			cls.add('indeterminate');
+		}
 	}
 });
 

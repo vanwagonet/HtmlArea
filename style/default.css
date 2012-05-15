@@ -1,12 +1,12 @@
 @font-face {
 	font-family:'icons';
-	src:url('icons/icons.eot?#iefix') format('embedded-opentype'),
-		url('icons/icons.woff') format('woff'),
-		url('icons/icons.ttf')  format('truetype'),
-		url('icons/icons.svg#icons') format('svg');
+	src:url('icons.eot?#iefix') format('embedded-opentype'),
+		url('icons.woff') format('woff'),
+		url('icons.ttf')  format('truetype'),
+		url('icons.svg#icons') format('svg');
 }
 
-.htmlarea { text-align:left; position:relative; border:1px solid #ccc; padding-top:32px; }
+.htmlarea { text-align:left; position:relative; border:1px solid #ccc; padding-top:31px; }
 
 .htmlarea textarea, .htmlarea .content { margin:0; padding:5px; border:none; outline:none; background:none; resize:none; }
 .htmlarea .content:focus, .htmlarea textarea:focus { background:#fff; }
@@ -21,8 +21,8 @@
 .htmlarea .content:after { content:""; display:block; clear:both; }
 
 
-.htmlarea > .tools { position:absolute; top:0; left:0; right:0; width:100%;
-	border-bottom:1px solid #ccc; background:#dfdfdf; white-space:nowrap; user-select:none; -webkit-user-select:none; -moz-user-select:-moz-none; }
+.htmlarea > .tools { position:absolute; top:0; left:0; right:0; width:100%; }
+.htmlarea .tools { border-bottom:1px solid #ccc; background:#dfdfdf; white-space:nowrap; user-select:none; -webkit-user-select:none; -moz-user-select:-moz-none; }
 .htmlarea .tools .tools { display:inline-block; vertical-align:top; border:none; }
 .htmlarea .tools a { display:inline-block; vertical-align:top; text-align:center; width:1em; line-height:1em; height:1em; padding:0; margin:.1em; cursor:pointer;
 	border:1px solid transparent; border-radius:.2em; background:transparent; position:relative; color:#333; font-size:24px; font-family:icons, Times, serif; }
@@ -39,10 +39,10 @@
 .htmlarea .tools .sub {}
 .htmlarea .tools .sup {}
 
-.htmlarea .tools .center {}
-.htmlarea .tools .left {}
-.htmlarea .tools .right {}
-.htmlarea .tools .justify {}
+.htmlarea .tools .center > span:after { content:"c" }
+.htmlarea .tools .left > span:after { content:"l" }
+.htmlarea .tools .right > span:after { content:"r" }
+.htmlarea .tools .justify > span:after { content:"j" }
 
 .htmlarea .tools .bullet {}
 .htmlarea .tools .number {}
