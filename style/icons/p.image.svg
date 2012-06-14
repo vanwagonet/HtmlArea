@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+	<path d="
+		M6,8 h18 v17 h-18z M8,10 v13 h14 v-13z M11,11 a2,2,0,0,1,0,4 a2,2,0,0,1,0,-4 M9,22 v-2 a64,64,0,0,1,12,-4 v6z
+	"/>
+</svg>
+

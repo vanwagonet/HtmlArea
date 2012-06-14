@@ -36,26 +36,26 @@
 .htmlarea .tools .italic > span:after { content:"i" }
 .htmlarea .tools .underline > span:after { content:"u" }
 .htmlarea .tools .strike > span:after { content:"s" }
-.htmlarea .tools .sub {}
-.htmlarea .tools .sup {}
+.htmlarea .tools .sub > span:after { content:"x" }
+.htmlarea .tools .sup > span:after { content:"X" }
 
 .htmlarea .tools .center > span:after { content:"c" }
 .htmlarea .tools .left > span:after { content:"l" }
 .htmlarea .tools .right > span:after { content:"r" }
 .htmlarea .tools .justify > span:after { content:"j" }
 
-.htmlarea .tools .bullet {}
-.htmlarea .tools .number {}
-.htmlarea .tools .indent {}
-.htmlarea .tools .outdent {}
+.htmlarea .tools .bullet > span:after { content:"*" }
+.htmlarea .tools .number > span:after { content:"1" }
+.htmlarea .tools .indent > span:after { content:">" }
+.htmlarea .tools .outdent > span:after { content:"<" }
 
 .htmlarea .tools .undo {}
 .htmlarea .tools .redo {}
-.htmlarea .tools .mode {}
+.htmlarea .tools .mode > span:after { content:"\2F" }
 
-.htmlarea .tools .link {}
-.htmlarea .tools .image {}
-.htmlarea .tools .video {}
+.htmlarea .tools .link > span:after { content:"_" }
+.htmlarea .tools .image > span:after { content:"p" }
+.htmlarea .tools .video > span:after { content:"v" }
 
 .htmlarea .tools .remove {}
 .htmlarea .tools .float-left {}
