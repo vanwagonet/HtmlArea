@@ -237,8 +237,10 @@ HtmlArea.prototype = {
 	},
 
 	has: function(cmd) {
-		return document.queryCommandIndeterm(cmd) ? undefined :
-			document.queryCommandState(cmd);
+		try {
+			return document.queryCommandIndeterm(cmd) ? undefined :
+				document.queryCommandState(cmd);
+		} catch (ex) { return false; }
 	},
 
 	can: function(cmd) {

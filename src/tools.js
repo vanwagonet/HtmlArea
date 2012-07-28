@@ -20,6 +20,7 @@ HtmlArea.Tool.prototype = HtmlArea.merge(new HtmlArea.Widget(), {
 		return title;
 	},
 	update: function() {
+		if ( ! this.command) { return; }
 		var cls = this.classes(this.button),
 			state = this.editor.has(this.command);
 		if (state === false) {
